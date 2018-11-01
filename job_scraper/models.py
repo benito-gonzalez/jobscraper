@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from django.utils import timezone
 
 
 class Company(models.Model):
@@ -19,10 +19,11 @@ class Job(models.Model):
     location = models.CharField(max_length=100)
     salary = models.FloatField(blank=True, default=None, null=True)
     pub_date = models.DateField(blank=True)
+    end_date = models.DateField(blank=True)
     job_type = models.CharField(max_length=500)
     highlighted = models.BooleanField(default=False)
-    created_at = models.DateTimeField(default=datetime.now)  # UTC time by default
-    company_id = models.ForeignKey(Company, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)  # UTC time by default
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title

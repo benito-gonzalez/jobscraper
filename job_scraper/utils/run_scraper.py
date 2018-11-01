@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
-
+from job_scraper.utils import db_support
 
 FILENAME = "servers.txt"
 
@@ -24,18 +24,20 @@ def read_server_urls():
 
 def main():
     servers = read_server_urls()
-    jobs = []
+    job_offers = []
     for server in servers:
         client = scraper.generate_instance_from_client(server.get('name').lower(), server.get('url'))
         html = request_support.simple_get(server.get('url'))
         if html:
-            jobs.extend(client.extract_info(html))
+            job_offers.extend(client.extract_info(html))
 
     # method to validate job information
 
     # method to store to DB checking that job does not exist yet.
-    for job in jobs:
-        print(job)
+    for job in job_offers:
+        company = db_support.get_company_by_name(job.company_name)
+        if db_support.is_new_job(job, company):
+            db_support.save_to_db(job, company)
 
 
 main()
