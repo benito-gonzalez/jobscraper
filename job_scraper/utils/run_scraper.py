@@ -2,7 +2,7 @@
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
 from job_scraper.utils import db_support
-
+from job_scraper.utils import error_log
 FILENAME = "servers.txt"
 
 
@@ -35,9 +35,12 @@ def main():
 
     # method to store to DB checking that job does not exist yet.
     for job in job_offers:
-        company = db_support.get_company_by_name(job.company_name)
-        if db_support.is_new_job(job, company):
-            db_support.save_to_db(job, company)
+        company = db_support.get_company_by_name("s")
+        if company:
+            if db_support.is_new_job(job, company):
+                db_support.save_to_db(job, company)
+        else:
+            error_log.set_company_not_found(job.company_name)
 
 
 main()

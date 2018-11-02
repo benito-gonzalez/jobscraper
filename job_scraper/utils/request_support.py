@@ -2,7 +2,7 @@ from requests import get
 from requests.exceptions import RequestException
 from contextlib2 import closing
 
-ERRORFILE = "errors.log"
+from job_scraper.utils import error_log
 
 
 def simple_get(url):
@@ -16,11 +16,11 @@ def simple_get(url):
             if is_good_response(resp):
                 return resp.content
             else:
-                log_error('Error during requests to {0}'.format(url))
+                error_log.set_invalid_response(url)
                 return None
 
     except RequestException as e:
-        log_error('Error during requests to {0} : {1}'.format(url, str(e)))
+        error_log.set_invalid_request(url, e)
         return None
 
 
@@ -32,12 +32,3 @@ def is_good_response(resp):
     return (resp.status_code == 200
             and content_type is not None
             and content_type.find('html') > -1)
-
-
-def log_error(e):
-    """
-    Log the error
-    """
-    f = open(ERRORFILE, 'a')
-    f.write(e + "\n")
-    f.close()
