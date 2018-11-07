@@ -16,8 +16,8 @@ def read_server_urls():
 
     for line in lines:
         if line and line[0] != "#":
-            info = line.split()
-            servers.append({'name': info[0], 'url': info[1]})
+            info = line.split("-")
+            servers.append({'name': info[0].strip(), 'url': info[1].strip()})
 
     return servers
 
@@ -35,7 +35,7 @@ def main():
 
     # method to store to DB checking that job does not exist yet.
     for job in job_offers:
-        company = db_support.get_company_by_name("s")
+        company = db_support.get_company_by_name(job.company_name)
         if company:
             if db_support.is_new_job(job, company):
                 db_support.save_to_db(job, company)
