@@ -4,19 +4,23 @@ from dateutil import tz
 
 from job_scraper.utils.job import JobOffer
 from job_scraper.utils import request_support
+from job_scraper.utils import log_support
 
 
 def generate_instance_from_client(client_name, url):
     if client_name == "dna":
-        return Dna(url)
+        return Dna(client_name, url)
     if client_name == "elisa":
-        return Elisa(url)
+        return Elisa(client_name, url)
+    else:
+        return None
 
 
 class Scraper(object):
 
-    def __init__(self, url):
+    def __init__(self, client_name, url):
         self.url = url
+        self.client_name = client_name
 
     def extract_info(self, html_content):
         pass
@@ -30,6 +34,7 @@ class Dna(Scraper):
         :param html:
         :return: JobOffer
         """
+        log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
         ul = soup.find("ul", attrs={'class': 'news__article-container'})

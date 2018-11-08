@@ -1,8 +1,10 @@
 from requests import get
 from requests.exceptions import RequestException
 from contextlib2 import closing
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-from job_scraper.utils import error_log
+from job_scraper.utils import log_support
 
 
 def simple_get(url):
@@ -11,24 +13,15 @@ def simple_get(url):
     If the content-type of response is some kind of HTML/XML, return the
     text content, otherwise return None.
     """
+    log_support.request_url(url)
     try:
-        with closing(get(url, stream=True)) as resp:
-            if is_good_response(resp):
+        with closing(get(url, stream=True, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)) as resp:
+            if resp.status_code == 200:
                 return resp.content
             else:
-                error_log.set_invalid_response(url)
+                log_support.set_invalid_response(url, resp.status_code)
                 return None
 
     except RequestException as e:
-        error_log.set_invalid_request(url, e)
+        log_support.set_invalid_request(url, e)
         return None
-
-
-def is_good_response(resp):
-    """
-    Returns True if the response seems to be HTML, False otherwise.
-    """
-    content_type = resp.headers['Content-Type'].lower()
-    return (resp.status_code == 200
-            and content_type is not None
-            and content_type.find('html') > -1)

@@ -5,4 +5,4 @@ job_scraper/__pycache__/
 job_scraper/utils/__pycache__/
 job_scraper/migrations/__pycache__/
 webapp/__pycache__/
-job_scraper/utils/errors.log
+job_scraper/utils/logs/

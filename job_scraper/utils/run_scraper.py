@@ -2,7 +2,7 @@
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
 from job_scraper.utils import db_support
-from job_scraper.utils import error_log
+from job_scraper.utils import log_support
 FILENAME = "servers.txt"
 
 
@@ -27,9 +27,10 @@ def main():
     job_offers = []
     for server in servers:
         client = scraper.generate_instance_from_client(server.get('name').lower(), server.get('url'))
-        html = request_support.simple_get(server.get('url'))
-        if html:
-            job_offers.extend(client.extract_info(html))
+        if client:
+            html = request_support.simple_get(server.get('url'))
+            if html:
+                job_offers.extend(client.extract_info(html))
 
     # method to validate job information
 
@@ -40,7 +41,7 @@ def main():
             if db_support.is_new_job(job, company):
                 db_support.save_to_db(job, company)
         else:
-            error_log.set_company_not_found(job.company_name)
+            log_support.set_company_not_found(job.company_name)
 
 
 main()
