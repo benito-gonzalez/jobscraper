@@ -45,3 +45,9 @@ def log_extract_info(client_name):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "Extracting information from {0}".format(client_name) + "\n")
     f.close()
+
+
+def disabled_job(job):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "Updated job '{0}' from '{1}'".format(job, job.company) + " to 'is_active = False'\n")
+    f.close()

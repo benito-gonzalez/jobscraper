@@ -22,26 +22,51 @@ def read_server_urls():
     return servers
 
 
+def are_same_jobs(db_job, scraped_job):
+    return db_job.title == scraped_job.title and db_job.company.name == scraped_job.company_name and db_job.location == scraped_job.location
+
+
+def update_active_jobs(scraped_jobs):
+    """
+    Updates those jobs which are active and do not appear among the scraped jobs so they no longer exist in the website.
+    For those which no longer exit, 'is_activate' is updated to False
+    :param scraped_jobs: jobs which have been found by the scraper
+    :return: None
+    """
+    active_jobs = db_support.get_active_jobs()
+    for active_job in active_jobs:
+        found = False
+        for scraped_job in scraped_jobs:
+            if are_same_jobs(active_job, scraped_job):
+                found = True
+                break
+        if not found:
+            db_support.disable_job(active_job)
+
+
 def main():
     servers = read_server_urls()
-    job_offers = []
+    scraped_jobs = []
     for server in servers:
         client = scraper.generate_instance_from_client(server.get('name').lower(), server.get('url'))
         if client:
             html = request_support.simple_get(server.get('url'))
             if html:
-                job_offers.extend(client.extract_info(html))
+                scraped_jobs.extend(client.extract_info(html))
 
     # method to validate job information
 
     # method to store to DB checking that job does not exist yet.
-    for job in job_offers:
-        company = db_support.get_company_by_name(job.company_name)
+    for scraped_job in scraped_jobs:
+        company = db_support.get_company_by_name(scraped_job.company_name)
         if company:
-            if db_support.is_new_job(job, company):
-                db_support.save_to_db(job, company)
+            if db_support.is_new_job(scraped_job, company):
+                db_support.save_to_db(scraped_job, company)
         else:
-            log_support.set_company_not_found(job.company_name)
+            log_support.set_company_not_found(scraped_job.company_name)
+
+    # disable jobs which no longer exist in the websites
+    update_active_jobs(scraped_jobs)
 
 
 main()

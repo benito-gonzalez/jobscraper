@@ -1,5 +1,5 @@
 
-class JobOffer:
+class ScrapedJob:
 
     def __init__(self, title, description, location, company, salary, pub_date, end_date, job_type, url):
         self.title = title

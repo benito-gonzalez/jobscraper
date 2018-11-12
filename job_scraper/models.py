@@ -15,15 +15,16 @@ class Company(models.Model):
 
 class Job(models.Model):
     title = models.CharField(max_length=500)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
     description = models.CharField(max_length=5000)
     location = models.CharField(max_length=100)
     salary = models.FloatField(blank=True, default=None, null=True)
     pub_date = models.DateField(blank=True)
     end_date = models.DateField(blank=True)
     job_type = models.CharField(max_length=500)
+    is_active = models.BooleanField(default=False)
     highlighted = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)  # UTC time by default
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title

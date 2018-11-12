@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import dateutil.parser as parser
 from dateutil import tz
 
-from job_scraper.utils.job import JobOffer
+from job_scraper.utils.job import ScrapedJob
 from job_scraper.utils import request_support
 from job_scraper.utils import log_support
 
@@ -32,7 +32,7 @@ class Dna(Scraper):
         """
         Receives an HTML from DNA client and scraps it filling job offer information
         :param html:
-        :return: JobOffer
+        :return: ScrapedJob
         """
         log_support.log_extract_info(self.client_name)
         jobs = []
@@ -50,7 +50,7 @@ class Dna(Scraper):
             description = self.get_full_description(job_details_soup)
             pub_date, end_date = self.get_dates(job_details_soup)
             job_type = self.get_job_type(job_details_soup)
-            job = JobOffer(title, description, location, "DNA", None, pub_date, end_date, job_type, url)
+            job = ScrapedJob(title, description, location, "DNA", None, pub_date, end_date, job_type, url)
             jobs.append(job)
 
         return jobs
