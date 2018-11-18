@@ -48,11 +48,12 @@ def main():
     servers = read_server_urls()
     scraped_jobs = []
     for server in servers:
-        client = scraper.generate_instance_from_client(server.get('name').lower(), server.get('url'))
+        client = scraper.generate_instance_from_client(server.get('name'), server.get('url'))
         if client:
             html = request_support.simple_get(server.get('url'))
             if html:
-                scraped_jobs.extend(client.extract_info(html))
+                jobs = client.extract_info(html)
+                scraped_jobs.extend(jobs)
 
     # method to validate job information
 

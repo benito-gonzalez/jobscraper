@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import dateutil.parser as parser
 from dateutil import tz
+import json
 
 from job_scraper.utils.job import ScrapedJob
 from job_scraper.utils import request_support
@@ -8,9 +9,9 @@ from job_scraper.utils import log_support
 
 
 def generate_instance_from_client(client_name, url):
-    if client_name == "dna":
+    if client_name.lower() == "dna":
         return Dna(client_name, url)
-    if client_name == "elisa":
+    if client_name.lower() == "elisa":
         return Elisa(client_name, url)
     else:
         return None
@@ -50,7 +51,7 @@ class Dna(Scraper):
             description = self.get_full_description(job_details_soup)
             pub_date, end_date = self.get_dates(job_details_soup)
             job_type = self.get_job_type(job_details_soup)
-            job = ScrapedJob(title, description, location, "DNA", None, pub_date, end_date, job_type, url)
+            job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, job_type, url)
             jobs.append(job)
 
         return jobs
@@ -100,4 +101,25 @@ class Dna(Scraper):
 class Elisa(Scraper):
     def extract_info(self, html):
         jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        for item in json_dict:
+            title = item["title"]
+            description = BeautifulSoup(item["jobDescription"], "lxml").text
+
+            if item["startDate"] != "":
+                pub_date = parser.parse(item["startDate"]).strftime('%Y-%m-%d')
+            else:
+                pub_date = None
+            if item["endDate"] != "":
+                end_date = parser.parse(item["endDate"]).strftime('%Y-%m-%d')
+            else:
+                end_date = None
+
+            job_type = item["jobDomain"]
+            url = item["jobDescUrl"]
+            job = ScrapedJob(title, description, None, self.client_name, None, pub_date, end_date, job_type, url)
+            jobs.append(job)
+
         return jobs
