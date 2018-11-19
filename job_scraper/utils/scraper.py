@@ -13,6 +13,8 @@ def generate_instance_from_client(client_name, url):
         return Dna(client_name, url)
     if client_name.lower() == "elisa":
         return Elisa(client_name, url)
+    if client_name.lower() == "vala group oy":
+        return Vala(client_name, url)
     else:
         return None
 
@@ -78,9 +80,9 @@ class Dna(Scraper):
         for tag in pub_date_block.next_siblings:
             if tag.name == "p":
                 date0 = tag.text.split("-")[0]
-                pub_date = parser.parse(date0, tzinfos={'EEST':tz.gettz("Europe/Helsinki"), 'EET':tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
+                pub_date = parser.parse(date0, tzinfos={'EEST': tz.gettz("Europe/Helsinki"), 'EET': tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
                 date1 = tag.text.split("-")[1]
-                end_date = parser.parse(date1, tzinfos={'EET':tz.gettz("Europe/Helsinki"), 'EEST':tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
+                end_date = parser.parse(date1, tzinfos={'EET': tz.gettz("Europe/Helsinki"), 'EEST': tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
                 break
 
         return pub_date, end_date
@@ -120,6 +122,39 @@ class Elisa(Scraper):
             job_type = item["jobDomain"]
             url = item["jobDescUrl"]
             job = ScrapedJob(title, description, None, self.client_name, None, pub_date, end_date, job_type, url)
+            jobs.append(job)
+
+        return jobs
+
+
+class Vala(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        section = soup.find("div", attrs={'class': 'sections_group'})
+        items = section.findAll("a")
+        for item in items:
+            title = item.find("h4", attrs={'class': 'title'}).text
+            # Vala has a list of jobs. Last item from the list is not a job a an applicatin form. Script must skip here
+            if title == "Open Application":
+                break
+            relative_url = item['href']
+            full_url = self.url + relative_url
+            # Get job details
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            details_bock = soup.find('div', attrs={'class': 'column_attr clearfix'})
+
+            description = ""
+            for tag in details_bock.find("h1").next_siblings:
+                if tag.name == "h4":
+                    break
+                elif tag.name == "p":
+                    description += tag.text
+
+            job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, full_url)
             jobs.append(job)
 
         return jobs
