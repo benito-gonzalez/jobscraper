@@ -52,8 +52,17 @@ def main():
         if client:
             html = request_support.simple_get(server.get('url'))
             if html:
+                """
+                Comment out during developing
+                try:
+                    jobs = client.extract_info(html)
+                    scraped_jobs.extend(jobs)
+                except:
+                    log_support.scraper_failure(server.get('name'))
+                """
                 jobs = client.extract_info(html)
                 scraped_jobs.extend(jobs)
+
 
     # method to validate job information
 

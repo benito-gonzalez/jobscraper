@@ -51,3 +51,9 @@ def disabled_job(job):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "Updated job '{0}' from '{1}'".format(job, job.company) + " to 'is_active = False'\n")
     f.close()
+
+
+def scraper_failure(client_name):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "ERROR. Invalid information from {0}".format(client_name) + "\n")
+    f.close()

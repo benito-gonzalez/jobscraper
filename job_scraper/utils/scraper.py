@@ -15,6 +15,8 @@ def generate_instance_from_client(client_name, url):
         return Elisa(client_name, url)
     if client_name.lower() == "vala group oy":
         return Vala(client_name, url)
+    if client_name.lower() == "siili solutions oyj":
+        return Siili(client_name, url)
     else:
         return None
 
@@ -61,13 +63,13 @@ class Dna(Scraper):
     @staticmethod
     def get_full_description(job_details_soup):
         description = ""
-        details_bock = job_details_soup.find('div', attrs={'class': 'news-single'})
+        details_block = job_details_soup.find('div', attrs={'class': 'news-single'})
 
-        for tag in details_bock.find("h5").next_siblings:
+        for tag in details_block.find("h5").next_siblings:
             if tag.name == "h5" and tag.text != "Tehtävän kuvaus":
                 break
             elif tag.name == "p":
-                description += tag.text
+                description += tag.text + "\n"
 
         return description
 
@@ -155,6 +157,33 @@ class Vala(Scraper):
                     description += tag.text
 
             job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, full_url)
+            jobs.append(job)
+
+        return jobs
+
+
+class Siili(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        jobs_block = soup.find('div', attrs={'class': 'listing--job-ads'})
+
+        items = jobs_block.find_all("article")
+        for item in items:
+            title = item.find("h3").text.strip()
+            location = item.find("div", attrs={'class': 'job-ad__office--listing'}).text.strip()
+            relative_url = item.find("a")['href']
+            full_url = self.url.split("com/")[0] + "com" + relative_url
+
+            # Get job details
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            job_description = soup.find('div', attrs={'class': 'job-ad__description'})
+            description = job_description.get_text().strip()
+
+            job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, full_url)
             jobs.append(job)
 
         return jobs
