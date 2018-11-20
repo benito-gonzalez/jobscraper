@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import dateutil.parser as parser
 from dateutil import tz
 import json
+from re import sub
 
 from job_scraper.utils.job import ScrapedJob
 from job_scraper.utils import request_support
@@ -17,6 +18,8 @@ def generate_instance_from_client(client_name, url):
         return Vala(client_name, url)
     if client_name.lower() == "siili solutions oyj":
         return Siili(client_name, url)
+    if client_name.lower() == "innofactor oyj":
+        return Innofactor(client_name, url)
     else:
         return None
 
@@ -141,7 +144,7 @@ class Vala(Scraper):
             title = item.find("h4", attrs={'class': 'title'}).text
             # Vala has a list of jobs. Last item from the list is not a job a an applicatin form. Script must skip here
             if title == "Open Application":
-                break
+                continue
             relative_url = item['href']
             full_url = self.url + relative_url
             # Get job details
@@ -181,9 +184,39 @@ class Siili(Scraper):
             job_details_html = request_support.simple_get(full_url)
             soup = BeautifulSoup(job_details_html, 'html.parser')
             job_description = soup.find('div', attrs={'class': 'job-ad__description'})
-            description = job_description.get_text().strip()
+            description = job_description.get_text()
 
             job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, full_url)
+            jobs.append(job)
+
+        return jobs
+
+
+class Innofactor(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        ul = soup.find("ul", attrs={'class': 'jobs'})
+        lis = ul.findAll('li')
+        for li in lis:
+            title = li.find('span', attrs={'class': 'title'}).text
+            # "avoin hakemus" == "open application"
+            if "avoin hakemus" in title.lower():
+                continue
+            relative_url = li.find("a")['href']
+            full_url = self.url.split("fi/")[0] + "fi" + relative_url
+
+            # Get job details
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_block = soup.find('div', attrs={'class': 'body'})
+            description = description_block.get_text('\n', strip=True)
+
+            # description has multiple consecutive whitespaces. we need to remove them
+            formatted_description = sub(' +', ' ', description)
+            job = ScrapedJob(title, formatted_description, None, self.client_name, None, None, None, None, full_url)
             jobs.append(job)
 
         return jobs
