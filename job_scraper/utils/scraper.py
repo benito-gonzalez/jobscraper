@@ -21,6 +21,8 @@ def generate_instance_from_client(client_name, url):
         return Innofactor(client_name, url)
     if client_name.lower() == "smarp oyj":
         return Smarp(client_name, url)
+    if client_name.lower() == "silo.ai oy":
+        return Silo(client_name, url)
     else:
         return None
 
@@ -271,6 +273,44 @@ class Smarp(Scraper):
         try:
             location_block = soup.find('h2', attrs={'class': 'byline'}).text
             location = location_block.split("–")[1].strip()
+        except:
+            log_support.set_invalid_location(self.client_name, job_title)
+
+        return location
+
+
+class Silo(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        job_divs = soup.find_all("div", attrs={'class': 'elementor-icon-box-content'})
+        for job_div in job_divs:
+            title = job_div.find("h3").text.strip()
+            url = job_div.find("a")["href"]
+
+            # Get job details
+            job_details_html = request_support.simple_get(url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            location = self.get_location(soup, title)
+
+            description = ""
+            description_div = soup.find("div", {'class': 'text-body'}).find_all(["p", "ul"])
+            for div in description_div:
+                description += str(div)
+
+            job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, url)
+            jobs.append(job)
+
+
+        return jobs
+
+    def get_location(self, soup, job_title):
+        location = None
+        try:
+            location_block = soup.find('div', attrs={'class': 'pill blue'}).text
+            location = location_block.split(", ")[1].strip()
         except:
             log_support.set_invalid_location(self.client_name, job_title)
 
