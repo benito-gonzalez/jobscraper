@@ -6,7 +6,7 @@
 {% if latest_job_list %}
     <ul>
     {% for job in latest_job_list %}
-        <li><a href="{%  url 'job_scraper:detail' job.id %}">{{ job.title }}</a></li>
+        <li><a href="{%  url 'job_scraper:detail' job.id %}">{{ job.title }}</a> at {{ job.company }}</li>
     {% endfor %}
     </ul>
 {% else %}

@@ -23,7 +23,7 @@ from job_scraper import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('web/', include('job_scraper.urls')),
+    path('jobs/', include('job_scraper.urls')),
     path('api/jobs/', views.JobListApiView.as_view()),
     path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view())
 ]

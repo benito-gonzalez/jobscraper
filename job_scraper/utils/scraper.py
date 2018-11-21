@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 import dateutil.parser as parser
 from dateutil import tz
 import json
-from re import sub
 
 from job_scraper.utils.job import ScrapedJob
 from job_scraper.utils import request_support
@@ -68,11 +67,15 @@ class Dna(Scraper):
         description = ""
         details_block = job_details_soup.find('div', attrs={'class': 'news-single'})
 
-        for tag in details_block.find("h5").next_siblings:
-            if tag.name == "h5" and tag.text != "Tehtävän kuvaus":
+        paragraph = details_block.find("p")
+        while True:
+            if paragraph is None:
                 break
-            elif tag.name == "p":
-                description += tag.text + "\n"
+            if paragraph.name and paragraph.name != "p":
+                break
+
+            description += str(paragraph)
+            paragraph = paragraph.next_sibling
 
         return description
 
@@ -113,7 +116,7 @@ class Elisa(Scraper):
 
         for item in json_dict:
             title = item["title"]
-            description = BeautifulSoup(item["jobDescription"], "lxml").text
+            description = item["jobDescription"]
 
             if item["startDate"] != "":
                 pub_date = parser.parse(item["startDate"]).strftime('%Y-%m-%d')
@@ -139,25 +142,25 @@ class Vala(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
         section = soup.find("div", attrs={'class': 'sections_group'})
-        items = section.findAll("a")
+        items = section.find_all("a")
         for item in items:
             title = item.find("h4", attrs={'class': 'title'}).text
-            # Vala has a list of jobs. Last item from the list is not a job a an applicatin form. Script must skip here
+            # Vala has a list of jobs. Last item from the list is not a job a an applicatin form. Loop must skip here
             if title == "Open Application":
-                continue
+                break
             relative_url = item['href']
             full_url = self.url + relative_url
             # Get job details
             job_details_html = request_support.simple_get(full_url)
-            soup = BeautifulSoup(job_details_html, 'html.parser')
+            soup = BeautifulSoup(job_details_html, 'lxml')
             details_bock = soup.find('div', attrs={'class': 'column_attr clearfix'})
 
             description = ""
             for tag in details_bock.find("h1").next_siblings:
-                if tag.name == "h4":
+                if tag.name == "h4" and tag.text.strip() == "Interested?":
                     break
-                elif tag.name == "p":
-                    description += tag.text
+                if tag != "\n":
+                    description += str(tag)
 
             job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, full_url)
             jobs.append(job)
@@ -176,6 +179,8 @@ class Siili(Scraper):
         items = jobs_block.find_all("article")
         for item in items:
             title = item.find("h3").text.strip()
+            if title == "Open Application":
+                continue
             location = item.find("div", attrs={'class': 'job-ad__office--listing'}).text.strip()
             relative_url = item.find("a")['href']
             full_url = self.url.split("com/")[0] + "com" + relative_url
@@ -183,8 +188,13 @@ class Siili(Scraper):
             # Get job details
             job_details_html = request_support.simple_get(full_url)
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            job_description = soup.find('div', attrs={'class': 'job-ad__description'})
-            description = job_description.get_text()
+            description = ""
+            job_description = soup.find('div', attrs={'class': 'job-ad__description'}).find_all(["p", "h3"])
+            for tag in job_description:
+                if tag.name == "h3" and "interested?" in tag.text.lower():
+                    break
+                if tag != "\n" and tag.text != "":
+                    description += str(tag)
 
             job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, full_url)
             jobs.append(job)
@@ -211,12 +221,13 @@ class Innofactor(Scraper):
             # Get job details
             job_details_html = request_support.simple_get(full_url)
             soup = BeautifulSoup(job_details_html, 'html.parser')
+            description = ""
             description_block = soup.find('div', attrs={'class': 'body'})
-            description = description_block.get_text('\n', strip=True)
-
-            # description has multiple consecutive whitespaces. we need to remove them
-            formatted_description = sub(' +', ' ', description)
-            job = ScrapedJob(title, formatted_description, None, self.client_name, None, None, None, None, full_url)
+            paragraphs = description_block.find_all("p")
+            for p in paragraphs:
+                if p.name == "p":
+                    description += str(p)
+            job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, full_url)
             jobs.append(job)
 
         return jobs
