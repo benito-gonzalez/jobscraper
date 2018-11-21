@@ -19,6 +19,8 @@ def generate_instance_from_client(client_name, url):
         return Siili(client_name, url)
     if client_name.lower() == "innofactor oyj":
         return Innofactor(client_name, url)
+    if client_name.lower() == "smarp oyj":
+        return Smarp(client_name, url)
     else:
         return None
 
@@ -227,7 +229,49 @@ class Innofactor(Scraper):
             for p in paragraphs:
                 if p.name == "p":
                     description += str(p)
+
             job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, full_url)
             jobs.append(job)
 
         return jobs
+
+
+class Smarp(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        ul = soup.find("ul", attrs={'class': 'jobs'})
+        lis = ul.findAll('li')
+        for li in lis:
+            title = li.find("span", {"class": "title"}).text
+            relative_url = li.find('a')['href']
+            full_url = self.url.split("com/")[0] + "com" + relative_url
+
+            # Get job details
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            location = self.get_location(soup, title)
+
+            description = ""
+            description_block = soup.find('div', attrs={'class': 'body'})
+            paragraphs = description_block.find_all("p")
+            for p in paragraphs:
+                if p.name == "p":
+                    description += str(p)
+
+            job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, full_url)
+            jobs.append(job)
+
+        return jobs
+
+    def get_location(self, soup, job_title):
+        location = None
+        try:
+            location_block = soup.find('h2', attrs={'class': 'byline'}).text
+            location = location_block.split("–")[1].strip()
+        except:
+            log_support.set_invalid_location(self.client_name, job_title)
+
+        return location
