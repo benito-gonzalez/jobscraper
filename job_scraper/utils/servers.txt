@@ -1,13 +1,16 @@
 # Define the list of clients to be used by the scraper. These must follow the convention: "name" - "url"
 DNA - https://corporate.dna.fi/tyopaikat
-Elisa - https://corporate.elisa.com/careers/avoimet_tyopaikat/kaikki_avoimet_paikat/
+Elisa - https://corporate.elisa.com/rest/corporate.elisa.fi/laurafeed/jobitems/all/en
 Flashnode Oy - https://jobs.flashnode.com/
 Vala Group Oy - https://www.valagroup.com/career/
-Siili Solutions Oyj - https://www.siili.com/careers?office=3#open-positions
+Siili Solutions Oyj - https://www.siili.com/careers
+Siili Solutions Oyj - https://www.siili.com/careers?office=6#open-positions
+Siili Solutions Oyj - https://www.siili.com/careers?office=603#open-positions
+Siili Solutions Oyj - https://www.siili.com/careers?office=847#open-positions
 Innofactor Oyj - https://ura.innofactor.fi/jobs/
-Smarp Oyj - https://smarp.teamtailor.com/
+Smarp Oyj - https://smarp.teamtailor.com/jobs?location_id=35113
 Silo.AI Oy - https://silo.ai/careers/
-BB Oy - https://new.abb.com/jobs/center/_api/AbbCareers/Jobs?take=100&country=FI&city=Helsinki&function=any&role=any&keywords=
+ABB Oy - https://new.abb.com/jobs/center/_api/AbbCareers/Jobs?take=100&country=FI&city=any&function=any&role=any&keywords=
 Qvik Oy - https://qvik.com/careers/
 Blueprint Genetics Oy - https://careers.blueprintgenetics.com/
 Eficode Oy - https://eficode.easycruit.com/index.html

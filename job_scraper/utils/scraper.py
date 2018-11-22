@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import dateutil.parser as parser
 from dateutil import tz
 import json
+import time
 
 from job_scraper.utils.job import ScrapedJob
 from job_scraper.utils import request_support
@@ -23,6 +24,8 @@ def generate_instance_from_client(client_name, url):
         return Smarp(client_name, url)
     if client_name.lower() == "silo.ai oy":
         return Silo(client_name, url)
+    if client_name.lower() == "abb oy":
+        return Abb(client_name, url)
     else:
         return None
 
@@ -113,7 +116,9 @@ class Dna(Scraper):
 
 
 class Elisa(Scraper):
+
     def extract_info(self, html):
+        # From API
         jobs = []
         log_support.log_extract_info(self.client_name)
         json_dict = json.loads(html)
@@ -213,7 +218,7 @@ class Innofactor(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
         ul = soup.find("ul", attrs={'class': 'jobs'})
-        lis = ul.findAll('li')
+        lis = ul.find_all('li')
         for li in lis:
             title = li.find('span', attrs={'class': 'title'}).text
             # "avoin hakemus" == "open application"
@@ -245,7 +250,7 @@ class Smarp(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
         ul = soup.find("ul", attrs={'class': 'jobs'})
-        lis = ul.findAll('li')
+        lis = ul.find_all('li')
         for li in lis:
             title = li.find("span", {"class": "title"}).text
             relative_url = li.find('a')['href']
@@ -303,7 +308,6 @@ class Silo(Scraper):
             job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, url)
             jobs.append(job)
 
-
         return jobs
 
     def get_location(self, soup, job_title):
@@ -315,3 +319,57 @@ class Silo(Scraper):
             log_support.set_invalid_location(self.client_name, job_title)
 
         return location
+
+
+class Abb(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        json_dict = json.loads(html)
+
+        for item in json_dict["Items"]:
+            title = item["Title"].strip()
+
+            location = None
+            if "AddressLocality" in item["JobLocation"] and item["JobLocation"]["AddressLocality"] and item["JobLocation"]["AddressLocality"] != "":
+                location = item["JobLocation"]["AddressLocality"]
+
+            end_date = self.get_end_date(item["ValidThrough"])
+
+            job_type = None
+            if "Name" in item["FunctionalArea"] and item["FunctionalArea"]["Name"] and item["FunctionalArea"]["Name"] != "":
+                job_type = item["FunctionalArea"]["Name"]
+
+            relative_url = item["Url"]
+            full_url = self.url.split("jobs/")[0] + "jobs/details" + relative_url
+
+            # Get job details
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description = ""
+            task_item = soup.find("h3", string='Tasks:')
+            for tag in task_item.next_siblings:
+                # remove tag attributes
+                tag.attrs = {}
+                if tag.name and tag.name != "p" and tag.name != "h3":
+                    break
+                if tag != "\n":
+                    # remove <span> from paragraphs
+                    for match in tag.find_all('span'):
+                        match.unwrap()
+                    description += str(tag)
+
+            job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, job_type, full_url)
+            jobs.append(job)
+
+        return jobs
+
+    @staticmethod
+    def get_end_date(date_field):
+        # Formatted as "/Date(1544313600000)/"
+        epoch = date_field.split("(")[1].split(")")[0]
+        seconds = int(epoch[:-3])
+        date_string = time.strftime('%Y-%m-%d', time.gmtime(seconds))
+        return date_string
