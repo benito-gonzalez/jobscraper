@@ -26,6 +26,12 @@ def generate_instance_from_client(client_name, url):
         return Silo(client_name, url)
     if client_name.lower() == "abb oy":
         return Abb(client_name, url)
+    if client_name.lower() == "qvik oy":
+        return Qvik(client_name, url)
+    if client_name.lower() == "blueprint genetics oy":
+        return Blueprint(client_name, url)
+    if client_name.lower() == "eficode oy":
+        return Eficode(client_name, url)
     else:
         return None
 
@@ -373,3 +379,122 @@ class Abb(Scraper):
         seconds = int(epoch[:-3])
         date_string = time.strftime('%Y-%m-%d', time.gmtime(seconds))
         return date_string
+
+
+class Qvik(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        job_divs = soup.find_all("div", attrs={'class': 'boxes-col'})
+
+        for job_div in job_divs:
+            title = job_div.find('h3').text
+            url = job_div.find('a')['href']
+
+            # Get job details
+            description = ""
+            job_details_html = request_support.simple_get(url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_div = soup.find("div", attrs={'class': 'article-container'})
+
+            for p in description_div.find_all('p'):
+                description += str(p)
+
+            # Qvik has their office in Helsinki but that information does not appear in the HTML tag from their careers.
+            job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, url)
+            jobs.append(job)
+
+        return jobs
+
+
+class Blueprint(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        ul = soup.find("ul", attrs={'class': 'jobs'})
+        lis = ul.find_all('li')
+        for li in lis:
+            title = li.find('span', attrs={'class': 'title'}).text
+            if "open application" in title.lower():
+                continue
+            location = self.get_location(li, title)
+            relative_url = li.find("a")['href']
+            full_url = self.url.split("com/")[0] + "com" + relative_url
+
+            # Get job details
+            description = ""
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_div = soup.find('div', {'class': 'body'})
+
+            for p in description_div.find('p').next_siblings:
+                description += str(p)
+
+            job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, full_url)
+            jobs.append(job)
+
+        return jobs
+
+    def get_location(self, li, job_title):
+        location = None
+        try:
+            location_block = li.find('span', attrs={'class': 'meta'}).text
+            location = location_block.split("–")[1].strip()
+        except:
+            log_support.set_invalid_location(self.client_name, job_title)
+
+        return location
+
+
+class Eficode(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        for job_div in soup.find_all('div', {'class': 'job-ad'}):
+            title = job_div.find('a').text
+            relative_url = job_div.find('a')['href']
+            full_url = self.url.split("com/")[0] + "com" + relative_url
+            location = self.get_location(job_div, title)
+
+            # Get job details
+            description = ""
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_div = soup.find('div', {'class': 'jd-description'})
+
+            for p in description_div.find('h1').next_siblings:
+                if p != "\n":
+                    description += str(p)
+
+            job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, full_url)
+            jobs.append(job)
+
+        return jobs
+
+    def get_location(self, job_div, job_title):
+        location = None
+        try:
+            location_block = job_div.find('p')
+            for br in location_block.find_all("br"):
+                br.replace_with(", ")
+
+            location_block = location_block.text
+            location_block = location_block.replace("Eficode Oy,", "")
+            location_block = location_block.replace("Eficode", "")
+            location_list = location_block.split(",")
+            location_list = map(str.strip, location_list)
+            # remove duplicated
+            locations = list(dict.fromkeys(location_list))
+            location = ", ".join(locations)
+
+        except:
+            log_support.set_invalid_location(self.client_name, job_title)
+
+        return location

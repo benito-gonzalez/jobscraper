@@ -63,3 +63,9 @@ def set_invalid_location(client_name, job_title):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "ERROR. Could not get a valid job location from {0} client for the job {1}".format(client_name, job_title) + "\n")
     f.close()
+
+
+def no_jobs_found(url):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "WARNING. No jobs retrieved from {0}".format(url) + "\n")
+    f.close()
