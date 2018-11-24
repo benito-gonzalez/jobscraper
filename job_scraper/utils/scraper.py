@@ -32,6 +32,8 @@ def generate_instance_from_client(client_name, url):
         return Blueprint(client_name, url)
     if client_name.lower() == "eficode oy":
         return Eficode(client_name, url)
+    if client_name.lower() == "ericsson":
+        return Ericsson(client_name, url)
     else:
         return None
 
@@ -470,7 +472,10 @@ class Eficode(Scraper):
             description_div = soup.find('div', {'class': 'jd-description'})
 
             for p in description_div.find('h1').next_siblings:
+                p.attrs = {}
                 if p != "\n":
+                    for match in p.find_all('span'):
+                        match.unwrap()
                     description += str(p)
 
             job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, full_url)
@@ -498,3 +503,28 @@ class Eficode(Scraper):
             log_support.set_invalid_location(self.client_name, job_title)
 
         return location
+
+
+class Ericsson(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        for item in json_dict["jobs"]:
+            title = item["data"]["title"]
+            description = item["data"]["description"]
+            location = item["data"]["city"]
+            pub_date = self.get_pub_date(item["data"]["create_date"])
+            url = item["data"]["meta_data"]["canonical_url"]
+
+            job = ScrapedJob(title, description, location, self.client_name, None, pub_date, None, None, url)
+            jobs.append(job)
+
+        return jobs
+
+    @staticmethod
+    def get_pub_date(created_date):
+        return parser.parse(created_date).strftime('%Y-%m-%d')
