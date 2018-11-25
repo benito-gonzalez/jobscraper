@@ -34,6 +34,12 @@ def generate_instance_from_client(client_name, url):
         return Eficode(client_name, url)
     if client_name.lower() == "ericsson":
         return Ericsson(client_name, url)
+    if client_name.lower() == "varjo technologies":
+        return Varjo(client_name, url)
+    if client_name.lower() == "telia finland oyj":
+        return Telia(client_name, url)
+    if client_name.lower() == "wärtsilä":
+        return Wartsila(client_name, url)
     else:
         return None
 
@@ -528,3 +534,117 @@ class Ericsson(Scraper):
     @staticmethod
     def get_pub_date(created_date):
         return parser.parse(created_date).strftime('%Y-%m-%d')
+
+
+class Varjo(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        job_divs = soup.find_all('div', {'class': 'jobs-list'})
+        for job_div in job_divs:
+            for item in job_div.find_all("a"):
+                title = item.find('span', {'class': 'jobs-position-title'}).text
+                location = item.find('span', {'class': 'jobs-position-location'}).text
+                url = item['href']
+
+                # Get job details
+                description = ""
+                job_details_html = request_support.simple_get(url)
+                soup = BeautifulSoup(job_details_html, 'html.parser')
+                description_div = soup.find('div', {'class': 'jobs-override'})
+
+                first_paragraph = description_div.find("p")
+                for p in first_paragraph.next_siblings:
+                    description += str(p)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, url)
+                jobs.append(job)
+
+        return jobs
+
+
+class Telia(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        for item in json_dict["vacancies"]:
+            if "Finland" not in item["countries"]:
+                continue
+            title = item["title"]
+            location = self.get_location(item)
+
+            description = item["additionalJobDescription"]
+            try:
+                pub_date = item["startDate"]
+            except KeyError:
+                pub_date = None
+            try:
+                end_date = item["applicationDeadline"]
+            except KeyError:
+                end_date = None
+            try:
+                job_type = item["positionType"]
+            except KeyError:
+                job_type = None
+
+            url = item["vacancyUrl"]
+
+            job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, job_type, url)
+            jobs.append(job)
+
+        return jobs
+
+    @staticmethod
+    def get_location(item):
+        location = None
+        if len(item["locations"]) > 0:
+            location = ', '.join(item["locations"])
+
+        return location
+
+
+class Wartsila(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        table = soup.find('table', {'id': 'searchresults'})
+        table_body = table.find('tbody')
+        for item in table_body.find_all("tr"):
+            title = item.find('a').text
+            relative_url = item.find('a')['href']
+            full_url = self.url.split("com/")[0] + "com" + relative_url
+            location = item.find('span', {'class': 'jobLocation'}).text.strip()
+            pub_date = item.find('span', {'class': 'jobDate'}).text.strip()
+            pub_date_formatted = self.get_pub_date(pub_date)
+
+            # Get job details
+            description = ""
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_div = soup.find('span', {'itemprop': 'description'})
+            for p in description_div.children:
+                # remove tag attributes
+                p.attrs = {}
+                if p != "\n" and p.text.strip() != "":
+                    for match in p.find_all('span'):
+                        match.unwrap()
+                    description += str(p)
+
+            job = ScrapedJob(title, description, location, self.client_name, None, pub_date_formatted, None, None, full_url)
+            jobs.append(job)
+
+        return jobs
+
+    @staticmethod
+    def get_pub_date(pub_date):
+        return parser.parse(pub_date).strftime('%Y-%m-%d')
