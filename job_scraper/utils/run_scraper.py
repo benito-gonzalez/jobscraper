@@ -16,7 +16,7 @@ def read_server_urls():
 
     for line in lines:
         if line and line[0] != "#":
-            info = line.split("-")
+            info = line.split("-", 1)
             servers.append({'name': info[0].strip(), 'url': info[1].strip()})
 
     return servers

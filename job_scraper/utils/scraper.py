@@ -40,6 +40,8 @@ def generate_instance_from_client(client_name, url):
         return Telia(client_name, url)
     if client_name.lower() == "wärtsilä":
         return Wartsila(client_name, url)
+    if client_name.lower() == "nordea":
+        return Nordea(client_name, url)
     else:
         return None
 
@@ -648,3 +650,66 @@ class Wartsila(Scraper):
     @staticmethod
     def get_pub_date(pub_date):
         return parser.parse(pub_date).strftime('%Y-%m-%d')
+
+
+class Nordea(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        jobs_div = soup.find('div', {'class': 'jobs-results'})
+
+        for item in jobs_div.find_all('tr', {'class': 'job-item'}):
+            title = item.find('a').text
+            relative_url = item.find('a')['href']
+            full_url = self.url.split("com/")[0] + "com" + relative_url
+            location_tag = item.find('td', {'class': 'text--left'}).next_sibling
+            location = location_tag.text
+            end_date_tag = location_tag.next_sibling
+            end_date = end_date_tag.text
+
+            # Get job details
+            description = ""
+            job_details_html = request_support.simple_get(full_url)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_div = soup.find('div', {'class': 'job--content'})
+            for div in description_div.children:
+                div.attrs = {}
+                if div.name == 'div':
+                    items_list = div.find_all(['div', 'ul'])
+                    # if div does not contain any div or ul, we get information directly
+                    if not items_list:
+                        if not div.find('a'):
+                            description += self.get_p_tag_from_div(soup, div)
+                    else:
+                        for item in items_list:
+                            item.attrs = {}
+                            if item.text != '\xa0':
+                                if item.name == 'div':
+                                    description += self.get_p_tag_from_div(soup, item)
+                                else:
+                                    description += str(item)
+                elif div.name == "ul":
+                    description += str(div)
+                elif div.name == 'h2':
+                    if div.text.lower() == "more information" or div.text.lower() == "lisätietoja" or div.text.lower() == "lisätietoja ja hakemuksen lähettäminen":
+                        break
+                    else:
+                        description += str(div)
+            description = description.replace('\n', '')
+
+            job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, full_url)
+            jobs.append(job)
+
+        return jobs
+
+    @staticmethod
+    def get_p_tag_from_div(soup, div):
+        if div.text == '\xa0':
+            return ""
+        new_tag = soup.new_tag('p')
+        new_tag.string = div.text.strip()
+        div.replace_with(new_tag)
+        return str(new_tag)
