@@ -42,6 +42,8 @@ def generate_instance_from_client(client_name, url):
         return Wartsila(client_name, url)
     if client_name.lower() == "nordea":
         return Nordea(client_name, url)
+    if client_name.lower() == "tieto":
+        return Tieto(client_name, url)
     else:
         return None
 
@@ -684,13 +686,13 @@ class Nordea(Scraper):
                         if not div.find('a'):
                             description += self.get_p_tag_from_div(soup, div)
                     else:
-                        for item in items_list:
-                            item.attrs = {}
-                            if item.text != '\xa0':
-                                if item.name == 'div':
-                                    description += self.get_p_tag_from_div(soup, item)
+                        for elem in items_list:
+                            elem.attrs = {}
+                            if elem.text != '\xa0':
+                                if elem.name == 'div':
+                                    description += self.get_p_tag_from_div(soup, elem)
                                 else:
-                                    description += str(item)
+                                    description += str(elem)
                 elif div.name == "ul":
                     description += str(div)
                 elif div.name == 'h2':
@@ -713,3 +715,82 @@ class Nordea(Scraper):
         new_tag.string = div.text.strip()
         div.replace_with(new_tag)
         return str(new_tag)
+
+
+class Tieto(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        job_div = soup.find('div', {'class': 'listingResults'})
+
+        while True:
+            for item in job_div.find_all('a'):
+                if not item.find('div', {'class': 'col-md-4'}):
+                    break
+                title = item.find('div', {'class': 'col-md-4'}).text.strip()
+                print(title)
+
+                relative_url = item['href']
+                full_url = self.url.split("com/")[0] + "com" + relative_url
+                location = self.get_location(item)
+
+                # Get job details
+                description = ""
+                job_details_html = request_support.simple_get(full_url)
+                description_soup = BeautifulSoup(job_details_html, 'html.parser')
+                description_div = description_soup.find('div', {'class': 'infobox'})
+                pub_date, end_date = self.get_dates(title, description_div)
+
+                for p in description_div.next_siblings:
+                    if p.name and p.text.lower() == "about tieto":
+                        break
+                    if p != "\n":
+                        description += str(p)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, None, full_url)
+                jobs.append(job)
+
+            # Get more jobs
+            more_jobs = job_div.find('div', {'class': 'row align-content-center loadingOverlay'})
+            if more_jobs:
+                try:
+                    more_jobs_url = more_jobs.find('a')['data-url']
+                    full_more_jobs_url = self.url.split("com/")[0] + "com" + more_jobs_url
+                    more_jobs_html = request_support.simple_get(full_more_jobs_url)
+                    job_div = BeautifulSoup(more_jobs_html, 'html.parser')
+                except Exception:
+                    break
+            else:
+                break
+
+        return jobs
+
+    @staticmethod
+    def get_location(item):
+        # last div contains the location
+        div_list = item.find_all('div', {'class': 'col-md-4'})
+        last_div = None
+        location = None
+
+        for last_div in div_list:
+            pass
+        if last_div:
+            location = last_div.text.strip()
+
+        return location
+
+    def get_dates(self, title, div):
+        try:
+            dates_string = div.find('label', string='Appliation period:').parent.text
+            dates = dates_string.split(":")[1]
+            pub_date = dates.split(" - ")[0]
+            pub_date_formatted = parser.parse(pub_date).strftime('%Y-%m-%d')
+            end_date = dates.split(" - ")[1]
+            end_date_formatted = parser.parse(end_date).strftime('%Y-%m-%d')
+            return pub_date_formatted, end_date_formatted
+        except Exception:
+            log_support.set_invalid_dates(self.client_name, title)
+            return None, None

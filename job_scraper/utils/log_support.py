@@ -69,3 +69,9 @@ def no_jobs_found(url):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "WARNING. No jobs retrieved from {0}".format(url) + "\n")
     f.close()
+
+
+def set_invalid_dates(company, title):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "WARNING. Invalid dates scraped from company {0} for the job {1}".format(company, title) + "\n")
+    f.close()
