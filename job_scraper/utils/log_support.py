@@ -75,3 +75,15 @@ def set_invalid_dates(company, title):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "WARNING. Invalid dates scraped from company {0} for the job {1}".format(company, title) + "\n")
     f.close()
+
+
+def set_invalid_title(company):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "ERROR. Job title could not be scraped from company {0}".format(company) + "\n")
+    f.close()
+
+
+def set_invalid_description(company, title):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "ERROR. Job description could not be scraped from the company {0} for the job {1}".format(company, title) + "\n")
+    f.close()

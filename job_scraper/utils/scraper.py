@@ -44,6 +44,8 @@ def generate_instance_from_client(client_name, url):
         return Nordea(client_name, url)
     if client_name.lower() == "tieto":
         return Tieto(client_name, url)
+    if client_name.lower() == "rightware":
+        return Rightware(client_name, url)
     else:
         return None
 
@@ -791,6 +793,94 @@ class Tieto(Scraper):
             end_date = dates.split(" - ")[1]
             end_date_formatted = parser.parse(end_date).strftime('%Y-%m-%d')
             return pub_date_formatted, end_date_formatted
-        except Exception:
+        except IndexError:
             log_support.set_invalid_dates(self.client_name, title)
             return None, None
+
+
+class Rightware(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        jobs_div = soup.find_all('div', {'class': 'vacancy-module'})
+        for job_div in jobs_div:
+            title = self.get_title(job_div)
+            if title:
+                url = job_div.find('a')['href']
+                if "https://" not in url:
+                    url = self.url.split("com/")[0] + "com" + url
+                location = self.get_location(job_div, title)
+                description = self.get_description(url, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_title(self, div):
+        title = None
+        title_div = div.find('a')
+        if title_div:
+            title = title_div.text.strip()
+        else:
+            log_support.set_invalid_title(self.client_name)
+
+        return title
+
+    def get_location(self, div, title):
+        location = None
+        location_p = div.find('p', {'class': 'vacancy-location'})
+        if location_p:
+            location = location_p.text.strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_description(self, url, title):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+
+            # For jobs which have sequential information
+            description_div = soup.find('div', {'class': 'body'})
+            if description_div:
+                position_h = soup.find(["h2", "h3", "h4"], string='Position')
+                if position_h:
+                    description += str(position_h)
+                    for p in position_h.next_siblings:
+                        if self.is_apply_block(p):
+                            break
+                        if p != "\n" and p.name != "hr":
+                            description += str(p)
+            else:
+                # Job description appears in parallel divs
+                description_div = soup.find('div', {'class': 'span12 widget-span widget-type-cell main-content'})
+                if description_div:
+                    block_tags = description_div.find_all(["h2", "h3", "h4"])
+                    for tag in block_tags:
+                        if self.is_apply_block(tag):
+                            break
+                        # Firt paragraph is a definition of the company which we don't want to store.
+                        if "team" in tag.text.lower():
+                            continue
+                        else:
+                            description += str(tag)
+                            for p in tag.next_siblings:
+                                if p != "\n" and p.name != "hr":
+                                    description += str(p)
+
+        if description == "":
+            log_support.set_invalid_description(self.client_name, title)
+
+        return description
+
+    @staticmethod
+    def is_apply_block(tag):
+        h_tags = ["h1", "h2", "h3", "h4", "h5", "h6"]
+        return tag.name in h_tags and "apply" in tag.text.lower()
