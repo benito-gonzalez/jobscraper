@@ -31,5 +31,3 @@ class Job(models.Model):
 
     class Meta:
         db_table = "Jobs"
-
-

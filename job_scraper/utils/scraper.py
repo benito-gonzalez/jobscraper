@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import re
 import dateutil.parser as parser
 from dateutil import tz
 import json
@@ -46,6 +47,12 @@ def generate_instance_from_client(client_name, url):
         return Tieto(client_name, url)
     if client_name.lower() == "rightware":
         return Rightware(client_name, url)
+    if client_name.lower() == "rovio":
+        return Rovio(client_name, url)
+    if client_name.lower() == "futurice":
+        return Futurice(client_name, url)
+    if client_name.lower() == "supercell":
+        return Supercell(client_name, url)
     else:
         return None
 
@@ -733,7 +740,6 @@ class Tieto(Scraper):
                 if not item.find('div', {'class': 'col-md-4'}):
                     break
                 title = item.find('div', {'class': 'col-md-4'}).text.strip()
-                print(title)
 
                 relative_url = item['href']
                 full_url = self.url.split("com/")[0] + "com" + relative_url
@@ -884,3 +890,218 @@ class Rightware(Scraper):
     def is_apply_block(tag):
         h_tags = ["h1", "h2", "h3", "h4", "h5", "h6"]
         return tag.name in h_tags and "apply" in tag.text.lower()
+
+
+class Rovio(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        jobs_div = soup.find_all('article', {'class': 'node-vacancy'})
+
+        for job_div in jobs_div:
+            title = self.get_title(job_div)
+            if title:
+                url = job_div.find("h2").find('a')['href']
+                location = self.get_location(job_div, title)
+                description = self.get_description(url, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_title(self, div):
+        title = None
+        h2_title = div.find("h2")
+        a_title = h2_title.find('a')
+
+        if a_title:
+            title = a_title.text.strip()
+        else:
+            log_support.set_invalid_title(self.client_name)
+
+        return title
+
+    def get_location(self, div, title):
+        location = None
+        location_div = div.find('div', {'class': 'field-location-channel'})
+        if location_div:
+            location_a = location_div.find("a")
+            if location_a:
+                location = location_a.text.strip()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_description(self, url, title):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_div = soup.find('h2', string="Job Description")
+            if description_div:
+                for child in description_div.next_siblings:
+                    if child != "\n":
+                        description += str(child)
+
+        if description == "":
+            log_support.set_invalid_description(self.client_name, title)
+
+        return description
+
+
+class Futurice(Scraper):
+    """
+    Futurice uses javascript to retrieve their list of jobs dynamically so we need to parse the Javascript response from the .js request.
+    This response will contains a list of job ids which can be linked to the root_url in order to get a HTML with the job details.
+    """
+    def extract_info(self, html):
+        url_root = "https://www.futurice.com/open-positions/"
+        finnish_offices = ["Helsinki", "Tampere"]
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        job_detail_urls = self.get_job_urls(soup, url_root)
+
+        for job_detail_url in job_detail_urls:
+            job_details_html = request_support.simple_get(job_detail_url)
+            if job_details_html:
+                soup = BeautifulSoup(job_details_html, 'html.parser')
+                header_div = soup.find('div', {'class': 'hero'})
+
+                title = self.get_title(header_div)
+                if title:
+                    location = self.get_location(header_div)
+                    if location in finnish_offices:
+                        description = self.get_description(soup, title)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, job_detail_url)
+                        jobs.append(job)
+
+        return jobs
+
+    @staticmethod
+    def get_job_urls(soup, url_root):
+        job_detail_urls = []
+
+        body_text = soup.find('body')
+        if body_text:
+            text = body_text.text
+            # jobs id will be like 'midsenior-product-designer-ux-focus-london' (can include numbers)
+            job_ids = re.findall('slug:"([A-Za-z0-9\-]+)",title:', text)
+            for job_id in job_ids:
+                job_detail_urls.append(url_root + job_id)
+
+        return job_detail_urls
+
+    def get_title(self, header_div):
+        title = None
+        title_div = header_div.find('h1')
+
+        if title_div:
+            title = title_div.text
+        else:
+            log_support.set_invalid_title(self.client_name)
+
+        return title
+
+    @staticmethod
+    def get_location(header_div):
+        location_div = header_div.find('p')
+
+        if location_div:
+            location = location_div.text
+        else:
+            location = None
+
+        return location
+
+    def get_description(self, soup, title):
+        description = ""
+        description_div = soup.find('div', {'class': 'container src-components----PostText-module---posttext---2vtIL'})
+        if description_div:
+            for tag in description_div.children:
+                if tag != "\n":
+                    description += str(tag)
+
+        if description == "":
+            log_support.set_invalid_description(self.client_name, title)
+
+        return description
+
+
+class Supercell(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        ul = soup.find('ul', {'class': 'job-positions'})
+        if ul:
+            for item in ul.children:
+                if not item.name:
+                    continue
+                title = self.get_title(item)
+                if title:
+                    location = self.get_location(item, title)
+                    relative_url = item.find('a')['href']
+                    full_url = self.url.split("com/")[0] + "com" + relative_url
+                    job_type_div = item.find('div', {'class': 'views-field-field-position'})
+                    if job_type_div:
+                        job_type = job_type_div.text.strip()
+                    else:
+                        job_type = None
+
+                    description = self.get_description(full_url, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, job_type, full_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_title(self, item):
+        title = None
+        title_div = item.find('div', {'class': 'views-field-title'})
+
+        if title_div:
+            title = title_div.text.strip()
+        else:
+            log_support.set_invalid_title(self.client_name)
+
+        return title
+
+    def get_location(self, item, title):
+        location = None
+        location_div = item.find('div', {'class': 'views-field-field-location'})
+
+        if location_div:
+            location = location_div.text.strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_description(self, url, title):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_div = soup.find('div', {'class': 'field-name-field-description'})
+            if description_div:
+                for tag in description_div.children:
+                    if tag != "\n":
+                        description += str(tag)
+
+        if description == "":
+            log_support.set_invalid_description(self.client_name, title)
+
+        return description

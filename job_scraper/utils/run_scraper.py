@@ -61,10 +61,10 @@ def main():
                     log_support.scraper_failure(server.get('name'))
                 """
                 jobs = client.extract_info(html)
-
-                if not jobs:
+                if jobs:
+                    scraped_jobs.extend(jobs)
+                else:
                     log_support.no_jobs_found(server.get('url'))
-                scraped_jobs.extend(jobs)
 
 
     # method to validate job information
