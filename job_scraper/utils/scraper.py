@@ -58,6 +58,7 @@ def generate_instance_from_client(client_name, url):
 
 
 class Scraper(object):
+    h_tags = ["h1", "h2", "h3", "h4", "h5", "h6"]
 
     def __init__(self, client_name, url):
         self.url = url
@@ -79,67 +80,99 @@ class Dna(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
         ul = soup.find("ul", attrs={'class': 'news__article-container'})
-        lis = ul.findAll('li')
+        lis = ul.find_all('li')
         for li in lis:
-            title = li.find('span', attrs={'class': 'title'}).text
-            url = self.url + li.find('span', attrs={'class': 'title'}).find('a')['href']
-            location = li.find('span', attrs={'class': 'news__location-item'}).text
-
-            # Get job details
-            job_details_html = request_support.simple_get(url)
-            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            description = self.get_full_description(job_details_soup)
-            pub_date, end_date = self.get_dates(job_details_soup)
-            job_type = self.get_job_type(job_details_soup)
-            job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, job_type, url)
-            jobs.append(job)
+            title_span = li.find('span', attrs={'class': 'title'})
+            if title_span:
+                title = title_span.text
+                location = self.get_location(li, title)
+                url = self.get_url(li, title)
+                if url:
+                    job_details_html = request_support.simple_get(url)
+                    if job_details_html:
+                        job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+                        if job_details_soup:
+                            description = self.get_full_description(job_details_soup, title)
+                            pub_date, end_date = self.get_dates(job_details_soup, title)
+                            job_type = self.get_job_type(job_details_soup)
+                            job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, job_type, url)
+                            jobs.append(job)
+            else:
+                log_support.set_invalid_title(self.client_name)
 
         return jobs
 
-    @staticmethod
-    def get_full_description(job_details_soup):
+    def get_full_description(self, job_details_soup, title):
         description = ""
         details_block = job_details_soup.find('div', attrs={'class': 'news-single'})
+        p = details_block.find("p")
 
-        paragraph = details_block.find("p")
-        while True:
-            if paragraph is None:
-                break
-            if paragraph.name and paragraph.name != "p":
-                break
+        if p:
+            description += str(p)
+            for p in p.next_siblings:
+                if p.name and p.name == "p":
+                    description += str(p)
+                elif p.name in self.h_tags:
+                    break
 
-            description += str(paragraph)
-            paragraph = paragraph.next_sibling
+        if description == "":
+            log_support.set_invalid_description_url(self.client_name, title)
 
         return description
 
-    @staticmethod
-    def get_dates(job_details_soup):
+    def get_dates(self, job_details_soup, title):
         pub_date = ""
         end_date = ""
         pub_date_block = job_details_soup.find('h5', string='Hakuaika')
 
-        for tag in pub_date_block.next_siblings:
-            if tag.name == "p":
-                date0 = tag.text.split("-")[0]
-                pub_date = parser.parse(date0, tzinfos={'EEST': tz.gettz("Europe/Helsinki"), 'EET': tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
-                date1 = tag.text.split("-")[1]
-                end_date = parser.parse(date1, tzinfos={'EET': tz.gettz("Europe/Helsinki"), 'EEST': tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
-                break
+        if pub_date_block:
+            date_p = pub_date_block.find_next('p')
+            if date_p:
+                date_splited = date_p.text.split("-")
+                if len(date_splited) == 2:
+                    pub_date = parser.parse(date_splited[0], tzinfos={'EEST': tz.gettz("Europe/Helsinki"), 'EET': tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
+                    end_date = parser.parse(date_splited[1], tzinfos={'EEST': tz.gettz("Europe/Helsinki"), 'EET': tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
+
+        if pub_date != "" or end_date != "":
+            log_support.set_invalid_dates(self.client_name, title)
 
         return pub_date, end_date
 
     @staticmethod
     def get_job_type(job_details_soup):
         job_type = ""
-        pub_date_block = job_details_soup.find('h5', string='Työsuhdetyyppi')
+        job_type_block = job_details_soup.find('h5', string='Työsuhdetyyppi')
 
-        for tag in pub_date_block.next_siblings:
-            if tag.name == "p":
-                job_type = tag.text
-                break
+        if job_type_block:
+            job_type_p = job_type_block.find_next('p')
+            if job_type_p:
+                job_type = job_type_p.text
 
         return job_type
+
+    def get_url(self, item, title):
+        url = None
+        url_span = item.find('span', attrs={'class': 'title'})
+        if url_span:
+            url_a = url_span.find('a')
+            if url_a:
+                relative_url = url_a['href']
+                url = self.url + relative_url
+
+        if not url:
+            log_support.set_invalid_description_url(self.client_name, title)
+
+        return url
+
+    def get_location(self, item, title):
+        location_span = item.find('span', attrs={'class': 'news__location-item'})
+        if location_span:
+            location = location_span.text
+        else:
+            location = None
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
 
 
 class Elisa(Scraper):
