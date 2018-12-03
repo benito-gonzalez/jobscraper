@@ -22,5 +22,5 @@ Tieto - https://www.tieto.com/en/careers/open-positions/search-our-jobs/?area=&c
 Rightware - https://www.rightware.com/careers/
 Rovio - https://www.rovio.com/careers?field_location_channel_tid=722
 #### Futurice uses javascript to generate the jobs dynamically
-Futurice - https://www.futurice.com/path---careers-f48a91c4881db63f79ef.js
+Futurice - https://www.futurice.com/path---careers-ad6f94a799614a1136db.js
 Supercell - https://supercell.com/en/careers/open-positions/

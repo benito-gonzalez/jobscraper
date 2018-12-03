@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+import os
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
 from job_scraper.utils import db_support
 from job_scraper.utils import log_support
-FILENAME = "servers.txt"
+
+my_path = os.path.abspath(os.path.dirname(__file__))
+FILENAME = os.path.join(my_path, "servers.txt")
+
+PRODUCTION_ENV = False
 
 
 def read_server_urls():
@@ -52,19 +57,21 @@ def main():
         if client:
             html = request_support.simple_get(server.get('url'))
             if html:
-                """
-                Comment out during developing
-                try:
-                    jobs = client.extract_info(html)
-                    scraped_jobs.extend(jobs)
-                except:
-                    log_support.scraper_failure(server.get('name'))
-                """
-                jobs = client.extract_info(html)
-                if jobs:
-                    scraped_jobs.extend(jobs)
+                if PRODUCTION_ENV:
+                    try:
+                        jobs = client.extract_info(html)
+                        if jobs:
+                            scraped_jobs.extend(jobs)
+                        else:
+                            log_support.no_jobs_found(server.get('url'))
+                    except Exception:
+                        log_support.scraper_failure(server.get('name'))
                 else:
-                    log_support.no_jobs_found(server.get('url'))
+                    jobs = client.extract_info(html)
+                    if jobs:
+                        scraped_jobs.extend(jobs)
+                    else:
+                        log_support.no_jobs_found(server.get('url'))
 
 
     # method to validate job information
@@ -80,6 +87,3 @@ def main():
 
     # disable jobs which no longer exist in the websites
     update_active_jobs(scraped_jobs)
-
-
-main()

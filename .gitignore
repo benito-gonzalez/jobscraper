@@ -8,4 +8,4 @@ webapp/__pycache__/
 job_scraper/utils/logs/
 job_scraper/*.pyc
 job_scraper/utils/*.pyc
-
+__pycache__/
