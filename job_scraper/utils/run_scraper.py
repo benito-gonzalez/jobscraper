@@ -87,3 +87,8 @@ def main():
 
     # disable jobs which no longer exist in the websites
     update_active_jobs(scraped_jobs)
+
+
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
