@@ -87,7 +87,7 @@ class Scraper(object):
         :param description: job description. "" (empty string) if it is not valid
         :return: Boolean
         """
-        application_job_titles = ["avoin hakemus", "open application", "open application (finland & sweden)", "avoin hakemus innofactorille"]
+        application_job_titles = ["avoin hakemus", "open application", "open application (finland & sweden)", "avoin hakemus innofactorille", "avoin hakemus / open application"]
         valid = False
 
         if not title:
@@ -136,8 +136,9 @@ class Dna(Scraper):
             # Check description_url
             url_span = title_span.find('a')
             if url_span:
-                relative_url = url_span['href']
-                description_url = self.url + relative_url
+                relative_url = url_span.get('href')
+                if relative_url:
+                    description_url = self.url + relative_url
 
             # Check description
             description = self.get_full_description(description_url)
@@ -163,8 +164,7 @@ class Dna(Scraper):
         return description
 
     def get_dates(self, job_details_soup, title):
-        pub_date = ""
-        end_date = ""
+        pub_date = end_date = None
         pub_date_block = job_details_soup.find('h5', string='Hakuaika')
 
         if pub_date_block:
@@ -172,11 +172,14 @@ class Dna(Scraper):
             if date_p:
                 date_splited = date_p.text.split("-")
                 if len(date_splited) == 2:
-                    pub_date = parser.parse(date_splited[0], tzinfos={'EEST': tz.gettz("Europe/Helsinki"), 'EET': tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
-                    end_date = parser.parse(date_splited[1], tzinfos={'EEST': tz.gettz("Europe/Helsinki"), 'EET': tz.gettz("Europe/Helsinki")}).strftime('%Y-%m-%d')
+                    try:
+                        pub_date_datetime = parser.parse(date_splited[0], tzinfos={'EEST': tz.gettz("Europe/Helsinki"), 'EET': tz.gettz("Europe/Helsinki")})
+                        end_date_datetime = parser.parse(date_splited[1], tzinfos={'EEST': tz.gettz("Europe/Helsinki"), 'EET': tz.gettz("Europe/Helsinki")})
 
-        if pub_date != "" or end_date != "":
-            log_support.set_invalid_dates(self.client_name, title)
+                        pub_date = pub_date_datetime.strftime('%Y-%m-%d')
+                        end_date = end_date_datetime.strftime('%Y-%m-%d')
+                    except ValueError:
+                        log_support.set_invalid_dates(self.client_name, title)
 
         return pub_date, end_date
 
@@ -276,11 +279,11 @@ class Vala(Scraper):
             title = title_tag.text
 
             url_tag = item.find('a')
-            if url_tag:
-                if "https://" in url_tag['href']:
-                    description_url = url_tag['href']
+            if url_tag and url_tag.get('href'):
+                if "https://" in url_tag.get('href'):
+                    description_url = url_tag.get('href')
                 else:
-                    description_url = self.url + url_tag['href']
+                    description_url = self.url + url_tag.get('href')
 
                 description = self.get_description(description_url)
 
@@ -339,9 +342,10 @@ class Siili(Scraper):
 
             relative_url_a = item.find("a")
             if relative_url_a:
-                relative_url = relative_url_a['href']
-                description_url = self.url.split("com/")[0] + "com" + relative_url
-                description = self.get_description(description_url)
+                relative_url = relative_url_a.get('href')
+                if relative_url:
+                    description_url = self.url.split("com/")[0] + "com" + relative_url
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -390,10 +394,10 @@ class Innofactor(Scraper):
 
             relative_url_a = item.find("a")
             if relative_url_a:
-                relative_url = relative_url_a['href']
-                description_url = self.url.split("fi/")[0] + "fi" + relative_url
-
-                description = self.get_description(description_url)
+                relative_url = relative_url_a.get('href')
+                if relative_url:
+                    description_url = self.url.split("fi/")[0] + "fi" + relative_url
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -442,10 +446,10 @@ class Smarp(Scraper):
 
             relative_url_a = item.find("a")
             if relative_url_a:
-                relative_url = relative_url_a['href']
-                description_url = self.url.split("com/")[0] + "com" + relative_url
-
-                description = self.get_description(description_url)
+                relative_url = relative_url_a.get('href')
+                if relative_url:
+                    description_url = self.url.split("com/")[0] + "com" + relative_url
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -507,9 +511,9 @@ class Silo(Scraper):
 
             relative_url_a = item.find("a")
             if relative_url_a:
-                description_url = relative_url_a['href']
-
-                description = self.get_description(description_url)
+                description_url = relative_url_a.get('href')
+                if description_url:
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -653,9 +657,9 @@ class Qvik(Scraper):
 
             url_a = item.find("a")
             if url_a:
-                description_url = url_a['href']
-
-                description = self.get_description(description_url)
+                description_url = url_a.get('href')
+                if description_url:
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -701,10 +705,10 @@ class Blueprint(Scraper):
 
             url_a = item.find("a")
             if url_a:
-                relative_url = url_a['href']
-                description_url = self.url.split("com/")[0] + "com" + relative_url
-
-                description = self.get_description(description_url)
+                relative_url = url_a.get('href')
+                if relative_url:
+                    description_url = self.url.split("com/")[0] + "com" + relative_url
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -761,10 +765,10 @@ class Eficode(Scraper):
         if title_tag:
             title = title_tag.text.strip()
 
-            relative_url = title_tag['href']
-            description_url = self.url.split("com/")[0] + "com" + relative_url
-
-            description = self.get_description(description_url)
+            relative_url = title_tag.get('href')
+            if relative_url:
+                description_url = self.url.split("com/")[0] + "com" + relative_url
+                description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -886,16 +890,15 @@ class Varjo(Scraper):
         for job_div in job_divs:
             title, description_url, description = self.get_mandatory_fields(job_div)
             if self.is_valid_job(title, description_url, description):
-                for item in job_div.find_all("a"):
-                    location_div = item.find('span', {'class': 'jobs-position-location'})
-                    if location_div:
-                        location = location_div.text
-                    else:
-                        location = None
-                        log_support.set_invalid_location(self.client_name, title)
+                location_div = job_div.find('span', {'class': 'jobs-position-location'})
+                if location_div:
+                    location = location_div.text
+                else:
+                    location = None
+                    log_support.set_invalid_location(self.client_name, title)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                    jobs.append(job)
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
 
         return jobs
 
@@ -906,9 +909,9 @@ class Varjo(Scraper):
         title_tag = item.find('span', {'class': 'jobs-position-title'})
         if title_tag:
             title = title_tag.text.strip()
-            description_url = item['href']
-
-            description = self.get_description(description_url)
+            description_url = item.get('href')
+            if description_url:
+                description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -920,9 +923,10 @@ class Varjo(Scraper):
             soup = BeautifulSoup(job_details_html, 'html.parser')
             description_div = soup.find('div', {'class': 'jobs-override'})
             if description_div:
-                first_paragraph_tag = description_div.find(['p', 'h3'], string="Job description")
-                for p in first_paragraph_tag.next_siblings:
-                    description += str(p)
+                first_paragraph_tag = description_div.find(['p', 'h3'], string=["Job description", "Job Description"])
+                if first_paragraph_tag:
+                    for p in first_paragraph_tag.next_siblings:
+                        description += str(p)
 
         return description
 
@@ -1041,9 +1045,10 @@ class Wartsila(Scraper):
         if title_tag:
             title = title_tag.text.strip()
 
-            relative_url = title_tag['href']
-            description_url = self.url.split("com/")[0] + "com" + relative_url
-            description = self.get_description(description_url)
+            relative_url = title_tag.get('href')
+            if relative_url:
+                description_url = self.url.split("com/")[0] + "com" + relative_url
+                description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -1106,9 +1111,10 @@ class Nordea(Scraper):
         if title_tag:
             title = title_tag.text.strip()
 
-            relative_url = title_tag['href']
-            description_url = self.url.split("com/")[0] + "com" + relative_url
-            description = self.get_description(description_url)
+            relative_url = title_tag.get('href')
+            if relative_url:
+                description_url = self.url.split("com/")[0] + "com" + relative_url
+                description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -1459,34 +1465,47 @@ class Futurice(Scraper):
     This response will contains a list of job ids which can be linked to the root_url in order to get a HTML with the job details.
     """
     def extract_info(self, html):
-        url_root = "https://www.futurice.com/open-positions/"
         finnish_offices = ["Helsinki", "Tampere"]
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'lxml')
+        js_url = self.get_js_url(soup)
+        js_response = request_support.simple_get(js_url)
+        if js_response:
+            js_soup = BeautifulSoup(js_response, 'lxml')
+            job_detail_urls = self.get_job_urls(js_soup)
 
-        job_detail_urls = self.get_job_urls(soup, url_root)
-
-        for job_detail_url in job_detail_urls:
-            job_details_html = request_support.simple_get(job_detail_url)
-            if job_details_html:
-                soup = BeautifulSoup(job_details_html, 'html.parser')
-                header_div = soup.find('div', {'class': 'hero'})
-
-                title = self.get_title(header_div)
-                if title:
-                    location = self.get_location(header_div)
-                    if location in finnish_offices:
-                        description = self.get_description(soup, title)
-
-                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, job_detail_url)
-                        jobs.append(job)
+            for job_detail_url in job_detail_urls:
+                job_details_html = request_support.simple_get(job_detail_url)
+                if job_details_html:
+                    soup = BeautifulSoup(job_details_html, 'html.parser')
+                    header_div = soup.find('div', {'class': 'hero'})
+                    if header_div:
+                        title = self.get_title(header_div)
+                        description = self.get_description(soup)
+                        if self.is_valid_job(title, job_detail_url, description):
+                            location = self.get_location(header_div, title)
+                            if location in finnish_offices:
+                                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, job_detail_url)
+                                jobs.append(job)
+                    else:
+                        log_support.set_invalid_title(self.client_name)
 
         return jobs
 
-    @staticmethod
-    def get_job_urls(soup, url_root):
+    def get_js_url(self, soup):
+        js_url = None
+        re_result = re.findall('path---careers-([a-z0-9]+).js', soup.text)
+        if len(re_result) > 0:
+            js_id = re_result[0]
+            js_call = "path---careers-" + js_id + ".js"
+            js_url = self.url.split("com/")[0] + "com/" + js_call
+
+        return js_url
+
+    def get_job_urls(self, soup):
         job_detail_urls = []
+        root_url = self.url.split("com/")[0] + "com/" + "open-positions/"
 
         body_text = soup.find('body')
         if body_text:
@@ -1494,42 +1513,39 @@ class Futurice(Scraper):
             # jobs id will be like 'midsenior-product-designer-ux-focus-london' (can include numbers)
             job_ids = re.findall('slug:"([A-Za-z0-9\-]+)",title:', text)
             for job_id in job_ids:
-                job_detail_urls.append(url_root + job_id)
+                job_detail_urls.append(root_url + job_id)
 
         return job_detail_urls
 
-    def get_title(self, header_div):
+    @staticmethod
+    def get_title(header_div):
         title = None
         title_div = header_div.find('h1')
 
         if title_div:
             title = title_div.text
-        else:
-            log_support.set_invalid_title(self.client_name)
 
         return title
 
-    @staticmethod
-    def get_location(header_div):
+    def get_location(self, header_div, title):
         location_div = header_div.find('p')
 
         if location_div:
             location = location_div.text
         else:
             location = None
+            log_support.set_invalid_location(self.client_name, title)
 
         return location
 
-    def get_description(self, soup, title):
+    @staticmethod
+    def get_description(soup):
         description = ""
         description_div = soup.find('div', {'class': 'container src-components----PostText-module---posttext---2vtIL'})
         if description_div:
             for tag in description_div.children:
                 if tag != "\n":
                     description += str(tag)
-
-        if description == "":
-            log_support.set_invalid_description(self.client_name, title)
 
         return description
 
@@ -1544,36 +1560,38 @@ class Supercell(Scraper):
         ul = soup.find('ul', {'class': 'job-positions'})
         if ul:
             for item in ul.children:
-                if not item.name:
-                    continue
-                title = self.get_title(item)
-                if title:
-                    location = self.get_location(item, title)
-                    relative_url = item.find('a')['href']
-                    full_url = self.url.split("com/")[0] + "com" + relative_url
-                    job_type_div = item.find('div', {'class': 'views-field-field-position'})
-                    if job_type_div:
-                        job_type = job_type_div.text.strip()
-                    else:
-                        job_type = None
+                if item.name:
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, title)
 
-                    description = self.get_description(full_url, title)
+                        job_type_div = item.find('div', {'class': 'views-field-field-position'})
+                        if job_type_div:
+                            job_type = job_type_div.text.strip()
+                        else:
+                            job_type = None
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, job_type, full_url)
-                    jobs.append(job)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, job_type, description_url)
+                        jobs.append(job)
 
         return jobs
 
-    def get_title(self, item):
-        title = None
-        title_div = item.find('div', {'class': 'views-field-title'})
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
 
-        if title_div:
-            title = title_div.text.strip()
-        else:
-            log_support.set_invalid_title(self.client_name)
+        title_tag = item.find('div', {'class': 'views-field-title'})
+        if title_tag:
+            title = title_tag.text.strip()
 
-        return title
+            tag_a = item.find('a')
+            if tag_a:
+                relative_url = tag_a.get('href')
+                if relative_url:
+                    description_url = self.url.split("com/")[0] + "com" + relative_url
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
 
     def get_location(self, item, title):
         location = None
@@ -1586,7 +1604,8 @@ class Supercell(Scraper):
 
         return location
 
-    def get_description(self, url, title):
+    @staticmethod
+    def get_description(url):
         description = ""
         job_details_html = request_support.simple_get(url)
 
@@ -1597,8 +1616,5 @@ class Supercell(Scraper):
                 for tag in description_div.children:
                     if tag != "\n":
                         description += str(tag)
-
-        if description == "":
-            log_support.set_invalid_description(self.client_name, title)
 
         return description
