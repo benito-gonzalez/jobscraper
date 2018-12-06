@@ -63,7 +63,7 @@ def scraper_failure(client_name):
 
 def set_invalid_location(client_name, job_title):
     f = open(SCRAPERLOG, 'a')
-    f.write(get_formatted_date() + "ERROR. Could not get a valid job location from {0} client for the job {1}".format(client_name, job_title) + "\n")
+    f.write(get_formatted_date() + "WARNING. Could not get a valid job location from {0} client for the job {1}".format(client_name, job_title) + "\n")
     f.close()
 
 

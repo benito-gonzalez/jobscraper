@@ -54,25 +54,24 @@ def main():
     scraped_jobs = []
     for server in servers:
         client = scraper.generate_instance_from_client(server.get('name'), server.get('url'))
-        if client:
-            html = request_support.simple_get(server.get('url'))
-            if html:
-                if PRODUCTION_ENV:
-                    try:
-                        jobs = client.extract_info(html)
-                        if jobs:
-                            scraped_jobs.extend(jobs)
-                        else:
-                            log_support.no_jobs_found(server.get('url'))
-                    except Exception:
-                        log_support.scraper_failure(server.get('name'))
-                else:
+        html = request_support.simple_get(server.get('url'))
+
+        if client and html:
+            if PRODUCTION_ENV:
+                try:
                     jobs = client.extract_info(html)
                     if jobs:
                         scraped_jobs.extend(jobs)
                     else:
                         log_support.no_jobs_found(server.get('url'))
-
+                except Exception as e:
+                    log_support.scraper_failure(server.get('name') + str(e))
+            else:
+                jobs = client.extract_info(html)
+                if jobs:
+                    scraped_jobs.extend(jobs)
+                else:
+                    log_support.no_jobs_found(server.get('url'))
 
     # method to validate job information
 

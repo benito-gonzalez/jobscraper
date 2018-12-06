@@ -21,6 +21,5 @@ Nordea - https://www.nordea.com/en/careers/vacant-positions/?p=3&cty=19420
 Tieto - https://www.tieto.com/en/careers/open-positions/search-our-jobs/?area=&country=Finland&city=&q=
 Rightware - https://www.rightware.com/careers/
 Rovio - https://www.rovio.com/careers?field_location_channel_tid=722
-#### Futurice uses javascript to generate the jobs dynamically
-Futurice - https://www.futurice.com/path---careers-ad6f94a799614a1136db.js
+Futurice - https://www.futurice.com/careers/
 Supercell - https://supercell.com/en/careers/open-positions/
