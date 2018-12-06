@@ -27,8 +27,18 @@ def get_company_by_name(name):
 
 
 def save_to_db(job_offer, company):
-    Job.objects.create(title=job_offer.title, description=job_offer.description, location=job_offer.location, salary=job_offer.salary,
-                       pub_date=job_offer.pub_date, end_date=job_offer.end_date, job_type=job_offer.job_type, highlighted=False, company=company, is_active=True)
+    Job.objects.create(title=job_offer.title,
+                       description=job_offer.description,
+                       location=job_offer.location,
+                       salary=job_offer.salary,
+                       pub_date=job_offer.pub_date,
+                       end_date=job_offer.end_date,
+                       job_type=job_offer.job_type,
+                       is_highlighted=False,
+                       company=company,
+                       job_url=job_offer.url,
+                       is_active=True)
+
     log_support.saved_job(job_offer)
 
 

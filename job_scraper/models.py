@@ -17,13 +17,14 @@ class Job(models.Model):
     title = models.CharField(max_length=500)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
-    description = models.CharField(max_length=5000, blank=True, null=True)
+    description = models.CharField(max_length=5000)
     location = models.CharField(max_length=100, blank=True, null=True)
     salary = models.FloatField(blank=True, default=None, null=True)
     pub_date = models.DateField(blank=True, null=True, default='')
     end_date = models.DateField(blank=True, null=True, default='')
     job_type = models.CharField(max_length=500, blank=True, null=True)
-    highlighted = models.BooleanField(default=False)
+    is_highlighted = models.BooleanField(default=False)
+    job_url = models.URLField(max_length=500)
     created_at = models.DateTimeField(default=timezone.now)  # UTC time by default
 
     def __str__(self):

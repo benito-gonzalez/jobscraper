@@ -151,15 +151,15 @@ class Dna(Scraper):
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
             details_block = job_details_soup.find('div', attrs={'class': 'news-single'})
-            p = details_block.find("p")
-
-            if p:
-                description += str(p)
-                for p in p.next_siblings:
-                    if p.name and p.name == "p":
-                        description += str(p)
-                    elif p.name in self.h_tags:
-                        break
+            if details_block:
+                p = details_block.find("p")
+                if p:
+                    description += str(p)
+                    for p in p.next_siblings:
+                        if p.name and p.name == "p":
+                            description += str(p)
+                        elif p.name in self.h_tags:
+                            break
 
         return description
 
