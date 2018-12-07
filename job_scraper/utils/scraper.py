@@ -1582,7 +1582,7 @@ class Supercell(Scraper):
 
         title_tag = item.find('div', {'class': 'views-field-title'})
         if title_tag:
-            title = title_tag.text.strip()
+            title = title_tag.text.strip().replace('"', '')
 
             tag_a = item.find('a')
             if tag_a:

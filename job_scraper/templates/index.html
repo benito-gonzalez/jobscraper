@@ -1,15 +1,168 @@
-{% extends "base_generic.html" %}
+<!DOCTYPE html>
+{% load static %}
+{% load bootstrap4 %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous">
+
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap-theme.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'custom.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+
+    <title>Job Scraper Site</title>
+</head>
+<body>
 
 
-{% block content %}
+{% block container4 %}
+    <nav class="navbar navbar-expand-sm navbar-light bg-navbar fixed-top text-navbar">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">Job scraper</a>
+        </div>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-{% if latest_job_list %}
-    <ul>
-    {% for job in latest_job_list %}
-        <li><a href="{%  url 'job_scraper:detail' job.id %}">{{ job.title }}</a> at {{ job.company }}</li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No jobs are available.</p>
-{% endif %}
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+            </ul>
+            <input class="mr-sm-2" placeholder="Search" aria-label="Search" id="searchfield">
+            <a class="btn btn-outline-default" id="searchbutton"><span><i class="fas fa-search"></i></span></a>
+        </div>
+    </nav>
+    <div class="main-div">
+    <div id="availableitems" style="display:block;">
+    <div id="itemlist">
+        {% for job in latest_job_list %}
+            {% if job.is_highlighted %}
+                <div class="media border-bottom border-gray d-flex align-items-stretch">
+                <div class="p-2 featured-div mr-2">
+                    <span id="featuredSpan"> Featured </span>
+                </div>
+            {% else %}
+                <div class="media border-bottom border-gray d-flex align-items-stretch no-featured-div">
+            {% endif %}
+
+        <div class="align-self-center p-2 img-block-div">
+            <img class="img-fluid img-thumbnail d-flex align-self-center mr-3 mx-auto d-block" src="{{ job.company.logo.url }}" width="100px" height="50px">
+        </div>
+
+        <div class="align-self-center p-2 content-div">
+            <div class="text-dark"><b>{{ job.title }}</b></div>
+            {% if job.location %}
+                <div>
+                    <img src="{% static 'images/location.png' %}" width="16px" height="16px">
+                    <span>{{ job.location }}</span>
+                </div>
+            {% endif %}
+            <div>
+                <p align="justify">{{ job.get_initial_description |slice:":500" }}...</p>
+            </div>
+
+            <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-outline-success btn-sm" >Show more</a>
+        </div>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+
+    {% if is_paginated %}
+        <div class="paginator float-left" style="display: inline-block" id="pageindex">
+
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                    <li><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </div>
+
+    {% endif %}
+
 {% endblock %}
+<div class="col-md-9">
+    <div class="emptyalert alert alert-danger" id="alertmsg" style="display: none; text-align: center"></div>
+</div>
+</div>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+<script src="{% static 'js/custom.js' %}"></script>
+
+</div>
+</body>
+</html>
+
+
+<!--
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Scraper Site</title>
+</head>
+<body>
+
+
+<div class="job-list">
+    {% if latest_job_list %}
+        <ul class="list">
+            {% for job in latest_job_list %}
+                <li>
+                    <hr/>
+                    <div class="job-info">
+                        <div class="job-title">
+                            {{ job.title }}
+                        </div>
+                        {% if job.location %}
+                            <div class="job-location">
+                                {{ job.location }}
+                            </div>
+                        {% endif %}
+                        <div class="job-company">
+                            <div class="job-company-logo">
+                                <img src={{ job.company.logo.url }}/>
+                            </div>
+                            <div class="job-company-name">
+                                {{ job.company }}
+                            </div>
+                        </div>
+
+                        <div class="details-link">
+                            <a href="{% url 'job_scraper:detail' job.id %}">More info</a>
+                        </div>
+
+                    </div>
+                </li>
+            {% endfor %}
+
+        </ul>
+    {% else %}
+        <p>No jobs are available.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
+-->

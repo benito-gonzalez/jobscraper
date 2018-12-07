@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+import re
 
 
 class Company(models.Model):
@@ -29,6 +30,24 @@ class Job(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def get_initial_description(self):
+        """
+        Gets the first N characters from a description removing all HTML tags and including only the text within the <p></p> tags.
+        :return: String
+        """
+        raw_description = self.description
+        description_split = self.description.split('<p>', 1)
+
+        if len(description_split) == 2:
+            raw_description = description_split[1]
+            raw_description = raw_description.replace('</p>', '\n')
+
+        reg_exp = re.compile('<.*?>')
+        description = re.sub(reg_exp, ' ', raw_description)
+
+        return description
 
     class Meta:
         db_table = "Jobs"

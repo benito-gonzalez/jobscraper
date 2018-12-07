@@ -7,11 +7,11 @@ from job_scraper.serializers import JobSerializer, JobDetailSerializer
 
 class IndexView(generic.ListView):
     template_name = 'index.html'
+    paginate_by = 20
     context_object_name = 'latest_job_list'
 
     def get_queryset(self):
-        """Return the last five published questions."""
-        return Job.objects.order_by()
+        return Job.objects.filter(is_active=True).order_by('-created_at')
 
 
 class DetailView(generic.DetailView):

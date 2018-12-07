@@ -1,7 +1,62 @@
-li a {
-    color: green;
+ul.list {
+    list-style-type: none;
 }
 
-body{
-    background: white url("images/background.jpg") no-repeat;
+hr {
+    display: block;
+    overflow: hidden;
+    border-style: inset;
+    border-width: 2px;
+}
+
+img {
+    width: 60px;
+    height: auto;
+}
+
+div.job-list {
+    color: black;
+    margin: auto;
+    width: 600px;
+}
+
+div.job-info {
+    /*border-radius: 20px;
+    border: 2px solid #73AD21;
+    outline-offset: 60px;*/
+    margin: 20px;
+    width: 500px;
+}
+
+div.job-title {
+    margin-top: 50px;
+    text-align: center;
+    font-size: 25px;
+}
+
+div.job-company {
+    margin: 20px;
+    display: flex;
+}
+
+div.job-company-logo {
+    width: 15%;
+    float: left;
+}
+
+div.job-company-name {
+    margin-left: 10%;
+}
+
+div.job-location {
+    text-align: center;
+}
+
+div.details-link {
+    margin: 20px;
+    text-align: center;
+}
+
+div.job-description{
+    text-align:justify
 }
