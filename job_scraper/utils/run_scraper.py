@@ -31,15 +31,19 @@ def are_same_jobs(db_job, scraped_job):
     return db_job.title == scraped_job.title and db_job.company.name == scraped_job.company_name and db_job.location == scraped_job.location
 
 
-def update_active_jobs(scraped_jobs):
+def update_active_jobs(scraped_jobs, failed_companies):
     """
     Updates those jobs which are active and do not appear among the scraped jobs so they no longer exist in the website.
+    If the company job is in 'failed_companies', skip it
     For those which no longer exit, 'is_activate' is updated to False
     :param scraped_jobs: jobs which have been found by the scraper
+    :param failed_companies: array with the company names that return a HTTP Error
     :return: None
     """
     active_jobs = db_support.get_active_jobs()
     for active_job in active_jobs:
+        if active_job.company.name in failed_companies:
+            continue
         found = False
         for scraped_job in scraped_jobs:
             if are_same_jobs(active_job, scraped_job):
@@ -50,12 +54,17 @@ def update_active_jobs(scraped_jobs):
 
 
 def main():
+    # Companies that return HTTP != 200 should not delete jobs from DB
+    failed_companies = []
+
     servers = read_server_urls()
     scraped_jobs = []
     for server in servers:
         client = scraper.generate_instance_from_client(server.get('name'), server.get('url'))
         html = request_support.simple_get(server.get('url'))
 
+        if not html:
+            failed_companies.append(server.get('name'))
         if client and html:
             if PRODUCTION_ENV:
                 try:
@@ -73,8 +82,6 @@ def main():
                 else:
                     log_support.no_jobs_found(server.get('url'))
 
-    # method to validate job information
-
     # method to store to DB checking that job does not exist yet.
     for scraped_job in scraped_jobs:
         company = db_support.get_company_by_name(scraped_job.company_name)
@@ -84,8 +91,8 @@ def main():
         else:
             log_support.set_company_not_found(scraped_job.company_name)
 
-    # disable jobs which no longer exist in the websites
-    update_active_jobs(scraped_jobs)
+    # disable jobs which no longer exist in the websites (skip jobs that belong to a company that failed)
+    update_active_jobs(scraped_jobs, failed_companies)
 
 
 if __name__ == "__main__":
