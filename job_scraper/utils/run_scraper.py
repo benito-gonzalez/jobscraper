@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import geotext
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
 from job_scraper.utils import db_support
@@ -53,6 +54,32 @@ def update_active_jobs(scraped_jobs, failed_companies):
             db_support.disable_job(active_job)
 
 
+def get_valid_locations(job_location):
+    """
+    Get locations based on Finland from the job locations
+    :param job_location:
+    :return: String
+    """
+    valid_locations = []
+    other_locations = ["hyvinkää", "capital region"]
+
+    if not job_location:
+        return
+
+    for location in job_location.split(', '):
+        if "FI" in geotext.GeoText(location).country_mentions:
+            valid_locations.append(location)
+        elif location.lower() in other_locations:
+            valid_locations.append(location)
+
+    if len(valid_locations) > 1 and "Finland" in valid_locations:
+        valid_locations.remove("Finland")
+
+    valid_locations_str = ", ".join(valid_locations)
+
+    return valid_locations_str
+
+
 def main():
     # Companies that return HTTP != 200 should not delete jobs from DB
     failed_companies = []
@@ -86,16 +113,23 @@ def main():
     for scraped_job in scraped_jobs:
         company = db_support.get_company_by_name(scraped_job.company_name)
         if company:
-            job_db = db_support.get_job_from_db(scraped_job, company)
-            if job_db:
-                if not job_db.is_active:
-                    db_support.enable_job(job_db)
-                    if job_db.is_new:
-                        db_support.update_new_job(job_db)
-            else:
-                # if it does not exist
-                db_support.save_to_db(scraped_job, company)
+            valid_locations = get_valid_locations(scraped_job.location)
+            # if location is not defined or any location belongs to Finland
+            if not scraped_job.location or valid_locations != "":
+                scraped_job.location = valid_locations
+                job_db = db_support.get_job_from_db(scraped_job, company)
 
+                if job_db:
+                    if not job_db.is_active:
+                        db_support.enable_job(job_db)
+                        if job_db.is_new:
+                            db_support.update_new_job(job_db)
+                else:
+                    # if it does not exist
+                    db_support.save_to_db(scraped_job, company)
+
+            else:
+                log_support.skipping_job_due_location(scraped_job.title, scraped_job.location, scraped_job.company_name)
         else:
             log_support.set_company_not_found(scraped_job.company_name)
 

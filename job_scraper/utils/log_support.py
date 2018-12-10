@@ -119,3 +119,9 @@ def set_completed_scraper():
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "Finished scraper \n")
     f.close()
+
+
+def skipping_job_due_location(title, location, company_name):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "INFO. Skipping job '{0}' from '{1}' because of its location '{2}'".format(title, company_name, location) + "\n")
+    f.close()

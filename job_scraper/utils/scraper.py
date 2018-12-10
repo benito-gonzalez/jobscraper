@@ -87,7 +87,12 @@ class Scraper(object):
         :param description: job description. "" (empty string) if it is not valid
         :return: Boolean
         """
-        application_job_titles = ["avoin hakemus", "open application", "open application (finland & sweden)", "avoin hakemus innofactorille", "avoin hakemus / open application"]
+        application_job_titles = ["avoin hakemus",
+                                  "open application",
+                                  "open application (finland & sweden)",
+                                  "avoin hakemus innofactorille",
+                                  "avoin hakemus / open application",
+                                  "Every tech position at Futurice. Ever."]
         valid = False
 
         if not title:
