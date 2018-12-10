@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 import re
+import time
 
 
 class Company(models.Model):
@@ -18,6 +19,7 @@ class Job(models.Model):
     title = models.CharField(max_length=500)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
+    is_new = models.BooleanField(default=True)
     description = models.CharField(max_length=5000)
     location = models.CharField(max_length=100, blank=True, null=True)
     salary = models.FloatField(blank=True, default=None, null=True)
@@ -27,6 +29,7 @@ class Job(models.Model):
     is_highlighted = models.BooleanField(default=False)
     job_url = models.URLField(max_length=500)
     created_at = models.DateTimeField(default=timezone.now)  # UTC time by default
+    updated_at = models.DateTimeField(default=timezone.now)  # UTC time by default
 
     def __str__(self):
         return self.title
@@ -48,6 +51,20 @@ class Job(models.Model):
         description = re.sub(reg_exp, ' ', raw_description)
 
         return description
+
+    @property
+    def is_recent_job(self):
+        return self.is_new and int(self.created_at.timestamp()) > self.get_epoch_by_day(-7)
+
+    @property
+    def is_published_again(self):
+        return not self.is_new and int(self.updated_at.timestamp()) > self.get_epoch_by_day(-7)
+
+    @staticmethod
+    def get_epoch_by_day(days):
+        current_epoch = int(time.time())
+        offset = 60 * 60 * 24 * days
+        return current_epoch + offset
 
     class Meta:
         db_table = "Jobs"

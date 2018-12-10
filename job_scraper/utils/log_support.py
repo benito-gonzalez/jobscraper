@@ -55,6 +55,18 @@ def disabled_job(job):
     f.close()
 
 
+def updated_existent_job(job):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "Updated job '{0}' from '{1}'".format(job, job.company) + " to 'is_new = False'\n")
+    f.close()
+
+
+def updated_active_job(job):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "Updated job '{0}' from '{1}'".format(job, job.company) + " to 'is_active = True'\n")
+    f.close()
+
+
 def scraper_failure(client_name):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "ERROR. Invalid information from {0}".format(client_name) + "\n")
@@ -94,4 +106,16 @@ def set_invalid_description(company, title):
 def set_invalid_description_url(company, title):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "ERROR. Descriptin URL could not be scraped from the company {0} for the job {1}".format(company, title) + "\n")
+    f.close()
+
+
+def set_multiple_duplicated_jobs(title, company, location):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "ERROR. Multiple duplicated jobs in DB with fields title '{0}', company '{1}', location '{2}'".format(title, company, location) + "\n")
+    f.close()
+
+
+def set_completed_scraper():
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "Finished scraper \n")
     f.close()

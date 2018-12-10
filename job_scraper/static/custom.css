@@ -142,7 +142,7 @@
 }
 
 .navbar.after-scroll {
-    background-color: #1e17cd !important;
+    background-color: #0e51a5 !important;
     color: white;
     /*    opacity: 1*/
 }
@@ -264,8 +264,8 @@ a.disabled {
 }
 
 .main-div {
-    margin-left: 200px;
-    margin-right: 200px;
+    margin-left: 100px;
+    margin-right: 100px;
 }
 
 .text-dark {
@@ -273,6 +273,19 @@ a.disabled {
     font-weight: 900 !important;
 }
 
+.job-tag {
+    float: right;
+    align-self: flex-start;
+    display: inline-table;
+    font-family: Proximanova,Helvetica,Arial,sans-serif;
+    line-height: 14px;
+    font-size: 12px;
+    height: 14px;
+    border-radius: 2px;
+    padding: 1px 5px;
+    background-color: #0e51a5;
+    color: #fff;
+}
 /*.featured-div{
     position: relative;
     overflow: hidden;

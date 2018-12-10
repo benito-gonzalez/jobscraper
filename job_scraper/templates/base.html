@@ -1,0 +1,66 @@
+{% load static %}
+{% load bootstrap4 %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap-theme.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'custom.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+
+    <title>Jobs Portal</title>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm navbar-light bg-navbar fixed-top text-navbar">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">Jobs portal</a>
+        </div>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+            </ul>
+            <input class="mr-sm-2" placeholder="Search" aria-label="Search" id="searchfield">
+            <a class="btn btn-outline-default" id="searchbutton"><span><i class="fas fa-search"></i></span></a>
+        </div>
+    </nav>
+
+    <!-- Main container (list of jobs and job descriptions) -->
+    <div class="container">
+        <div class="main-div">
+            {% block content %}
+            {% endblock %}
+        </div>
+
+        <div class="col-md-9">
+            <div class="emptyalert alert alert-danger" id="alertmsg" style="display: none; text-align: center"></div>
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            crossorigin="anonymous"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+
+</body>
+</html>

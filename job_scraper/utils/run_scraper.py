@@ -86,13 +86,22 @@ def main():
     for scraped_job in scraped_jobs:
         company = db_support.get_company_by_name(scraped_job.company_name)
         if company:
-            if db_support.is_new_job(scraped_job, company):
+            job_db = db_support.get_job_from_db(scraped_job, company)
+            if job_db:
+                if not job_db.is_active:
+                    db_support.enable_job(job_db)
+                    if job_db.is_new:
+                        db_support.update_new_job(job_db)
+            else:
+                # if it does not exist
                 db_support.save_to_db(scraped_job, company)
+
         else:
             log_support.set_company_not_found(scraped_job.company_name)
 
     # disable jobs which no longer exist in the websites (skip jobs that belong to a company that failed)
     update_active_jobs(scraped_jobs, failed_companies)
+    log_support.set_completed_scraper()
 
 
 if __name__ == "__main__":
