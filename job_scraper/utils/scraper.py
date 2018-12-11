@@ -1403,8 +1403,9 @@ class Rovio(Scraper):
             title, description_url, description = self.get_mandatory_fields(job_div)
             if self.is_valid_job(title, description_url, description):
                 location = self.get_location(job_div, title)
+                end_date = self.get_end_date(description_url, title)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                 jobs.append(job)
 
         return jobs
@@ -1449,6 +1450,36 @@ class Rovio(Scraper):
                             description += str(child)
 
         return description
+
+    def get_end_date(self, url, title):
+        end_date = None
+        expected = False
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            date_ul = soup.find('ul', {'class': 'job-details'})
+            if date_ul:
+                # first li contains the due date
+                date_li = date_ul.find('li')
+                if date_li:
+                    date_text = date_li.text
+                    date_splited = date_text.split(": ")
+                    if len(date_splited) == 2:
+                        date = date_splited[1].strip()
+                        try:
+                            end_date_datetime = parser.parse(date)
+                            end_date = end_date_datetime.strftime('%Y-%m-%d')
+                        except ValueError:
+                            log_support.set_invalid_dates(self.client_name, title)
+                    else:
+                        # Some jobs does not have a due date but "Applications are considered on a rolling basis"
+                        expected = True
+
+        if not end_date and not expected:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
 
     def get_location(self, div, title):
         location = None
