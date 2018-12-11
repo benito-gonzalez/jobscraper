@@ -277,7 +277,7 @@ a.disabled {
     float: right;
     align-self: flex-start;
     display: inline-table;
-    font-family: Proximanova,Helvetica,Arial,sans-serif;
+    font-family: Proximanova, Helvetica, Arial, sans-serif;
     line-height: 14px;
     font-size: 12px;
     height: 14px;
@@ -286,6 +286,27 @@ a.disabled {
     background-color: #0e51a5;
     color: #fff;
 }
+
+.job-block-info {
+}
+
+.job-dates {
+    display: flex;
+}
+
+.job-pub-date {
+    width: 150px;
+}
+
+.job-end-date {
+    margin-top: 2px;
+    flex-grow: 10;
+}
+
+.job-location {
+    margin-top: 10px;
+}
+
 /*.featured-div{
     position: relative;
     overflow: hidden;

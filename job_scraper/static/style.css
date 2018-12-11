@@ -9,11 +9,6 @@ hr {
     border-width: 2px;
 }
 
-img {
-    width: 60px;
-    height: auto;
-}
-
 div.job-list {
     color: black;
     margin: auto;
@@ -46,10 +41,6 @@ div.job-company-logo {
 
 div.job-company-name {
     margin-left: 10%;
-}
-
-div.job-location {
-    text-align: center;
 }
 
 div.details-link {

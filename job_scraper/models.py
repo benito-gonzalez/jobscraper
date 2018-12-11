@@ -60,6 +60,17 @@ class Job(models.Model):
     def is_published_again(self):
         return not self.is_new and int(self.updated_at.timestamp()) > self.get_epoch_by_day(-7)
 
+    @property
+    def posted_date(self):
+        difference = (timezone.now() - self.updated_at).days
+
+        if difference == 0:
+            return "Today"
+        if difference == 1:
+            return "Yesterday"
+        else:
+            return "Posted %d" % difference + " days ago"
+
     @staticmethod
     def get_epoch_by_day(days):
         current_epoch = int(time.time())
