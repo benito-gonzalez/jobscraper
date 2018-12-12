@@ -31,18 +31,18 @@
                     </div>
                 </div>
                 <div class="job-block-info">
-                    <div class="job-dates">
-                        <div class="job-pub-date">
-                            <img src="{% static 'images/pub_date.png' %}" width="25px" height="auto">
-                            <span>{{ job.posted_date }}</span>
-                        </div>
-                        <div class="job-end-date">
-                            {% if job.end_date %}
-                                <img src="{% static 'images/end_date.png' %}" width="28px" height="auto">
-                                <span>Due date: {{ job.end_date |date:"d M, Y" }}</span>
-                            {% endif %}
-                        </div>
+                    <div class="job-pub-date">
+                        <img src="{% static 'images/pub_date.png' %}" width="25px" height="auto">
+                        <span>{{ job.posted_date }}</span>
                     </div>
+                    {% if job.end_date %}
+                        <div class="job-end-date">
+
+                            <img src="{% static 'images/end_date.png' %}" width="28px" height="auto">
+                            <span><strong>Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
+                        </div>
+                    {% endif %}
+
                     <div class="job-location">
                         {% if job.location %}
                             <img src="{% static 'images/location.png' %}" width="20px" height="auto">
@@ -55,7 +55,7 @@
                     <p align="justify">{{ job.get_initial_description |slice:":500" }}...</p>
                 </div>
 
-                <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-outline-success btn-sm">Show more</a>
+                <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-show-more btn-outline-success btn-sm">Show more</a>
             </div>
             </div>
 
@@ -67,20 +67,39 @@
             <div class="paginator float-left" style="display: inline-block" id="pageindex">
 
                 <ul class="pagination">
-                    {% if page_obj.has_previous %}
+
+                    {% if page_obj.number > 1 %}
                         <li><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
                     {% endif %}
-                    <div class="col-md-12">
 
-                        {% if page_obj.has_next %}
-                            <li><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                            <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+
+                        {% elif page_obj.number == 1 and i < page_obj.number|add:'5' %}
+                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+                        {% elif page_obj.number == 2 and i > page_obj.number|add:'-1' and i < page_obj.number|add:'4' %}
+                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+
+                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' and i < page_obj.paginator.num_pages|add:'1' %}
+                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+
+                        {% elif page_obj.number == page_obj.paginator.num_pages|add:'-1' and i > page_obj.number|add:'-4' and i < page_obj.number|add:'2' %}
+                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+                        {% elif page_obj.number == page_obj.paginator.num_pages and i > page_obj.number|add:'-5' %}
+                            <li><a href="?page={{ i }}">{{ i }}</a></li>
                         {% endif %}
-                    </div>
+                    {% endfor %}
 
+                    {% if page_obj.paginator.num_pages > page_obj.number %}
+                        <li><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
                 </ul>
             </div>
-
         {% endif %}
+
+        <button onclick="topFunction()" id="myBtn" title="Go to top"><img src="{% static 'images/arrow_up.png' %}" width="50px" height="auto"></button>
+
 
     </div>
 
