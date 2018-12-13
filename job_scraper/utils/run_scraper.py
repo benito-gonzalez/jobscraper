@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import geotext
+import random
+
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
 from job_scraper.utils import db_support
@@ -108,6 +110,9 @@ def main():
                     scraped_jobs.extend(jobs)
                 else:
                     log_support.no_jobs_found(server.get('url'))
+
+    # shuffle jobs to avoid to store them in order they were scraped
+    random.shuffle(scraped_jobs)
 
     # method to store to DB checking that job does not exist yet.
     for scraped_job in scraped_jobs:

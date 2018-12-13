@@ -32,26 +32,25 @@
                 </div>
                 <div class="job-block-info">
                     <div class="job-pub-date">
-                        <img src="{% static 'images/pub_date.png' %}" width="25px" height="auto">
+                        <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto">
                         <span>{{ job.posted_date }}</span>
                     </div>
                     {% if job.end_date %}
                         <div class="job-end-date">
-
-                            <img src="{% static 'images/end_date.png' %}" width="28px" height="auto">
+                            <img src="{% static 'images/end_date.png' %}" width="23px" height="auto">
                             <span><strong>Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
                         </div>
                     {% endif %}
 
                     <div class="job-location">
                         {% if job.location %}
-                            <img src="{% static 'images/location.png' %}" width="20px" height="auto">
+                            <img src="{% static 'images/location.png' %}" width="18px" height="auto">
                             <span>{{ job.location }}</span>
                         {% endif %}
                     </div>
 
                 </div>
-                <div>
+                <div style="margin-top: 10px">
                     <p align="justify">{{ job.get_initial_description |slice:":500" }}...</p>
                 </div>
 

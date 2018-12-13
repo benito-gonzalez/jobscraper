@@ -98,10 +98,12 @@
 }
 
 .footer {
+    position: relative;
+    overflow: hidden;
     border-top: 5px solid #eee;
-    padding: 3em 0;
-    margin-top: 3em;
+    margin-top: 8em;
     text-align: center;
+    background: white;
 }
 
 /* ==================================================
@@ -138,13 +140,7 @@
 .navbar {
     -webkit-transition: all .3s;
     transition: all .3s;
-    height: 150px;
-}
-
-.navbar.after-scroll {
-    background-color: #0e51a5 !important;
-    color: white;
-    /*    opacity: 1*/
+    height: 250px;
 }
 
 /*Menu font*/
@@ -165,7 +161,7 @@
 }
 
 .bg-navbar {
-    background-color: #2aabd2;
+    background: linear-gradient(to bottom, #99ebff 0%, #3385ff 99%);
 }
 
 .text-navbar {
@@ -273,6 +269,7 @@ a.disabled {
 }
 
 .main-div {
+
     margin-left: 100px;
     margin-right: 100px;
 }
@@ -305,37 +302,39 @@ a.disabled {
 }
 
 .job-end-date {
-    margin-top: 2px;
     flex-grow: 1;
 }
 
 .job-location {
     flex-grow: 10;
+    margin-top: -1px;
 }
 
 .btn-show-more {
+    margin-top: -20px;
+    margin-bottom: 10px;
     float: right;
 }
 
 .btn-outline-success {
-    color: #2aabd2;
+    color: #28a745;
     background-color: transparent;
     background-image: none;
-    border-color: #2aabd2
+    border-color: #28a745
 
 }
 
 .btn-outline-success:hover {
     color: #fff;
-    background-color: #0e51a5;
-    border-color: #0e51a5
+    background-color: #28a745;
+    border-color: #28a745
 }
 
 #myBtn {
     display: none; /* Hidden by default */
     position: fixed; /* Fixed/sticky position */
-    bottom: 20px; /* Place the button at the bottom of the page */
-    right: 100px; /* Place the button 30px from the right */
+    bottom: 155px; /* Place the button at the bottom of the page */
+    right: 30px; /* Place the button 30px from the right */
     z-index: 99; /* Make sure it does not overlap */
     border: none; /* Remove borders */
     outline: none; /* Remove outline */
@@ -350,33 +349,147 @@ a.disabled {
     background-color: #2aabd2; /* Add a dark-grey background on hover */
 }
 
+.copyright {
+    margin-top: 40px;
+    margin-bottom: 10px;
+}
 
-/*.featured-div{
-    position: relative;
-    overflow: hidden;
-}
-.featured-div:before {
-    content: "Featured";
-    line-height: 1em;
+.row-item {
     text-align: center;
-    padding: 0.5em 0;
-    box-sizing: border-box;
-    top: 5px;
-    right: 1px;
-    transform: rotate(45deg);
-    transform-origin: 50% 50%;
-    position: absolute;
-    z-index: 5;
-    color: #000;
+    float: left;
+    width: 50px;
+    padding-left: 80px;
 }
-.featured-div:after {
-    content: "";
-    display: inline-block;
-    border-left: 65px solid transparent;
-    border-bottom: 65px solid transparent;
-    border-right: 65px solid #ccc;
+
+.search-block{
+    margin-left: 50px;
+}
+
+.location-block{
+    margin-left: -50px;
+
+}
+
+.search-tag {
+    width: 110px;
+    font-size: 25px;
+    font-weight: bold;
+    text-align: right;
+}
+
+.input-fields {
     position: absolute;
-    top: -3px;
-    right: -3px;
-    border-right: 65px solid #ddd;
-}*/
+    height: 50px;
+    top: 80px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 72%;
+    margin: auto;
+    align-items: center;
+    display: flex;
+}
+
+.search-input {
+    float: left;
+    border-radius: 5px;
+    padding-left: 100px;
+    width: 350px;
+}
+
+.search-input input {
+    border: none;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 10px;
+    background: #fff url(images/search.png) no-repeat right 10px center;
+}
+
+.location-input {
+    float: left;
+    border-radius: 5px;
+    padding-left: 100px;
+    width: 350px;
+
+}
+
+.location-input input {
+    border: none;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 10px;
+    background: #fff url(images/location2.png) no-repeat right 10px center;
+}
+
+.navbar-title {
+    position: absolute;
+    height: 50px;
+    top: 40px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    margin: 0 auto;
+    font-size: 2.5vw;
+    color: white;
+    text-align: center;
+}
+
+#search_button {
+    font-family: Proximanovasemibold,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    display: inline-block;
+    border-radius: 5px;
+    cursor: pointer;
+    overflow: visible;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: none;
+    -webkit-appearance: none;
+    outline: 0;
+    transition: background-color .3s ease,color .3s ease;
+    color: #fff;
+    border: 1px solid #19672b;
+    background-color: #28a745;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    width: 100px;
+    height: 40px;
+    margin-left: 0px;
+    font-weight: bold;
+}
+
+#search_button:hover{
+        background-color: #46d267;
+
+}
+
+
+body {
+    background: #f2f2f2;
+}
+
+.main-border {
+    background: white;
+    -webkit-box-shadow: 0 0 5px 2px grey;
+    -moz-box-shadow: 0 0 5px 2px grey;
+    box-shadow: 0 0 5px 2px grey;
+}
+
+.right-inner-addon {
+    position: relative;
+}
+
+.right-inner-addon input {
+    padding-right: 30px;
+}
+
+.right-inner-addon i {
+    position: absolute;
+    right: 0px;
+    padding: 10px 12px;
+    pointer-events: none;
+}
