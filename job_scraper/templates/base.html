@@ -2,76 +2,74 @@
 {% load bootstrap4 %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-          crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap-theme.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'custom.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+
+
 
     <title>Jobs Portal</title>
 </head>
 
 <body>
 
-<nav class="navbar navbar-expand-sm navbar-light bg-navbar fixed-top text-navbar">
-    <div class="navbar-title">
-        Search For Better - Find Jobs In Your City
-    </div>
 
+<div class="header">
+    <div class="container container-header">
 
-    <div class="input-fields">
-        <div class="row-item">
-            <a href="/"><img src="{% static 'images/logo.png' %}" width="100px" height="auto"></a>
+        <div class="row">
+            <div class="col">
+                <div class="header-title">
+                    Search For Better - Find Jobs In Your City
+                </div>
+
+            </div>
         </div>
-        <div class="search-block">
-            <div class="row-item">
+
+        <div class="row row-header">
+            <div class="d-none d-sm-block col-md header-logo">
+                <a href="/"><img src="{% static 'images/logo.png' %}" width="100px" height="auto"></a>
+            </div>
+            <div class="d-none d-lg-block col-md">
                 <div class="search-tag">
                     What
                 </div>
             </div>
-            <div class="search-input">
-                <div class="col">
-                    <div class="right-inner-addon">
-                        <i class="icon-search"></i>
-                        <input type="search" class="form-control" placeholder="Search"/>
-                    </div>
+
+            <div class="col-12  col-md-3">
+                <div class="search-input">
+                    <input type="search" class="form-control" placeholder="Search"/>
                 </div>
             </div>
-        </div>
-
-        <div class="location-block">
-            <div class="row-item">
+            <div class="d-none d-lg-block col-md">
                 <div class="search-tag">
                     Where
                 </div>
             </div>
-            <div class="location-input">
-                <div class="col">
-                    <div class="right-inner-addon">
-                        <i class="icon-search"></i>
-                        <input type="location" class="form-control" placeholder="Location"/>
-                    </div>
+
+            <div class="col-12 col-md-3 mt-3 mt-sm-0">
+                <div class="location-input">
+                    <input type="search" class="form-control" placeholder="Location"/>
                 </div>
+
             </div>
-        </div>
-        <div class="row-item">
-            <button id="search_button" type="button">Search</button>
+            <div class="col-12 col-md-2 d-flex justify-content-center justify-content-md-start  mt-2 mb-2 mt-sm-0 mb-sm-0">
+                <button id="search_button" type="button">Search</button>
+            </div>
+
         </div>
     </div>
 
-</nav>
+</div>
 
 <!-- Main container (list of jobs and job descriptions) -->
-<div class="container">
+<div class="container ">
     <div class="main-border">
         <div class="main-div">
             {% block content %}
@@ -99,13 +97,15 @@
             Cookie Policy
         </div>
     </div>
-    <div class="copyright">
+    <div class="row mt-5 justify-content-center align-items-center">
         Copyright © 2018 JobsPortal. All rights reserved
     </div>
 </div>
 
+
+<!-- content -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
         crossorigin="anonymous"></script>
 <script src="{% static 'js/custom.js' %}"></script>
 
