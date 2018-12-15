@@ -928,10 +928,12 @@ class Varjo(Scraper):
             soup = BeautifulSoup(job_details_html, 'html.parser')
             description_div = soup.find('div', {'class': 'jobs-override'})
             if description_div:
-                first_paragraph_tag = description_div.find(['p', 'h3'], string=["Job description", "Job Description"])
-                if first_paragraph_tag:
-                    for p in first_paragraph_tag.next_siblings:
-                        description += str(p)
+                tags = description_div.find_all(['p', 'h3'])
+                for tag in tags:
+                    if tag.text.strip().lower() == "job description":
+                        for p in tag.next_siblings:
+                            description += str(p)
+                        break
 
         return description
 
