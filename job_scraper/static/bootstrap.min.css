@@ -1,5 +1,5 @@
 /*!
- * Bootstrap v4.1.1 (https://getbootstrap.com/)
+ * Bootstrap v4.1.3 (https://getbootstrap.com/)
  * Copyright 2011-2018 The Bootstrap Authors
  * Copyright 2011-2018 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
@@ -31,7 +31,7 @@
     --breakpoint-md: 768px;
     --breakpoint-lg: 992px;
     --breakpoint-xl: 1200px;
-    --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
 }
 
@@ -58,7 +58,7 @@ article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
 
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
@@ -197,8 +197,9 @@ img {
     border-style: none
 }
 
-svg:not(:root) {
-    overflow: hidden
+svg {
+    overflow: hidden;
+    vertical-align: middle
 }
 
 table {
@@ -1635,7 +1636,6 @@ pre code {
 
 .table {
     width: 100%;
-    max-width: 100%;
     margin-bottom: 1rem;
     background-color: transparent
 }
@@ -1899,6 +1899,7 @@ pre code {
 .form-control {
     display: block;
     width: 100%;
+    height: calc(2.25rem + 2px);
     padding: .375rem .75rem;
     font-size: 1rem;
     line-height: 1.5;
@@ -1959,10 +1960,6 @@ pre code {
     opacity: 1
 }
 
-select.form-control:not([size]):not([multiple]) {
-    height: calc(2.25rem + 2px)
-}
-
 select.form-control:focus::-ms-value {
     color: #495057;
     background-color: #fff
@@ -2008,31 +2005,33 @@ select.form-control:focus::-ms-value {
     border-width: 1px 0
 }
 
-.form-control-plaintext.form-control-lg, .form-control-plaintext.form-control-sm, .input-group-lg > .form-control-plaintext.form-control, .input-group-lg > .input-group-append > .form-control-plaintext.btn, .input-group-lg > .input-group-append > .form-control-plaintext.input-group-text, .input-group-lg > .input-group-prepend > .form-control-plaintext.btn, .input-group-lg > .input-group-prepend > .form-control-plaintext.input-group-text, .input-group-sm > .form-control-plaintext.form-control, .input-group-sm > .input-group-append > .form-control-plaintext.btn, .input-group-sm > .input-group-append > .form-control-plaintext.input-group-text, .input-group-sm > .input-group-prepend > .form-control-plaintext.btn, .input-group-sm > .input-group-prepend > .form-control-plaintext.input-group-text {
+.form-control-plaintext.form-control-lg, .form-control-plaintext.form-control-sm {
     padding-right: 0;
     padding-left: 0
 }
 
-.form-control-sm, .input-group-sm > .form-control, .input-group-sm > .input-group-append > .btn, .input-group-sm > .input-group-append > .input-group-text, .input-group-sm > .input-group-prepend > .btn, .input-group-sm > .input-group-prepend > .input-group-text {
+.form-control-sm {
+    height: calc(1.8125rem + 2px);
     padding: .25rem .5rem;
     font-size: .875rem;
     line-height: 1.5;
     border-radius: .2rem
 }
 
-.input-group-sm > .input-group-append > select.btn:not([size]):not([multiple]), .input-group-sm > .input-group-append > select.input-group-text:not([size]):not([multiple]), .input-group-sm > .input-group-prepend > select.btn:not([size]):not([multiple]), .input-group-sm > .input-group-prepend > select.input-group-text:not([size]):not([multiple]), .input-group-sm > select.form-control:not([size]):not([multiple]), select.form-control-sm:not([size]):not([multiple]) {
-    height: calc(1.8125rem + 2px)
-}
-
-.form-control-lg, .input-group-lg > .form-control, .input-group-lg > .input-group-append > .btn, .input-group-lg > .input-group-append > .input-group-text, .input-group-lg > .input-group-prepend > .btn, .input-group-lg > .input-group-prepend > .input-group-text {
+.form-control-lg {
+    height: calc(2.875rem + 2px);
     padding: .5rem 1rem;
     font-size: 1.25rem;
     line-height: 1.5;
     border-radius: .3rem
 }
 
-.input-group-lg > .input-group-append > select.btn:not([size]):not([multiple]), .input-group-lg > .input-group-append > select.input-group-text:not([size]):not([multiple]), .input-group-lg > .input-group-prepend > select.btn:not([size]):not([multiple]), .input-group-lg > .input-group-prepend > select.input-group-text:not([size]):not([multiple]), .input-group-lg > select.form-control:not([size]):not([multiple]), select.form-control-lg:not([size]):not([multiple]) {
-    height: calc(2.875rem + 2px)
+select.form-control[multiple], select.form-control[size] {
+    height: auto
+}
+
+textarea.form-control {
+    height: auto
 }
 
 .form-group {
@@ -2108,13 +2107,13 @@ select.form-control:focus::-ms-value {
     z-index: 5;
     display: none;
     max-width: 100%;
-    padding: .5rem;
+    padding: .25rem .5rem;
     margin-top: .1rem;
     font-size: .875rem;
-    line-height: 1;
+    line-height: 1.5;
     color: #fff;
-    background-color: rgba(40, 167, 69, .8);
-    border-radius: .2rem
+    background-color: rgba(40, 167, 69, .9);
+    border-radius: .25rem
 }
 
 .custom-select.is-valid, .form-control.is-valid, .was-validated .custom-select:valid, .was-validated .form-control:valid {
@@ -2166,7 +2165,7 @@ select.form-control:focus::-ms-value {
     border-color: #28a745
 }
 
-.custom-file-input.is-valid ~ .custom-file-label::before, .was-validated .custom-file-input:valid ~ .custom-file-label::before {
+.custom-file-input.is-valid ~ .custom-file-label::after, .was-validated .custom-file-input:valid ~ .custom-file-label::after {
     border-color: inherit
 }
 
@@ -2192,13 +2191,13 @@ select.form-control:focus::-ms-value {
     z-index: 5;
     display: none;
     max-width: 100%;
-    padding: .5rem;
+    padding: .25rem .5rem;
     margin-top: .1rem;
     font-size: .875rem;
-    line-height: 1;
+    line-height: 1.5;
     color: #fff;
-    background-color: rgba(220, 53, 69, .8);
-    border-radius: .2rem
+    background-color: rgba(220, 53, 69, .9);
+    border-radius: .25rem
 }
 
 .custom-select.is-invalid, .form-control.is-invalid, .was-validated .custom-select:invalid, .was-validated .form-control:invalid {
@@ -2250,7 +2249,7 @@ select.form-control:focus::-ms-value {
     border-color: #dc3545
 }
 
-.custom-file-input.is-invalid ~ .custom-file-label::before, .was-validated .custom-file-input:invalid ~ .custom-file-label::before {
+.custom-file-input.is-invalid ~ .custom-file-label::after, .was-validated .custom-file-input:invalid ~ .custom-file-label::after {
     border-color: inherit
 }
 
@@ -2381,10 +2380,6 @@ select.form-control:focus::-ms-value {
 
 .btn:not(:disabled):not(.disabled) {
     cursor: pointer
-}
-
-.btn:not(:disabled):not(.disabled).active, .btn:not(:disabled):not(.disabled):active {
-    background-image: none
 }
 
 a.btn.disabled, fieldset:disabled a.btn {
@@ -3318,12 +3313,16 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     margin-bottom: 0
 }
 
-.input-group > .custom-file:focus, .input-group > .custom-select:focus, .input-group > .form-control:focus {
+.input-group > .custom-file + .custom-file, .input-group > .custom-file + .custom-select, .input-group > .custom-file + .form-control, .input-group > .custom-select + .custom-file, .input-group > .custom-select + .custom-select, .input-group > .custom-select + .form-control, .input-group > .form-control + .custom-file, .input-group > .form-control + .custom-select, .input-group > .form-control + .form-control {
+    margin-left: -1px
+}
+
+.input-group > .custom-file .custom-file-input:focus ~ .custom-file-label, .input-group > .custom-select:focus, .input-group > .form-control:focus {
     z-index: 3
 }
 
-.input-group > .custom-file + .custom-file, .input-group > .custom-file + .custom-select, .input-group > .custom-file + .form-control, .input-group > .custom-select + .custom-file, .input-group > .custom-select + .custom-select, .input-group > .custom-select + .form-control, .input-group > .form-control + .custom-file, .input-group > .form-control + .custom-select, .input-group > .form-control + .form-control {
-    margin-left: -1px
+.input-group > .custom-file .custom-file-input:focus {
+    z-index: 4
 }
 
 .input-group > .custom-select:not(:last-child), .input-group > .form-control:not(:last-child) {
@@ -3395,6 +3394,22 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
 
 .input-group-text input[type=checkbox], .input-group-text input[type=radio] {
     margin-top: 0
+}
+
+.input-group-lg > .form-control, .input-group-lg > .input-group-append > .btn, .input-group-lg > .input-group-append > .input-group-text, .input-group-lg > .input-group-prepend > .btn, .input-group-lg > .input-group-prepend > .input-group-text {
+    height: calc(2.875rem + 2px);
+    padding: .5rem 1rem;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    border-radius: .3rem
+}
+
+.input-group-sm > .form-control, .input-group-sm > .input-group-append > .btn, .input-group-sm > .input-group-append > .input-group-text, .input-group-sm > .input-group-prepend > .btn, .input-group-sm > .input-group-prepend > .input-group-text {
+    height: calc(1.8125rem + 2px);
+    padding: .25rem .5rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border-radius: .2rem
 }
 
 .input-group > .input-group-append:last-child > .btn:not(:last-child):not(.dropdown-toggle), .input-group > .input-group-append:last-child > .input-group-text:not(:last-child), .input-group > .input-group-append:not(:last-child) > .btn, .input-group > .input-group-append:not(:last-child) > .input-group-text, .input-group > .input-group-prepend > .btn, .input-group > .input-group-prepend > .input-group-text {
@@ -3546,7 +3561,7 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
 .custom-select:focus {
     border-color: #80bdff;
     outline: 0;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, .075), 0 0 5px rgba(128, 189, 255, .5)
+    box-shadow: 0 0 0 .2rem rgba(128, 189, 255, .5)
 }
 
 .custom-select:focus::-ms-value {
@@ -3609,6 +3624,10 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     border-color: #80bdff
 }
 
+.custom-file-input:disabled ~ .custom-file-label {
+    background-color: #e9ecef
+}
+
 .custom-file-input:lang(en) ~ .custom-file-label::after {
     content: "Browse"
 }
@@ -3658,6 +3677,18 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     outline: 0
 }
 
+.custom-range:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(0, 123, 255, .25)
+}
+
+.custom-range:focus::-moz-range-thumb {
+    box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(0, 123, 255, .25)
+}
+
+.custom-range:focus::-ms-thumb {
+    box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(0, 123, 255, .25)
+}
+
 .custom-range::-moz-focus-outer {
     border: 0
 }
@@ -3669,13 +3700,15 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     background-color: #007bff;
     border: 0;
     border-radius: 1rem;
+    transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     -webkit-appearance: none;
     appearance: none
 }
 
-.custom-range::-webkit-slider-thumb:focus {
-    outline: 0;
-    box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(0, 123, 255, .25)
+@media screen and (prefers-reduced-motion: reduce) {
+    .custom-range::-webkit-slider-thumb {
+        transition: none
+    }
 }
 
 .custom-range::-webkit-slider-thumb:active {
@@ -3698,13 +3731,15 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     background-color: #007bff;
     border: 0;
     border-radius: 1rem;
+    transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     -moz-appearance: none;
     appearance: none
 }
 
-.custom-range::-moz-range-thumb:focus {
-    outline: 0;
-    box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(0, 123, 255, .25)
+@media screen and (prefers-reduced-motion: reduce) {
+    .custom-range::-moz-range-thumb {
+        transition: none
+    }
 }
 
 .custom-range::-moz-range-thumb:active {
@@ -3724,15 +3759,20 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
 .custom-range::-ms-thumb {
     width: 1rem;
     height: 1rem;
+    margin-top: 0;
+    margin-right: .2rem;
+    margin-left: .2rem;
     background-color: #007bff;
     border: 0;
     border-radius: 1rem;
+    transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     appearance: none
 }
 
-.custom-range::-ms-thumb:focus {
-    outline: 0;
-    box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(0, 123, 255, .25)
+@media screen and (prefers-reduced-motion: reduce) {
+    .custom-range::-ms-thumb {
+        transition: none
+    }
 }
 
 .custom-range::-ms-thumb:active {
@@ -3758,6 +3798,16 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     margin-right: 15px;
     background-color: #dee2e6;
     border-radius: 1rem
+}
+
+.custom-control-label::before, .custom-file-label, .custom-select {
+    transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+    .custom-control-label::before, .custom-file-label, .custom-select {
+        transition: none
+    }
 }
 
 .nav {
@@ -5225,14 +5275,14 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     opacity: .5
 }
 
-.close:focus, .close:hover {
+.close:not(:disabled):not(.disabled) {
+    cursor: pointer
+}
+
+.close:not(:disabled):not(.disabled):focus, .close:not(:disabled):not(.disabled):hover {
     color: #000;
     text-decoration: none;
     opacity: .75
-}
-
-.close:not(:disabled):not(.disabled) {
-    cursor: pointer
 }
 
 button.close {
@@ -5246,6 +5296,11 @@ button.close {
     overflow: hidden
 }
 
+.modal-open .modal {
+    overflow-x: hidden;
+    overflow-y: auto
+}
+
 .modal {
     position: fixed;
     top: 0;
@@ -5256,11 +5311,6 @@ button.close {
     display: none;
     overflow: hidden;
     outline: 0
-}
-
-.modal-open .modal {
-    overflow-x: hidden;
-    overflow-y: auto
 }
 
 .modal-dialog {
@@ -5295,6 +5345,12 @@ button.close {
     -ms-flex-align: center;
     align-items: center;
     min-height: calc(100% - (.5rem * 2))
+}
+
+.modal-dialog-centered::before {
+    display: block;
+    height: calc(100vh - (.5rem * 2));
+    content: ""
 }
 
 .modal-content {
@@ -5397,6 +5453,10 @@ button.close {
         min-height: calc(100% - (1.75rem * 2))
     }
 
+    .modal-dialog-centered::before {
+        height: calc(100vh - (1.75rem * 2))
+    }
+
     .modal-sm {
         max-width: 300px
     }
@@ -5413,7 +5473,7 @@ button.close {
     z-index: 1070;
     display: block;
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     font-style: normal;
     font-weight: 400;
     line-height: 1.5;
@@ -5526,7 +5586,7 @@ button.close {
     z-index: 1060;
     display: block;
     max-width: 276px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     font-style: normal;
     font-weight: 400;
     line-height: 1.5;
@@ -5705,23 +5765,23 @@ button.close {
     -ms-flex-align: center;
     align-items: center;
     width: 100%;
-    transition: -webkit-transform .6s ease;
-    transition: transform .6s ease;
-    transition: transform .6s ease, -webkit-transform .6s ease;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     -webkit-perspective: 1000px;
     perspective: 1000px
 }
 
-@media screen and (prefers-reduced-motion: reduce) {
-    .carousel-item {
-        transition: none
-    }
+.carousel-item-next, .carousel-item-prev, .carousel-item.active {
+    display: block;
+    transition: -webkit-transform .6s ease;
+    transition: transform .6s ease;
+    transition: transform .6s ease, -webkit-transform .6s ease
 }
 
-.carousel-item-next, .carousel-item-prev, .carousel-item.active {
-    display: block
+@media screen and (prefers-reduced-motion: reduce) {
+    .carousel-item-next, .carousel-item-prev, .carousel-item.active {
+        transition: none
+    }
 }
 
 .carousel-item-next, .carousel-item-prev {
