@@ -61,7 +61,7 @@ class Job(models.Model):
         return not self.is_new and int(self.updated_at.timestamp()) > self.get_epoch_by_day(-7)
 
     @property
-    def posted_date(self):
+    def posted_date_details(self):
         difference = (timezone.now() - self.updated_at).days
 
         if difference == 0:
@@ -69,7 +69,15 @@ class Job(models.Model):
         if difference == 1:
             return "Yesterday"
         else:
-            return "Posted %d" % difference + " days ago"
+            return " %d" % difference + " days ago"
+
+    @property
+    def posted_date(self):
+        date_str = self.posted_date_details
+        if date_str != "Today" and date_str != "Yesterday":
+            date_str = "Posted " + date_str
+
+        return date_str
 
     @staticmethod
     def get_epoch_by_day(days):

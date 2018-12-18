@@ -2,6 +2,50 @@
 {% load static %}
 
 {% block content %}
+    <div class="row mt-3">
+        <div class="col">
+            <h2>{{ job.title }}</h2>
+        </div>
+    </div>
+
+    <div class="row mt-1 row-details">
+        <div class="col">
+            <div class="row mt-1">
+                <div class="col-10">
+                    <div class="row">
+                        <div class="col-5">
+                            Posted: <strong>{{ job.posted_date_details }}</strong>
+                        </div>
+                        <div class="col-5">
+                            Company: <strong>{{ job.company }}</strong>
+                        </div>
+                    </div>
+                    <div class="row mb-1">
+                        <div class="col-5">
+                            {% if job.end_date %}
+                                Due date: <strong>{{ job.end_date }}</strong>
+                            {% endif %}
+                        </div>
+                        <div class="col-5">
+                            {% if job.location %}
+                                Location: <strong>{{ job.location }}</strong>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2 text-right apply-button">
+                    <a href="{{ job.job_url }}" class="btn btn-outline-success btn-sm" target="_blank"><strong>Apply!</strong></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col job-description">
+            <p>{{ job.description |safe }}</p>
+        </div>
+    </div>
+    <!--
         <div class="job-title">
             <h2>{{ job.title }}</h2>
         </div>
@@ -9,5 +53,5 @@
             <p>{{ job.description |safe }}</p>
         </div>
         <a href="{{ job.job_url }}" class="btn btn-outline-success btn-sm" target="_blank">Visit company</a>
-
+    -->
 {% endblock %}
