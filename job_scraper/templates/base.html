@@ -13,7 +13,6 @@
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
 
 
-
     <title>Jobs Portal</title>
 </head>
 
@@ -32,38 +31,50 @@
             </div>
         </div>
 
-        <div class="row row-header">
-            <div class="d-none d-sm-block col-md header-logo">
-                <a href="/"><img src="{% static 'images/logo.png' %}" width="100px" height="auto"></a>
-            </div>
-            <div class="d-none d-lg-block col-md">
-                <div class="search-tag">
-                    What
-                </div>
-            </div>
+        <form action="{% url 'job_scraper:index' %}" method="get">
+            <div class="row row-header">
 
-            <div class="col-12  col-md-3">
-                <div class="search-input">
-                    <input type="search" class="form-control" placeholder="Search"/>
+                <div class="d-none d-sm-block col-md header-logo">
+                    <a href="/"><img src="{% static 'images/logo.png' %}" width="100px" height="auto"></a>
                 </div>
-            </div>
-            <div class="d-none d-lg-block col-md">
-                <div class="search-tag">
-                    Where
-                </div>
-            </div>
-
-            <div class="col-12 col-md-3 mt-3 mt-sm-0">
-                <div class="location-input">
-                    <input type="search" class="form-control" placeholder="Location"/>
+                <div class="d-none d-lg-block col-md">
+                    <div class="search-tag">
+                        What
+                    </div>
                 </div>
 
-            </div>
-            <div class="col-12 col-md-2 d-flex justify-content-center justify-content-md-start  mt-2 mb-2 mt-sm-0 mb-sm-0">
-                <button id="search_button" type="button">Search</button>
-            </div>
+                <div class="col-12  col-md-3">
+                    <div class="search-input">
+                        {% if request.GET.search %}
+                            <input type="search" class="form-control" name="search" value="{{ request.GET.search }}"/>
+                        {% else %}
+                            <input type="search" class="form-control" name="search" placeholder="Search"/>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="d-none d-lg-block col-md">
+                    <div class="search-tag">
+                        Where
+                    </div>
+                </div>
 
-        </div>
+                <div class="col-12 col-md-3 mt-3 mt-sm-0">
+
+                    <div class="location-input">
+                        {% if request.GET.location %}
+                            <input type="search" class="form-control" name="location" value="{{ request.GET.location }}"/>
+                        {% else %}
+                            <input type="search" class="form-control" name="location" placeholder="Location"/>
+                        {% endif %}
+
+                    </div>
+                </div>
+                <div class="col-12 col-md-2 d-flex justify-content-center justify-content-md-start  mt-2 mb-2 mt-sm-0 mb-sm-0">
+                    <button id="search_button" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+
     </div>
 
 </div>

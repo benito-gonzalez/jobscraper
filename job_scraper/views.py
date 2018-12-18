@@ -11,7 +11,17 @@ class IndexView(generic.ListView):
     context_object_name = 'latest_job_list'
 
     def get_queryset(self):
-        return Job.objects.filter(is_active=True).order_by('-created_at')
+        search_query = self.request.GET.get('search', None)
+        location_query = self.request.GET.get('location', None)
+
+        if search_query and location_query:
+            return Job.objects.filter(is_active=True, title__icontains=search_query, location__icontains=location_query).order_by('-updated_at')
+        if search_query:
+            return Job.objects.filter(is_active=True, title__icontains=search_query).order_by('-updated_at')
+        if location_query:
+            return Job.objects.filter(is_active=True, location__icontains=location_query).order_by('-updated_at')
+        else:
+            return Job.objects.filter(is_active=True).order_by('-updated_at')
 
 
 class DetailView(generic.DetailView):

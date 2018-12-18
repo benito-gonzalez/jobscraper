@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
+{% load search_tags %}
 
 {% block content %}
     {% for job in latest_job_list %}
 
-        <div class="row row-job mt-3 align-items-center ">
+        <div class="row row-job mt-3 align-items-center pr-5">
 
         {% if job.is_highlighted %}
             <div class="media border-bottom border-gray d-flex align-items-stretch mr-3">
@@ -12,7 +13,7 @@
                 <span id="featuredSpan"> Featured </span>
             </div>
         {% else %}
-            <div class="media border-bottom border-gray d-flex align-items-center no-featured-div">
+            <div class="media d-flex align-items-center no-featured-div">
         {% endif %}
 
     <div class="col-md-2 d-none d-sm-block text-right job-logo">
@@ -76,7 +77,7 @@
             <ul class="pagination">
 
                 {% if page_obj.number > 1 %}
-                    <li><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    <li><a href="?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>
                 {% endif %}
 
                 {% for i in page_obj.paginator.page_range %}
@@ -86,23 +87,23 @@
                             <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
 
                         {% elif page_obj.number == 1 and i < page_obj.number|add:'5' %}
-                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
                         {% elif page_obj.number == 2 and i > page_obj.number|add:'-1' and i < page_obj.number|add:'4' %}
-                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
 
                         {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' and i < page_obj.paginator.num_pages|add:'1' %}
-                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
 
                         {% elif page_obj.number == page_obj.paginator.num_pages|add:'-1' and i > page_obj.number|add:'-4' and i < page_obj.number|add:'2' %}
-                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
                         {% elif page_obj.number == page_obj.paginator.num_pages and i > page_obj.number|add:'-5' %}
-                            <li><a href="?page={{ i }}">{{ i }}</a></li>
+                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
                         {% endif %}
                     </div>
 
                 {% endfor %}
                 {% if page_obj.paginator.num_pages > page_obj.number %}
-                    <li><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    <li><a href="?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
                 {% endif %}
             </ul>
         </div>
