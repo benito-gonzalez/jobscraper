@@ -255,9 +255,22 @@ class Elisa(Scraper):
             if "jobDescUrl" in item:
                 description_url = item["jobDescUrl"]
                 if "jobDescription" in item:
-                    description = item["jobDescription"]
+                    description = self.get_description(item["jobDescription"])
 
         return title, description_url, description
+
+    @staticmethod
+    def get_description(description_raw):
+        description = ""
+
+        soup = BeautifulSoup(description_raw, 'html.parser')
+        for tag in soup.find_all():
+            for match in tag.find_all('img'):
+                match.decompose()
+            if tag.name:
+                description += str(tag)
+
+        return description
 
 
 class Vala(Scraper):
