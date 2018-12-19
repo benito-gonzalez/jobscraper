@@ -125,10 +125,6 @@ Jobs
     font-size: 15px;
 }
 
-.job-description {
-    text-align: justify;
-}
-
 /*
 Paginator
  */
@@ -251,16 +247,10 @@ Bottom up
 
 .row-details {
     width: 70%;
-    margin-left: auto;
-    margin-right: auto;
+
     border: #28a745 solid 1px;
     background-color: #f2f2f2;
     border-radius: 5px;
-}
-
-.apply-button {
-    margin: auto;
-    font-weight: bold;
 }
 
 /*
@@ -275,6 +265,12 @@ Mobiles
 
     .job-end-date {
         display: none;
+    }
+
+    .row-details {
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
     }
 }
 

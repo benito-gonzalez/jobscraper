@@ -5,7 +5,7 @@
 {% block content %}
     {% for job in latest_job_list %}
 
-        <div class="row row-job mt-3 align-items-center pr-5">
+        <div class="row row-job mt-3 align-items-center pr-md-5">
 
         {% if job.is_highlighted %}
             <div class="media border-bottom border-gray d-flex align-items-stretch mr-3">
@@ -55,12 +55,12 @@
 
         </div>
         <div class="row mt-3">
-            <div class="col-md job-description">
-                <p align="justify">{{ job.get_initial_description |slice:":500" }}...</p>
+            <div class="col-md">
+                <p>{{ job.get_initial_description |slice:":500" }}...</p>
             </div>
         </div>
         <div class="row mt-3 mb-1">
-            <div class="col-md ">
+            <div class="col-md">
                 <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-show-more btn-outline-success btn-sm">Show more</a>
             </div>
         </div>
