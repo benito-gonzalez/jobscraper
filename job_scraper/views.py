@@ -1,5 +1,8 @@
 from rest_framework import generics
 from django.views import generic
+from django.db.models import Q
+from operator import and_
+import functools
 
 from job_scraper.models import Job
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
@@ -8,16 +11,20 @@ from job_scraper.serializers import JobSerializer, JobDetailSerializer
 class IndexView(generic.ListView):
     template_name = 'index.html'
     paginate_by = 20
-    context_object_name = 'latest_job_list'
+    context_object_name = 'jobs_list'
 
     def get_queryset(self):
         search_query = self.request.GET.get('search', None)
         location_query = self.request.GET.get('location', None)
+        search_words = []
+
+        if search_query:
+            search_words = search_query.split(" ")
 
         if search_query and location_query:
-            return Job.objects.filter(is_active=True, title__icontains=search_query, location__icontains=location_query).order_by('-updated_at')
+            return Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in search_words]) & Q(is_active=True) & Q(location__icontains=location_query))
         if search_query:
-            return Job.objects.filter(is_active=True, title__icontains=search_query).order_by('-updated_at')
+            return Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in search_words]) & Q(is_active=True))
         if location_query:
             return Job.objects.filter(is_active=True, location__icontains=location_query).order_by('-updated_at')
         else:

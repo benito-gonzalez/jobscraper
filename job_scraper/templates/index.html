@@ -3,109 +3,116 @@
 {% load search_tags %}
 
 {% block content %}
-    {% for job in latest_job_list %}
 
-        <div class="row row-job mt-3 align-items-center pr-md-5">
+    {% if jobs_list %}
+        {% for job in jobs_list %}
 
-        {% if job.is_highlighted %}
-            <div class="media border-bottom border-gray d-flex align-items-stretch mr-3">
-            <div class="p-2 featured-div">
-                <span id="featuredSpan"> Featured </span>
+            <div class="row row-job mt-3 align-items-center pr-md-5">
+
+            {% if job.is_highlighted %}
+                <div class="media border-bottom border-gray d-flex align-items-stretch mr-3">
+                <div class="p-2 featured-div">
+                    <span id="featuredSpan"> Featured </span>
+                </div>
+            {% else %}
+                <div class="media d-flex align-items-center no-featured-div">
+            {% endif %}
+
+        <div class="col-md-2 d-none d-sm-block text-right job-logo">
+            <img src="{{ job.company.logo.url }}" width="80px" height="auto">
+        </div>
+
+        <div class="col-11 col-md-10">
+            <div class="row no-gutters">
+                <div class="col col-md-10 job-title">
+                    {{ job.title }}
+                </div>
+                <div class="d-none d-sm-block col-md-2">
+                    {% if job.is_recent_job %}
+                        <div class="job-tag">New</div>
+                    {% endif %}
+                    {% if job.is_published_again %}
+                        <div class="job-tag">Published again</div>
+                    {% endif %}
+                </div>
+
             </div>
-        {% else %}
-            <div class="media d-flex align-items-center no-featured-div">
+            <div class="row  justify-content-center align-items-center justify-content-md-start">
+                <div class="col-auto col-md-3 job-details ">
+                    <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto">
+                    {{ job.posted_date }}
+                </div>
+                {% if job.end_date %}
+                    <div class="col-auto job-details">
+                        <img src="{% static 'images/end_date.png' %}" width="23px" height="auto">
+                        <span><strong class="job-end-date">Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
+                    </div>
+                {% endif %}
+                {% if job.location %}
+                    <div class="col-auto collapse-chevron job-details">
+                        <img src="{% static 'images/location.png' %}" width="18px" height="auto">
+                        <span>{{ job.location }}</span>
+                    </div>
+                {% endif %}
+
+            </div>
+            <div class="row mt-3">
+                <div class="col-md">
+                    <p>{{ job.get_initial_description |slice:":500" }}...</p>
+                </div>
+            </div>
+            <div class="row mt-3 mb-1">
+                <div class="col-md">
+                    <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-show-more btn-outline-success btn-sm">Show more</a>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        </div>
+        {% endfor %}
+
+        {% if is_paginated %}
+            <div class="paginator float-left" style="display: inline-block" id="pageindex">
+
+                <ul class="pagination">
+
+                    {% if page_obj.number > 1 %}
+                        <li><a href="?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                        <div class="d-none d-sm-block">
+
+                            {% if page_obj.number == i %}
+                                <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+
+                            {% elif page_obj.number == 1 and i < page_obj.number|add:'5' %}
+                                <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
+                            {% elif page_obj.number == 2 and i > page_obj.number|add:'-1' and i < page_obj.number|add:'4' %}
+                                <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
+
+                            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' and i < page_obj.paginator.num_pages|add:'1' %}
+                                <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
+
+                            {% elif page_obj.number == page_obj.paginator.num_pages|add:'-1' and i > page_obj.number|add:'-4' and i < page_obj.number|add:'2' %}
+                                <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
+                            {% elif page_obj.number == page_obj.paginator.num_pages and i > page_obj.number|add:'-5' %}
+                                <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
+                            {% endif %}
+                        </div>
+
+                    {% endfor %}
+                    {% if page_obj.paginator.num_pages > page_obj.number %}
+                        <li><a href="?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </div>
         {% endif %}
 
-    <div class="col-md-2 d-none d-sm-block text-right job-logo">
-        <img src="{{ job.company.logo.url }}" width="80px" height="auto">
-    </div>
-
-    <div class="col-11 col-md-10">
-        <div class="row no-gutters">
-            <div class="col col-md-10 job-title">
-                {{ job.title }}
-            </div>
-            <div class="d-none d-sm-block col-md-2">
-                {% if job.is_recent_job %}
-                    <div class="job-tag">New</div>
-                {% endif %}
-                {% if job.is_published_again %}
-                    <div class="job-tag">Published again</div>
-                {% endif %}
-            </div>
-
-        </div>
-        <div class="row  justify-content-center align-items-center justify-content-md-start">
-            <div class="col-auto col-md-3 job-details ">
-                <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto">
-                {{ job.posted_date }}
-            </div>
-            {% if job.end_date %}
-                <div class="col-auto job-details">
-                    <img src="{% static 'images/end_date.png' %}" width="23px" height="auto">
-                    <span><strong class="job-end-date">Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
-                </div>
-            {% endif %}
-            {% if job.location %}
-                <div class="col-auto collapse-chevron job-details">
-                    <img src="{% static 'images/location.png' %}" width="18px" height="auto">
-                    <span>{{ job.location }}</span>
-                </div>
-            {% endif %}
-
-        </div>
-        <div class="row mt-3">
-            <div class="col-md">
-                <p>{{ job.get_initial_description |slice:":500" }}...</p>
-            </div>
-        </div>
-        <div class="row mt-3 mb-1">
-            <div class="col-md">
-                <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-show-more btn-outline-success btn-sm">Show more</a>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    </div>
-
-    {% endfor %}
-
-    {% if is_paginated %}
-        <div class="paginator float-left" style="display: inline-block" id="pageindex">
-
-            <ul class="pagination">
-
-                {% if page_obj.number > 1 %}
-                    <li><a href="?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>
-                {% endif %}
-
-                {% for i in page_obj.paginator.page_range %}
-                    <div class="d-none d-sm-block">
-
-                        {% if page_obj.number == i %}
-                            <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-
-                        {% elif page_obj.number == 1 and i < page_obj.number|add:'5' %}
-                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
-                        {% elif page_obj.number == 2 and i > page_obj.number|add:'-1' and i < page_obj.number|add:'4' %}
-                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
-
-                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' and i < page_obj.paginator.num_pages|add:'1' %}
-                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
-
-                        {% elif page_obj.number == page_obj.paginator.num_pages|add:'-1' and i > page_obj.number|add:'-4' and i < page_obj.number|add:'2' %}
-                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
-                        {% elif page_obj.number == page_obj.paginator.num_pages and i > page_obj.number|add:'-5' %}
-                            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
-                        {% endif %}
-                    </div>
-
-                {% endfor %}
-                {% if page_obj.paginator.num_pages > page_obj.number %}
-                    <li><a href="?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
-                {% endif %}
-            </ul>
+    {% else %}
+        <div class="mt-5 mb-5 no-jobs">
+            Sorry, we didn't find any jobs matching your criteria.
         </div>
     {% endif %}
 

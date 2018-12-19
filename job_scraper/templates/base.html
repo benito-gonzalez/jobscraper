@@ -46,9 +46,9 @@
                 <div class="col-12  col-md-3">
                     <div class="search-input">
                         {% if request.GET.search %}
-                            <input type="search" class="form-control" name="search" value="{{ request.GET.search }}"/>
+                            <input type="search" class="form-control" name="search" value="{{ request.GET.search }}" placeholder="Keywords, company..."/>
                         {% else %}
-                            <input type="search" class="form-control" name="search" placeholder="Search"/>
+                            <input type="search" class="form-control" name="search" placeholder="Keywords, company..."/>
                         {% endif %}
                     </div>
                 </div>
@@ -62,7 +62,7 @@
 
                     <div class="location-input">
                         {% if request.GET.location %}
-                            <input type="search" class="form-control" name="location" value="{{ request.GET.location }}"/>
+                            <input type="search" class="form-control" name="location" value="{{ request.GET.location }}" placeholder="Location"/>
                         {% else %}
                             <input type="search" class="form-control" name="location" placeholder="Location"/>
                         {% endif %}
