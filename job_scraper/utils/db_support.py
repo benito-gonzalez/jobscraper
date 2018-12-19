@@ -2,7 +2,11 @@ import os
 import django
 from django.utils import timezone
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "webapp.settings")
+if os.path.isfile(os.path.dirname(os.path.dirname(__file__)) + '/../webapp/secretkey.txt'):
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.production')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.development')
+
 django.setup()
 
 from job_scraper.models import Company  # noqa: E402

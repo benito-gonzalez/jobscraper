@@ -11,7 +11,10 @@ from job_scraper.utils import log_support
 my_path = os.path.abspath(os.path.dirname(__file__))
 FILENAME = os.path.join(my_path, "servers.txt")
 
-PRODUCTION_ENV = False
+if os.path.isfile(os.path.dirname(os.path.dirname(__file__)) + '/../webapp/secretkey.txt'):
+    PRODUCTION_ENV = True
+else:
+    PRODUCTION_ENV = False
 
 
 def read_server_urls():
