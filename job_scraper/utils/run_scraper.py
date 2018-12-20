@@ -82,6 +82,30 @@ def get_valid_locations(job_location):
     return valid_locations_str
 
 
+def enrich_location_by_title(title, current_location, company_name):
+    """
+    Finds any Finnish city in a job title to enrich job locations.
+    :param title: job title
+    :param current_location: job location
+    :param company_name: job company
+    :return: String with the found cities.
+    """
+    locations = []
+
+    cities = geotext.GeoText(title).cities
+    for city in cities:
+        if "FI" in geotext.GeoText(city).country_mentions:
+            locations.append(city)
+
+    if locations:
+        new_location = ", ".join(locations)
+        log_support.enriching_job_location(company_name, title, new_location)
+    else:
+        new_location = current_location
+
+    return new_location
+
+
 def main():
     # Companies that return HTTP != 200 should not delete jobs from DB
     failed_companies = []
@@ -118,6 +142,10 @@ def main():
     for scraped_job in scraped_jobs:
         company = db_support.get_company_by_name(scraped_job.company_name)
         if company:
+            # enrich title when it is None or it is 'Finland'
+            if not scraped_job.location or scraped_job.location == "Finland":
+                scraped_job.location = enrich_location_by_title(scraped_job.title, scraped_job.location, scraped_job.company_name)
+
             valid_locations = get_valid_locations(scraped_job.location)
             # if location is not defined or any location belongs to Finland
             if not scraped_job.location or valid_locations != "":
