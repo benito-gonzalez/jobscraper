@@ -7,6 +7,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}"/>
 
     <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
@@ -32,7 +33,7 @@
         </div>
 
         <form action="{% url 'job_scraper:index' %}" method="get">
-            <div class="row row-header">
+            <div class="row row-header flex-nowrap">
 
                 <div class="d-none d-sm-block col-md header-logo">
                     <a href="/"><img src="{% static 'images/logo.png' %}" width="100px" height="auto"></a>

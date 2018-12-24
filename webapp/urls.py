@@ -18,7 +18,6 @@ from django.urls import path
 from django.conf import settings
 from django.views.static import serve
 from django.conf.urls import url, include
-from django.views.generic import RedirectView
 
 from job_scraper import views
 
@@ -27,7 +26,6 @@ urlpatterns = [
     path('', include('job_scraper.urls')),
     path('api/jobs/', views.JobListApiView.as_view()),
     path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view()),
-    url(r'^favicon\.ico$', RedirectView.as_view(url='/static/images/favicon.ico'))
 ]
 
 if settings.DEBUG:
