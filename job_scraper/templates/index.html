@@ -18,7 +18,7 @@
                 <div class="media d-flex align-items-center no-featured-div">
             {% endif %}
 
-        <div class="col-md-2 d-none d-sm-block text-right job-logo">
+        <div class="col-md-2 d-none d-sm-block text-lg-right job-logo">
             <img src="{{ job.company.logo.url }}" width="80px" height="auto">
         </div>
 
@@ -37,8 +37,8 @@
                 </div>
 
             </div>
-            <div class="row  justify-content-center align-items-center justify-content-md-start">
-                <div class="col-auto col-md-3 job-details ">
+            <div class="row  justify-content-center align-items-center justify-content-md-start flex-lg-nowrap">
+                <div class="col-auto job-details ">
                     <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto">
                     {{ job.posted_date }}
                 </div>
