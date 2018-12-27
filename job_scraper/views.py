@@ -1,5 +1,7 @@
 from rest_framework import generics
 from django.views import generic
+from django.http import Http404
+from django.shortcuts import redirect
 from django.db.models import Q
 from operator import and_
 import functools
@@ -35,6 +37,14 @@ class IndexView(generic.ListView):
 class DetailView(generic.DetailView):
     model = Job
     template_name = 'detail.html'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            context = self.get_context_data(object=self.object)
+            return self.render_to_response(context)
+        except Http404:
+            return redirect('job_scraper:index')
 
 
 class JobListApiView(generics.ListAPIView):
