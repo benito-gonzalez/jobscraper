@@ -125,9 +125,3 @@ def skipping_job_due_location(title, location, company_name):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "INFO. Skipping job '{0}' from '{1}' because of its location '{2}'".format(title, company_name, location) + "\n")
     f.close()
-
-
-def enriching_job_location(company_name, title, new_location):
-    f = open(SCRAPERLOG, 'a')
-    f.write(get_formatted_date() + "INFO. Enriching location of job '{0}' ('{1}') to '{2}'".format(title, company_name, new_location) + "\n")
-    f.close()

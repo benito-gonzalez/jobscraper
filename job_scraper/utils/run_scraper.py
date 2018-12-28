@@ -59,54 +59,57 @@ def update_active_jobs(scraped_jobs, failed_companies):
             db_support.disable_job(active_job)
 
 
-def get_valid_locations(job_location):
-    """
-    Get locations based on Finland from the job locations
-    :param job_location:
-    :return: String
-    """
-    valid_locations = []
-    other_locations = ["hyvinkää", "capital region"]
-
-    if not job_location:
-        return
-
-    for location in job_location.split(', '):
-        if "FI" in geotext.GeoText(location).country_mentions:
-            valid_locations.append(location)
-        elif location.lower() in other_locations:
-            valid_locations.append(location)
-
-    if len(valid_locations) > 1 and "Finland" in valid_locations:
-        valid_locations.remove("Finland")
-
-    valid_locations_str = ", ".join(valid_locations)
-
-    return valid_locations_str
-
-
-def enrich_location_by_title(title, current_location, company_name):
-    """
-    Finds any Finnish city in a job title to enrich job locations.
-    :param title: job title
-    :param current_location: job location
-    :param company_name: job company
-    :return: String with the found cities.
-    """
-    locations = []
-
-    cities = geotext.GeoText(title).cities
-    for city in cities:
-        if "FI" in geotext.GeoText(city).country_mentions:
-            locations.append(city)
-
-    if locations:
-        new_location = ", ".join(locations)
-        log_support.enriching_job_location(company_name, title, new_location)
+def has_finnish_cities(job_location):
+    if job_location is None:
+        finnish_cities = False
     else:
-        new_location = current_location
+        cities = geotext.GeoText(job_location).cities
+        finnish_cities = "FI" in geotext.GeoText(str(cities)).country_mentions
 
-    return new_location
+    return finnish_cities
+
+
+def is_foreign_job(job_location):
+    return job_location and "FI" not in geotext.GeoText(job_location).country_mentions and "Capital Region" not in job_location
+
+
+def enrich_location(title, job_location):
+    """
+    Jobs which are located out of Finland are marked as invalid. If job location does not exist and title contains a Finnish city, job location is overwritten
+    :param title: Job title
+    :param job_location: Current job location retrieved by the scraper
+    :return: New location and if it is valid.
+    """
+    location = None
+    valid_location = True
+
+    if is_foreign_job(job_location):
+        location = job_location
+        valid_location = False
+    else:
+        if has_finnish_cities(job_location):
+            cities = geotext.GeoText(job_location).cities
+        else:
+            cities = geotext.GeoText(title).cities
+
+        finnish_cities = []
+
+        # remove no Finnish cities
+        for city in cities:
+            if "FI" in geotext.GeoText(city).country_mentions:
+                finnish_cities.append(city)
+
+        if finnish_cities:
+            location = ", ".join(finnish_cities)
+        else:
+            if cities:
+                valid_location = False
+            elif "capital region" in job_location.__str__().lower():
+                location = "Capital Region"
+            elif "Finland" in job_location.__str__():
+                location = "Finland"
+
+    return location, valid_location
 
 
 def main():
@@ -145,14 +148,8 @@ def main():
     for scraped_job in scraped_jobs:
         company = db_support.get_company_by_name(scraped_job.company_name)
         if company:
-            # enrich title when it is None or it is 'Finland'
-            if not scraped_job.location or scraped_job.location == "Finland":
-                scraped_job.location = enrich_location_by_title(scraped_job.title, scraped_job.location, scraped_job.company_name)
-
-            valid_locations = get_valid_locations(scraped_job.location)
-            # if location is not defined or any location belongs to Finland
-            if not scraped_job.location or valid_locations != "":
-                scraped_job.location = valid_locations
+            scraped_job.location, valid_location = enrich_location(scraped_job.title, scraped_job.location)
+            if valid_location:
                 job_db = db_support.get_job_from_db(scraped_job, company)
 
                 if job_db:
