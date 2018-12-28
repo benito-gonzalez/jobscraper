@@ -4,6 +4,7 @@ import dateutil.parser as parser
 from dateutil import tz
 import json
 import time
+import geotext
 
 from job_scraper.utils.job import ScrapedJob
 from job_scraper.utils import request_support
@@ -53,6 +54,8 @@ def generate_instance_from_client(client_name, url):
         return Futurice(client_name, url)
     if client_name.lower() == "supercell":
         return Supercell(client_name, url)
+    if client_name.lower() == "nokia":
+        return Nokia(client_name, url)
     else:
         return None
 
@@ -1515,6 +1518,7 @@ class Futurice(Scraper):
     Futurice uses javascript to retrieve their list of jobs dynamically so we need to parse the Javascript response from the .js request.
     This response will contains a list of job ids which can be linked to the root_url in order to get a HTML with the job details.
     """
+
     def extract_info(self, html):
         finnish_offices = ["Helsinki", "Tampere"]
         log_support.log_extract_info(self.client_name)
@@ -1669,3 +1673,98 @@ class Supercell(Scraper):
                         description += str(tag)
 
         return description
+
+
+class Nokia(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        last_page = False
+        while not last_page:
+            for job in soup.find_all('div', {'class': 'job_list_row'}):
+                title, description_url, description = self.get_mandatory_fields(job)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(job, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+            if self.is_last_page(soup):
+                last_page = True
+            else:
+                current_page_tag = soup.find('div', {'id': 'jPaginateCurrPage'})
+                current_page = int(current_page_tag.text)
+
+                job_details_html = request_support.simple_get(self.url + "/page%d" % (current_page + 1))
+
+                if job_details_html:
+                    soup = BeautifulSoup(job_details_html, 'html.parser')
+                else:
+                    # in case of error, break
+                    last_page = True
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('a')
+        if title_tag:
+            title = title_tag.text
+            description_url = title_tag.get('href')
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            description_div = soup.find('div', {'class': 'job_description'})
+            if description_div:
+                for block in description_div.children:
+                    block.attrs = {}
+                    if block.name:
+                        for child in block.find_all(True):
+                            child.attrs = {}
+                    if block != "\n":
+                        description += str(block)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+        location_tag = item.find("span", {"class": "location"})
+
+        if location_tag:
+            full_location = location_tag.text.strip()
+            cities = geotext.GeoText(full_location).cities
+            location = ", ".join(cities)
+        if not location or location == "":
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def is_last_page(self, soup):
+        total_pages = current_page = 0
+
+        total_pages_tag = soup.find('div', {'id': 'jPaginateNumPages'})
+        current_page_tag = soup.find('div', {'id': 'jPaginateCurrPage'})
+
+        if total_pages_tag and current_page_tag:
+            try:
+                total_pages = int(float(total_pages_tag.text))
+                current_page = int(current_page_tag.text)
+            except (ValueError, TypeError):
+                log_support.set_invalid_pagination(self.client_name)
+                return True
+
+        return total_pages == current_page

@@ -1,25 +1,2 @@
 # Define the list of clients to be used by the scraper. These must follow the convention: "name" - "url"
-DNA - https://corporate.dna.fi/tyopaikat
-Elisa - https://corporate.elisa.com/rest/corporate.elisa.fi/laurafeed/jobitems/all/en
-Vala Group Oy - https://www.valagroup.com/career/
-Siili Solutions Oyj - https://www.siili.com/careers
-Siili Solutions Oyj - https://www.siili.com/careers?office=6#open-positions
-Siili Solutions Oyj - https://www.siili.com/careers?office=603#open-positions
-Siili Solutions Oyj - https://www.siili.com/careers?office=847#open-positions
-Innofactor Oyj - https://ura.innofactor.fi/jobs/
-Smarp Oyj - https://smarp.teamtailor.com/jobs?location_id=35113
-Silo.AI Oy - https://silo.ai/careers/
-ABB Oy - https://new.abb.com/jobs/center/_api/AbbCareers/Jobs?take=100&country=FI&city=any&function=any&role=any&keywords=
-Qvik Oy - https://qvik.com/careers/
-Blueprint Genetics Oy - https://careers.blueprintgenetics.com/
-Eficode Oy - https://eficode.easycruit.com/index.html
-Ericsson - https://jobs.ericsson.com/api/jobs?location=Finland&page=1&limit=100
-Varjo Technologies - https://varjo.com/jobs/
-Telia Finland Oyj - https://www.telia.fi/.rest/vacancies/youatwork?type=regular
-Wärtsilä - https://careers.wartsila.com/search/?q=&optionsFacetsDD_title=&optionsFacetsDD_country=Fi&optionsFacetsDD_customfield4=&optionsFacetsDD_customfield2=&optionsFacetsDD_customfield1=&optionsFacetsDD_customfield3=
-Nordea - https://www.nordea.com/en/careers/vacant-positions/?p=3&cty=19420
-Tieto - https://www.tieto.com/en/careers/open-positions/search-our-jobs/?area=&country=Finland&city=&q=
-Rightware - https://www.rightware.com/careers/
-Rovio - https://www.rovio.com/careers?field_location_channel_tid=722
-Futurice - https://www.futurice.com/careers/
-Supercell - https://supercell.com/en/careers/open-positions/
+Nokia - https://careers.nokia.com/jobs/search/13080337
