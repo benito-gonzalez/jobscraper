@@ -56,6 +56,8 @@ def generate_instance_from_client(client_name, url):
         return Supercell(client_name, url)
     if client_name.lower() == "nokia":
         return Nokia(client_name, url)
+    if client_name.lower() == "verto analytics":
+        return Verto(client_name, url)
     else:
         return None
 
@@ -1768,3 +1770,51 @@ class Nokia(Scraper):
                 return True
 
         return total_pages == current_page
+
+
+class Verto(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        panel_div = soup.find('div', {'class': 'mk-tabs-panes'})
+        if panel_div:
+            jobs_div = panel_div.find(self.find_location)
+            if jobs_div:
+                url_jobs = jobs_div.find_all('a')
+                for url_job in url_jobs:
+                    url = url_job.get('href')
+                    title, description_url, description = self.get_mandatory_fields(url)
+                    if self.is_valid_job(title, description_url, description):
+                        job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, url):
+        title = description_url = None
+        description = ""
+
+        if url:
+            description_url = self.url + url
+            job_details_html = request_support.simple_get(description_url)
+            if job_details_html:
+                soup = BeautifulSoup(job_details_html, 'html.parser')
+                title_tag = soup.find('h2')
+                if title_tag:
+                    title = title_tag.text
+                    description_block = soup.find('div', {'id': 'text-block-4'})
+                    if description_block:
+                        for tag in description_block.children:
+                            if tag != "\n":
+                                for child in tag.find_all(True):
+                                    child.attrs = {}
+                                description += str(tag)
+
+        return title, description_url, description
+
+    @staticmethod
+    def find_location(tag):
+        return tag.name == 'div' and 'Helsinki' in tag.get_text()
