@@ -58,6 +58,8 @@ def generate_instance_from_client(client_name, url):
         return Nokia(client_name, url)
     if client_name.lower() == "verto analytics":
         return Verto(client_name, url)
+    if client_name.lower() == "efecte oyj":
+        return Efecte(client_name, url)
     else:
         return None
 
@@ -1818,3 +1820,41 @@ class Verto(Scraper):
     @staticmethod
     def find_location(tag):
         return tag.name == 'div' and 'Helsinki' in tag.get_text()
+
+
+class Efecte(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        for item in json_dict["data"]:
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                if "location" in item and "city" in item["location"] and "name" in item["location"]["city"]:
+                    location = item["location"]["city"]["name"]
+                else:
+                    location = None
+                    log_support.set_invalid_location(self.client_name, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "name" in item:
+            title = item["name"]
+            if "slug" in item and "id" in item:
+                description_url = self.url.split(".com/")[0] + ".com/#/jobs/" + item["slug"] + "/" + str(item["id"])
+                # check 'description_url' is valid
+                description_info = request_support.simple_get(description_url)
+                if description_info:
+                    description = item["description"]
+
+        return title, description_url, description
