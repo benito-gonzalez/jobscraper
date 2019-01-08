@@ -60,6 +60,8 @@ def generate_instance_from_client(client_name, url):
         return Verto(client_name, url)
     if client_name.lower() == "efecte oyj":
         return Efecte(client_name, url)
+    if client_name.lower() == "nets":
+        return Nets(client_name, url)
     else:
         return None
 
@@ -1858,3 +1860,79 @@ class Efecte(Scraper):
                     description = item["description"]
 
         return title, description_url, description
+
+
+class Nets(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        scripts = soup.find_all('script', {'type': 'text/javascript'})
+        for script in scripts:
+            if "var jsonData" in script.get_text():
+                jobs_text = self.get_jobs_text(script)
+                if jobs_text != "":
+                    try:
+                        jobs_json = json.loads(jobs_text)
+
+                        for item in jobs_json:
+                            title, description_url, description = self.get_mandatory_fields(item)
+                            if self.is_valid_job(title, description_url, description):
+                                if "Country" in item:
+                                    location = item["Country"]
+                                else:
+                                    location = None
+                                    log_support.set_invalid_location(self.client_name, title)
+
+                                end_date = self.get_end_date(item, title)
+
+                                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                                jobs.append(job)
+
+                    except json.JSONDecodeError:
+                        log_support.set_invalid_json(self.client_name)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "JobTitle" in item:
+            title = item["JobTitle"]
+            if "JobReqId" in item:
+                description_url = self.url + "?jobId=" + str(item["JobReqId"])
+                # check 'description_url' is valid
+                description_info = request_support.simple_get(description_url)
+                if description_info:
+                    description = item["JobDescription"]
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_jobs_text(script):
+        try:
+            jobs_txt = "[" + script.text.split("[", 1)[1].split("]")[0] + "]"
+        except (ValueError, TypeError):
+            jobs_txt = ""
+
+        return jobs_txt
+
+    def get_end_date(self, item, title):
+        date_string = None
+        if "ExpirationDate" in item:
+            date_field = item["ExpirationDate"]
+            epoch_splited = date_field.split("(")
+            if len(epoch_splited) == 2:
+                epoch_splited_2 = epoch_splited[1].split(")")
+                if len(epoch_splited_2) == 2:
+                    epoch = epoch_splited_2[0]
+                    seconds = int(epoch[:-3])
+                    date_string = time.strftime('%Y-%m-%d', time.gmtime(seconds))
+
+        if not date_string:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return date_string
