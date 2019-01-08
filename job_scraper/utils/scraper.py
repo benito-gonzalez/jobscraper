@@ -62,6 +62,8 @@ def generate_instance_from_client(client_name, url):
         return Efecte(client_name, url)
     if client_name.lower() == "nets":
         return Nets(client_name, url)
+    if client_name.lower() == "danske bank":
+        return Danske(client_name, url)
     else:
         return None
 
@@ -1936,3 +1938,101 @@ class Nets(Scraper):
             log_support.set_invalid_dates(self.client_name, title)
 
         return date_string
+
+
+class Danske(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        table = soup.find('table', {'class': 'datagrid'})
+        for row in table.find_all("tr"):
+            if self.is_header(row):
+                continue
+            title, description_url, description, is_finnish = self.get_mandatory_fields(row)
+            if is_finnish and self.is_valid_job(title, description_url, description):
+                # location has already being checked in get_mandatory_fields()
+                location = row.find("span").text
+                end_date = self.get_end_date(row, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, row):
+        title = description_url = None
+        description = ""
+        is_finnish = False
+
+        # Check title
+        title_tag = row.find('a')
+        if title_tag:
+            title_raw = title_tag.text
+            # title_raw contains multiple consecutive whitespaces in the middle
+            title = " ".join(title_raw.split())
+
+            # Since Danske Bank has a lot of jobs and they can not be filtered out, scraper gets the location and will only retrieve job description for those based on Finland
+            location_tag = row.find("span")
+            if location_tag:
+                location = location_tag.text
+                if "FI" in geotext.GeoText(location).country_mentions:
+                    is_finnish = True
+                    url_tag = row.find('a')
+                    if url_tag:
+                        url_raw = url_tag['onclick']
+                        description_url = self.get_url_from_raw(url_raw)
+                        description = self.get_full_description(description_url)
+
+        return title, description_url, description, is_finnish
+
+    @staticmethod
+    def is_header(row):
+        header = False
+        a_tag = row.find("a")
+        if a_tag:
+            header = (a_tag.text == "Job title")
+
+        return header
+
+    @staticmethod
+    def get_url_from_raw(url_raw):
+        url = re.findall(r'(https?://[a-zA-Z0-9/\-_.]+)', url_raw)
+        if len(url) > 0:
+            return url[0]
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            # It has several identical 'td' but only one has information within a <p> tag.
+            blocks = job_details_soup.find_all('td', {'valign': 'top'})
+            for block in blocks:
+                first_paragraph = block.find(['p', 'br'])
+                if first_paragraph:
+                    first_paragraph.attrs = {}
+                    description += str(first_paragraph)
+                    for tag in first_paragraph.next_siblings:
+                        tag.attrs = {}
+                        description += str(tag)
+
+        return description
+
+    def get_end_date(self, row, title):
+        # end date is in the last column (td)
+        end_date = None
+        columns = row.find_all('td')
+        date_tag = columns[len(columns)-1]
+        if date_tag:
+            date = date_tag.text
+            end_date_datetime = parser.parse(date)
+            end_date = end_date_datetime.strftime('%Y-%m-%d')
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
