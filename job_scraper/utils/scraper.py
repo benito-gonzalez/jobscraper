@@ -66,6 +66,8 @@ def generate_instance_from_client(client_name, url):
         return Danske(client_name, url)
     if client_name.lower() == "nordcloud":
         return Nordcloud(client_name, url)
+    if client_name.lower() == "nebula oy":
+        return Nebula(client_name, url)
     else:
         return None
 
@@ -2096,3 +2098,68 @@ class Nordcloud(Scraper):
                         description += str(child)
 
         return description
+
+
+class Nebula(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        jobs_div = soup.find("div", attrs={'class': 'o-open-positions'})
+        if jobs_div:
+            for item in jobs_div.find_all('div', {'class': 'open-position-item'}):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+            return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        title_span = item.find('div', attrs={'class': 'open-position-item__title'})
+        if title_span and title_span.text:
+            title = title_span.text.strip()
+
+            # Check description_url
+            url_span = item.find('a')
+            if url_span:
+                if "https://" in url_span.get('href'):
+                    description_url = url_span.get('href')
+                else:
+                    description_url = self.url.split(".fi/")[0] + ".fi" + url_span.get('href')
+
+                description = self.get_full_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            block_description = job_details_soup.find('div', {'class': 'o-paragraph__container'})
+            if block_description:
+                title_line = block_description.find('h3')
+                if title_line:
+                    for sibling in title_line.next_siblings:
+                        description += str(sibling)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+        location_span = item.find('span', attrs={'class': 'open-position-item__location'})
+        if location_span and location_span.text:
+            location = location_span.text.strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
