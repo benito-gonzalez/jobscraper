@@ -64,6 +64,8 @@ def generate_instance_from_client(client_name, url):
         return Nets(client_name, url)
     if client_name.lower() == "danske bank":
         return Danske(client_name, url)
+    if client_name.lower() == "nordcloud":
+        return Nordcloud(client_name, url)
     else:
         return None
 
@@ -126,17 +128,17 @@ class Dna(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
         ul = soup.find("ul", attrs={'class': 'news__article-container'})
-
-        for li in ul.find_all('li'):
-            title, description_url, description = self.get_mandatory_fields(li)
-            if self.is_valid_job(title, description_url, description):
-                location = self.get_location(li, title)
-                job_details_html = request_support.simple_get(description_url)
-                job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-                pub_date, end_date = self.get_dates(job_details_soup, title)
-                job_type = self.get_job_type(job_details_soup)
-                job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, job_type, description_url)
-                jobs.append(job)
+        if ul:
+            for li in ul.find_all('li'):
+                title, description_url, description = self.get_mandatory_fields(li)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(li, title)
+                    job_details_html = request_support.simple_get(description_url)
+                    job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+                    pub_date, end_date = self.get_dates(job_details_soup, title)
+                    job_type = self.get_job_type(job_details_soup)
+                    job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, job_type, description_url)
+                    jobs.append(job)
 
         return jobs
 
@@ -2036,3 +2038,61 @@ class Danske(Scraper):
             log_support.set_invalid_dates(self.client_name, title)
 
         return end_date
+
+
+class Nordcloud(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        for item in json_dict:
+            title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+            if is_finnish and self.is_valid_job(title, description_url, description):
+                if "location" in item and "city" in item["location"]:
+                    location = item["location"]["city"]
+                else:
+                    location = None
+                    log_support.set_invalid_location(self.client_name, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        finnish = False
+        title = description_url = None
+        description = ""
+
+        if self.is_finnish(item):
+            finnish = True
+            if "name" in item:
+                title = item["name"]
+                if "url" in item:
+                    description_url = item["url"]
+                    if description_url:
+                        description = self.get_description(description_url)
+
+        return title, description_url, description, finnish
+
+    @staticmethod
+    def is_finnish(item):
+        return "location" in item and "country" in item["location"] and "name" in item["location"]["country"] and "Finland" == item["location"]["country"]["name"]
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            details_block = job_details_soup.find('div', attrs={'class': 'description'})
+            if details_block:
+                for child in details_block.children:
+                    # skip images
+                    if not child.find('img'):
+                        description += str(child)
+
+        return description
