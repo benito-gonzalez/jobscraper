@@ -72,6 +72,8 @@ def generate_instance_from_client(client_name, url):
         return Digital(client_name, url)
     if client_name.lower() == "nightingale health":
         return Nightingale(client_name, url)
+    if client_name.lower() == "sandvik":
+        return Sandvik(client_name, url)
     else:
         return None
 
@@ -2297,3 +2299,83 @@ class Nightingale(Scraper):
                         description += str(tag)
 
         return description
+
+
+class Sandvik(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        items = soup.find_all("li", attrs={'class': 'job'})
+        for item in items:
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+                end_date = self.get_end_date(item, title)
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        title_tag = item.find('a')
+        if title_tag:
+            title = title_tag.text
+            relative_url = title_tag.get('href')
+            if relative_url:
+                description_url = self.url.split(".sandvik/")[0] + ".sandvik" + relative_url
+
+            # Check description
+            description = self.get_full_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            details_block = job_details_soup.find('div', attrs={'class': 'article text'})
+            if details_block:
+                tag = details_block.find("p")
+                if tag:
+                    description += str(tag)
+                    for tag in tag.next_siblings:
+                        if tag.name and (tag.text == "Contact information" or tag.text == "Lisätietoja/yhteydenotot"):
+                            break
+                        description += str(tag)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+        location_span = item.find('span', string="Location:")
+        if location_span:
+            location_tag = location_span.next_sibling
+            if location_tag:
+                location = location_tag.strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+        date_span = item.find('span', string="Deadline:")
+        if date_span:
+            date_tag = date_span.next_sibling.strip()
+            if date_tag:
+                date_raw = date_tag.strip()
+                end_date_datetime = parser.parse(date_raw)
+                end_date = end_date_datetime.strftime('%Y-%m-%d')
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return end_date
