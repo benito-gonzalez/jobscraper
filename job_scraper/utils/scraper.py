@@ -68,6 +68,8 @@ def generate_instance_from_client(client_name, url):
         return Nordcloud(client_name, url)
     if client_name.lower() == "nebula oy":
         return Nebula(client_name, url)
+    if client_name.lower() == "digital goodie":
+        return Digital(client_name, url)
     else:
         return None
 
@@ -107,7 +109,8 @@ class Scraper(object):
                                   "open application (finland & sweden)",
                                   "avoin hakemus innofactorille",
                                   "avoin hakemus / open application",
-                                  "Every tech position at Futurice. Ever."]
+                                  "Every tech position at Futurice. Ever.",
+                                  "your title here"]
         valid = False
 
         if not title:
@@ -1578,7 +1581,7 @@ class Futurice(Scraper):
         if body_text:
             text = body_text.text
             # jobs id will be like 'midsenior-product-designer-ux-focus-london' (can include numbers)
-            job_ids = re.findall('slug:"([A-Za-z0-9\-]+)",title:', text)
+            job_ids = re.findall('slug:"([A-Za-z0-9-]+)",title:', text)
             for job_id in job_ids:
                 job_detail_urls.append(root_url + job_id)
 
@@ -2160,6 +2163,80 @@ class Nebula(Scraper):
         if location_span and location_span.text:
             location = location_span.text.strip()
         else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Digital(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        jobs_div = soup.find_all("div", attrs={'class': 'entry-content-wrapper clearfix'})
+        # only one of the divs in jobs_div include the list of jobs, we need to find it
+        for div in jobs_div:
+            if div.find('h3', {'class': 'av-special-heading-tag'}):
+                for child in div.children:
+                    if child.name and child.find('h3', {'class': 'av-special-heading-tag'}) and child.find('a'):
+                        title, description_url, description = self.get_mandatory_fields(child)
+                        if self.is_valid_job(title, description_url, description):
+                            location = self.get_location(description_url, title)
+
+                            job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                            jobs.append(job)
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        title_tag = item.find('h3')
+        if title_tag:
+            title = title_tag.text
+
+            # Check description_url
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                description = self.get_full_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            first_paragraph = job_details_soup.find('section', {'class': 'av_textblock_section'})
+            if first_paragraph:
+                first_paragraph.attrs = {}
+                for tag in first_paragraph.find_all(True):
+                    tag.attrs = {}
+                description += str(first_paragraph)
+                for sibling in first_paragraph.next_siblings:
+                    if sibling.name:
+                        sibling.attrs = {}
+                        for tag in sibling.find_all(True):
+                            tag.attrs = {}
+                        description += str(sibling)
+
+        return description
+
+    def get_location(self, description_url, title):
+        location = None
+
+        job_details_html = request_support.simple_get(description_url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            location_tag = job_details_soup.find('div', {'class': 'av-subheading'})
+            if location_tag:
+                location = location_tag.text.strip().title()
+
+        if not location:
             log_support.set_invalid_location(self.client_name, title)
 
         return location
