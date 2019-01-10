@@ -70,6 +70,8 @@ def generate_instance_from_client(client_name, url):
         return Nebula(client_name, url)
     if client_name.lower() == "digital goodie":
         return Digital(client_name, url)
+    if client_name.lower() == "nightingale health":
+        return Nightingale(client_name, url)
     else:
         return None
 
@@ -2240,3 +2242,58 @@ class Digital(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class Nightingale(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        items = soup.find_all("div", attrs={'class': 'box'})
+        for item in items:
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                # All current jobs are located in Helsinki but this information can not be scraped so it is hard-coded
+                job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        title_tag = item.find('h3')
+        if title_tag:
+            title = title_tag.text
+
+            # Check description_url
+            url_tag = item.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description = self.get_full_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            title_line = job_details_soup.find('h2')
+            if title_line:
+                # next div to title_line contains all HTML tags description
+                description_block = title_line.next_sibling
+                for tag in description_block.children:
+                    if tag.name and tag.text.strip() != "":
+                        # Last description block called "Next steps" includes information to apply
+                        if tag.text.strip() == "Next steps":
+                            break
+                        description += str(tag)
+
+        return description
