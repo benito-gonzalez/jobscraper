@@ -74,6 +74,8 @@ def generate_instance_from_client(client_name, url):
         return Nightingale(client_name, url)
     if client_name.lower() == "sandvik":
         return Sandvik(client_name, url)
+    if client_name.lower() == "crf health":
+        return Crf(client_name, url)
     else:
         return None
 
@@ -2379,3 +2381,109 @@ class Sandvik(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return end_date
+
+
+class Crf(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        iframe = soup.find("iframe")
+        if iframe and 'src' in iframe.attrs:
+            job_details_html = request_support.simple_get(iframe.attrs['src'])
+            if job_details_html:
+                iframe_soup = BeautifulSoup(job_details_html, 'lxml')
+
+                items = iframe_soup.find_all("li", attrs={'class': 'row'})
+                for item in items:
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, title)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        title_tag = item.find('div', {'class': 'title'})
+        if title_tag:
+            # title_tag has two span, only the second one contains the title
+            first_span = title_tag.find('span', {'class': 'field-label'})
+            if first_span:
+                second_span = first_span.find_next_sibling('span')
+                if second_span:
+                    title = second_span.text.strip()
+                    url_tag = title_tag.find('a')
+                    if url_tag:
+                        description_url_raw = url_tag.get('href')
+                        description_url = description_url_raw.split("?in_iframe")[0]
+                        description = self.get_full_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+
+            iframe = job_details_soup.find("iframe")
+            if iframe and 'src' in iframe.attrs:
+                job_details_html = request_support.simple_get(iframe.attrs['src'])
+                if job_details_html:
+                    iframe_soup = BeautifulSoup(job_details_html, 'lxml')
+                    details_block = iframe_soup.find('div', attrs={'class': 'iCIMS_JobContent'})
+                    if details_block:
+                        has_skip_title_line = True
+                        for block in details_block.children:
+                            if block.name:
+                                # After the job description, page has a HTML tag with the content "\n\xa0\n", after it, the description is done.
+                                if "\n\xa0\n" in block.text:
+                                    break
+
+                                # Skip blocks which contains reduntand job information and the line "Role Overview"
+                                if block.find('div', {'role': 'list'}) or block.text.strip() == "Role Overview":
+                                    continue
+
+                                block.attrs = {}
+
+                                # some title has a large font size, this must be reduced to h4
+                                if block.name == "h2":
+                                    block.name = "h4"
+
+                                # clean html attributes and remove those that contain \xa0
+                                for tag in block.find_all(True):
+                                    tag.attrs = {}
+                                    if tag.text == "\xa0":
+                                        tag.extract()
+
+                                # the first line from the description contains the job title (or similar). It must be removed
+                                if has_skip_title_line:
+                                    title_line = block.find('p')
+                                    if title_line:
+                                        title_line.extract()
+                                    has_skip_title_line = False
+
+                                description += str(block)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+        # first span from 'row' contain the location block. Location text is in the next span
+        first_span = item.find('span', {'class': 'field-label'})
+        if first_span:
+            second_span = first_span.find_next_sibling('span')
+            if second_span:
+                location = second_span.text.strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
