@@ -1,2 +1,41 @@
 # Define the list of clients to be used by the scraper. These must follow the convention: "name" - "url"
+DNA - https://corporate.dna.fi/tyopaikat
+Elisa - https://corporate.elisa.com/rest/corporate.elisa.fi/laurafeed/jobitems/all/en
+Vala Group Oy - https://www.valagroup.com/career/
+Siili Solutions Oyj - https://www.siili.com/careers
+Siili Solutions Oyj - https://www.siili.com/careers?office=6#open-positions
+Siili Solutions Oyj - https://www.siili.com/careers?office=603#open-positions
+Siili Solutions Oyj - https://www.siili.com/careers?office=847#open-positions
+Innofactor Oyj - https://ura.innofactor.fi/jobs/
+Smarp Oyj - https://smarp.teamtailor.com/jobs?location_id=35113
+Silo.AI Oy - https://silo.ai/careers/
+ABB Oy - https://new.abb.com/jobs/center/_api/AbbCareers/Jobs?take=100&country=FI&city=any&function=any&role=any&keywords=
+Qvik Oy - https://qvik.com/careers/
+Blueprint Genetics Oy - https://careers.blueprintgenetics.com/
+Eficode Oy - https://eficode.easycruit.com/index.html
+Ericsson - https://jobs.ericsson.com/api/jobs?location=Finland&page=1&limit=100
+Varjo Technologies - https://varjo.com/jobs/
+Telia Finland Oyj - https://www.telia.fi/.rest/vacancies/youatwork?type=regular
+Wärtsilä - https://careers.wartsila.com/search/?q=&optionsFacetsDD_title=&optionsFacetsDD_country=Fi&optionsFacetsDD_customfield4=&optionsFacetsDD_customfield2=&optionsFacetsDD_customfield1=&optionsFacetsDD_customfield3=
+Nordea - https://www.nordea.com/en/careers/vacant-positions/?p=3&cty=19420
+Tieto - https://www.tieto.com/en/careers/open-positions/search-our-jobs/?area=&country=Finland&city=&q=
+Rightware - https://www.rightware.com/careers/
+Rovio - https://www.rovio.com/careers?field_location_channel_tid=722
+Futurice - https://www.futurice.com/careers/
+Supercell - https://supercell.com/en/careers/open-positions/
 Nokia - https://careers.nokia.com/jobs/search/13080337
+Verto Analytics - https://www.vertoanalytics.com/careers/
+Efecte Oyj - https://careers.efecte.com/api/v2/jobs/?filters[company_id]=49719&filters[statuses][]=active&filters[hidden]=0&filters[ignore_auth]=1
+Nets - https://www.nets.eu/careers/Pages/Job-openings.aspx
+Danske Bank - https://danskebank.com/en-uk/careers/Apply/Pages/Current-openings.aspx
+Nordcloud - https://nordcloudfinland.breezy.hr/json
+Nebula Oy - https://www.inmicsnebula.fi/fi/avoimet-tyopaikat
+Digital goodie - http://www.digitalgoodie.com/careers/
+Nightingale Health - https://nightingalehealth.com/company/join
+Sandvik - https://www.home.sandvik/en/careers/job-search/?category=all&country=finland&jq=
+CRF Health - https://careers-crfhealth.icims.com/jobs/search?ss=1&searchLocation=--Helsinki%2C+Finland
+Op - https://op-careers.fi/search/
+Dream Broker - https://dreambroker.com/careers/
+Relex - https://jsapi.recruiterbox.com/v1/openings?client_name=relex&limit=100
+F-Secure - https://feed.jobylon.com/feeds/561aeed31b804e4586385e67d25ee682/?format=json
+Outotec - https://app.outotec.com/hr/applications.nsf/vwOpenJobsNew?SearchView&Count=1000&SearchMax=1000&SearchOrder=4&Country=Finland&CA=&level=&Q=&Query=(%5BfCountry%5D%3DFinland)
