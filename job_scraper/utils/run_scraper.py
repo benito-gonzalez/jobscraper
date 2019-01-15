@@ -122,7 +122,6 @@ def main():
     for scraped_job in scraped_jobs:
         company = db_support.get_company_by_name(scraped_job.company_name)
         if company:
-            print("llamando a enrich location con " + company.name + "\t" + scraped_job.title + "\t")
             scraped_job.location, valid_location = enrich_location(scraped_job.title, scraped_job.location)
             if valid_location:
                 job_db = db_support.get_job_from_db(scraped_job, company)
