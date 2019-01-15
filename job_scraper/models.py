@@ -62,14 +62,45 @@ class Job(models.Model):
 
     @property
     def posted_date_details(self):
+        month = 30
         difference = (timezone.now() - self.updated_at).days
 
-        if difference == 0:
+        if difference < 1:
             return "Today"
-        if difference == 1:
+        elif difference < 2:
             return "Yesterday"
-        else:
+        elif difference < 7:
             return " %d" % difference + " days ago"
+        elif difference < 13:
+            return "a week ago"
+        elif difference < 20:
+            return "2 weeks ago"
+        elif difference < 26:
+            return "3 weeks ago"
+        elif difference < month * 2:
+            return "a month ago"
+        elif difference < month * 3:
+            return "2 months ago"
+        elif difference < month * 4:
+            return "3 months ago"
+        elif difference < month * 5:
+            return "4 months ago"
+        elif difference < month * 6:
+            return "5 months ago"
+        elif difference < month * 7:
+            return "6 months ago"
+        elif difference < month * 8:
+            return "7 months ago"
+        elif difference < month * 9:
+            return "8 months ago"
+        elif difference < month * 10:
+            return "9 months ago"
+        elif difference < month * 11:
+            return "10 months ago"
+        elif difference < month * 12:
+            return "11 months ago"
+        else:
+            return "more than one year ago"
 
     @property
     def posted_date(self):
