@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
-import geotext
 import random
 
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
 from job_scraper.utils import db_support
 from job_scraper.utils import log_support
+from job_scraper.utils.locator import CityLocator
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 FILENAME = os.path.join(my_path, "servers.txt")
@@ -27,7 +27,7 @@ def read_server_urls():
 
     for line in lines:
         if line and line[0] != "#":
-            info = line.split("-", 1)
+            info = line.split(" - ", 1)
             servers.append({'name': info[0].strip(), 'url': info[1].strip()})
 
     return servers
@@ -59,20 +59,6 @@ def update_active_jobs(scraped_jobs, failed_companies):
             db_support.disable_job(active_job)
 
 
-def has_finnish_cities(job_location):
-    if job_location is None:
-        finnish_cities = False
-    else:
-        cities = geotext.GeoText(job_location).cities
-        finnish_cities = "FI" in geotext.GeoText(str(cities)).country_mentions
-
-    return finnish_cities
-
-
-def is_foreign_job(job_location):
-    return job_location and "FI" not in geotext.GeoText(job_location).country_mentions and "Capital Region" not in job_location
-
-
 def enrich_location(title, job_location):
     """
     Jobs which are located out of Finland are marked as invalid. If job location does not exist and title contains a Finnish city, job location is overwritten
@@ -81,33 +67,21 @@ def enrich_location(title, job_location):
     :return: New location and if it is valid.
     """
     location = None
-    valid_location = True
 
-    if is_foreign_job(job_location):
+    locator = CityLocator()
+    if locator.is_foreign_job_location(job_location) or locator.is_foreign_job_title(title):
         location = job_location
         valid_location = False
     else:
-        if has_finnish_cities(job_location):
-            cities = geotext.GeoText(job_location).cities
+        valid_location = True
+
+        if locator.has_finnish_cities(job_location):
+            cities = locator.get_finnish_cities(job_location)
         else:
-            cities = geotext.GeoText(title).cities
+            cities = locator.get_finnish_cities(title)
 
-        finnish_cities = []
-
-        # remove no Finnish cities
-        for city in cities:
-            if "FI" in geotext.GeoText(city).country_mentions:
-                finnish_cities.append(city)
-
-        if finnish_cities:
-            location = ", ".join(finnish_cities)
-        else:
-            if cities:
-                valid_location = False
-            elif "capital region" in job_location.__str__().lower():
-                location = "Capital Region"
-            elif "Finland" in job_location.__str__():
-                location = "Finland"
+        if cities:
+            location = ", ".join(cities)
 
     return location, valid_location
 
@@ -148,6 +122,7 @@ def main():
     for scraped_job in scraped_jobs:
         company = db_support.get_company_by_name(scraped_job.company_name)
         if company:
+            print("llamando a enrich location con " + company.name + "\t" + scraped_job.title + "\t")
             scraped_job.location, valid_location = enrich_location(scraped_job.title, scraped_job.location)
             if valid_location:
                 job_db = db_support.get_job_from_db(scraped_job, company)

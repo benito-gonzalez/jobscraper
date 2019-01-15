@@ -4,11 +4,11 @@ import dateutil.parser as parser
 from dateutil import tz
 import json
 import time
-import geotext
 
 from job_scraper.utils.job import ScrapedJob
 from job_scraper.utils import request_support
 from job_scraper.utils import log_support
+from job_scraper.utils.locator import CityLocator
 
 
 def generate_instance_from_client(client_name, url):
@@ -1775,11 +1775,13 @@ class Nokia(Scraper):
     def get_location(self, item, title):
         location = None
         location_tag = item.find("span", {"class": "location"})
+        locator = CityLocator()
 
         if location_tag:
             full_location = location_tag.text.strip()
-            cities = geotext.GeoText(full_location).cities
-            location = ", ".join(cities)
+            cities = locator.get_finnish_cities(full_location)
+            if cities:
+                location = ", ".join(cities)
         if not location or location == "":
             log_support.set_invalid_location(self.client_name, title)
 
@@ -1990,6 +1992,7 @@ class Danske(Scraper):
         title = description_url = None
         description = ""
         is_finnish = False
+        locator = CityLocator()
 
         # Check title
         title_tag = row.find('a')
@@ -2002,7 +2005,7 @@ class Danske(Scraper):
             location_tag = row.find("span")
             if location_tag:
                 location = location_tag.text
-                if "FI" in geotext.GeoText(location).country_mentions:
+                if locator.has_finnish_cities(location):
                     is_finnish = True
                     url_tag = row.find('a')
                     if url_tag:
