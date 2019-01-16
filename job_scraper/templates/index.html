@@ -19,7 +19,7 @@
             {% endif %}
 
         <div class="col-md-2 d-none d-sm-block text-lg-right job-logo">
-            <img src="{{ job.company.logo.url }}" width="80px" height="auto">
+            <img src="{{ job.company.logo.url }}" width="80px" height="auto" alt="{{ job.company.name }}">
         </div>
 
         <div class="col-11 col-md-10">
@@ -39,18 +39,18 @@
             </div>
             <div class="row align-items-center justify-content-md-start flex-lg-nowrap">
                 <div class="col-auto job-details ">
-                    <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto">
+                    <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto" alt="">
                     {{ job.posted_date }}
                 </div>
                 {% if job.end_date %}
                     <div class="col-auto job-details">
-                        <img src="{% static 'images/end_date.png' %}" width="23px" height="auto">
+                        <img src="{% static 'images/end_date.png' %}" width="23px" height="auto" alt="">
                         <span><strong class="job-end-date">Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
                     </div>
                 {% endif %}
                 {% if job.location %}
                     <div class="col-auto collapse-chevron job-details">
-                        <img src="{% static 'images/location.png' %}" width="18px" height="auto">
+                        <img src="{% static 'images/location.png' %}" width="18px" height="auto" alt="">
                         <span>{{ job.location }}</span>
                     </div>
                 {% endif %}
@@ -117,7 +117,7 @@
     {% endif %}
 
     <div class="d-none d-sm-block">
-        <button onclick="topFunction()" id="myBtn" title="Go to top"><img src="{% static 'images/arrow_up.png' %}" width="50px" height="auto"></button>
+        <button onclick="topFunction()" id="myBtn" title="Go to top"><img src="{% static 'images/arrow_up.png' %}" width="50px" height="auto" alt=""></button>
     </div>
 
 

@@ -221,6 +221,26 @@ Bottom up
     width: 100%;
 }
 
+/*  About Links */
+.about-links {
+    color: #212529;
+    cursor: pointer; /* Add a mouse pointer on hover */
+}
+.about-links:hover {
+    color: #212529;
+    cursor: pointer;
+}
+
+.cookies-policy-header {
+    border-radius: 2px;
+    font-weight: bold;
+    background-color: #28a745;
+}
+.cookies-policy-row {
+
+    border-bottom: 2px solid #dee2e6;
+}
+
 /* featured code */
 
 .featured-div {

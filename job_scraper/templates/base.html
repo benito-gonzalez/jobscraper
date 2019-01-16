@@ -10,6 +10,7 @@
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}"/>
 
     <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'cookieconsent.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'custom.css' %}">
 
@@ -36,7 +37,7 @@
             <div class="row row-header flex-lg-nowrap">
 
                 <div class="d-none d-sm-block col-md header-logo">
-                    <a href="/"><img src="{% static 'images/logo.png' %}" width="100px" height="auto"></a>
+                    <a href="/"><img src="{% static 'images/logo.png' %}" width="100px" height="auto" alt=""></a>
                 </div>
                 <div class="d-none d-lg-block col-md">
                     <div class="search-tag">
@@ -106,11 +107,11 @@
             Contact us
         </div>
         <div class="col">
-            Cookie Policy
+            <a href="/about/cookiepolicy" class="about-links">Cookie Policy</a>
         </div>
     </div>
     <div class="row mt-5 justify-content-center align-items-center">
-        Copyright © 2018 JobsPortal. All rights reserved
+        Copyright © 2019 JobsPortal. All rights reserved
     </div>
 </div>
 
@@ -120,6 +121,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
         crossorigin="anonymous"></script>
 <script src="{% static 'js/custom.js' %}"></script>
+<script src="{% static 'js/cookieconsent.min.js' %}"></script>
 
 </body>
 </html>

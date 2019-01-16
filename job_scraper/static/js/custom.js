@@ -118,8 +118,7 @@ $(document).ready(function () {
                         $("#searchbutton span i").addClass("fa-times");
                         // $("#availableitems").css("display", "none");
                         $("#searchfield").blur();
-                    }
-                    else {
+                    } else {
                         var msg = "No results found for <b>" + name + "</b>!<br class='brk'> Please Try again."
                         $("#alertmsg").html(msg);
                         $("#searchfield").val("");
@@ -257,7 +256,7 @@ $(document).ready(function () {
             $(".paginator a:last").removeClass("disabled");
         }
     })
-})
+});
 
 
 // When the user scrolls down 20px from the top of the document, show the button
@@ -266,8 +265,8 @@ window.onscroll = function () {
 };
 
 function scrollFunction() {
-    var height = Math.max( document.body.scrollHeight, document.body.offsetHeight,
-                       document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );
+    const height = Math.max(document.body.scrollHeight, document.body.offsetHeight,
+        document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
 
     if ((height - document.body.scrollTop) < 1000 || (height - document.documentElement.scrollTop) < 1000) {
         document.getElementById("myBtn").style.display = "block";
@@ -281,3 +280,21 @@ function topFunction() {
     document.body.scrollTop = 0; // For Safari
     document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 }
+
+
+window.addEventListener("load", function () {
+    window.cookieconsent.initialise({
+        "palette": {
+            "popup": {
+                "background": "#3385ff"
+            },
+            "button": {
+                "background": "#fff",
+                "text": "#3385ff"
+            }
+        },
+        "content": {
+            "href": "/about/cookiepolicy"
+        }
+    })
+});
