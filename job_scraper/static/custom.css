@@ -175,9 +175,13 @@ Bottom show more
  */
 
 .btn-show-more {
-    margin-top: -20px;
-    margin-bottom: 10px;
     float: right;
+}
+
+.btn-apply-mbl {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
 }
 
 .btn-outline-success {
@@ -191,6 +195,13 @@ Bottom show more
     background-color: #28a745;
     border-color: #28a745;
 }
+
+.btn-outline-success:focus {
+    color: #28a745;
+    background-color: transparent;
+    border-color: #28a745;
+}
+
 
 /*
 Bottom up
@@ -226,6 +237,7 @@ Bottom up
     color: #212529;
     cursor: pointer; /* Add a mouse pointer on hover */
 }
+
 .about-links:hover {
     color: #212529;
     cursor: pointer;
@@ -236,15 +248,17 @@ Bottom up
     font-weight: bold;
     background-color: #28a745;
 }
+
 .cookies-policy-row {
 
     border-bottom: 2px solid #dee2e6;
 }
 
-.total_jobs{
+.total_jobs {
     font-style: italic;
     color: grey;
 }
+
 /* featured code */
 
 .featured-div {
@@ -290,6 +304,18 @@ input:focus::-webkit-input-placeholder {
     font-weight: bold;
 }
 
+.bloque {
+    border: red solid 2px;
+}
+
+.bloque2 {
+    border: green solid 2px;
+}
+
+.bloque3 {
+    border: blue solid 2px;
+}
+
 /*
 Phones
  */
@@ -298,10 +324,13 @@ Phones
         background-color: white;
     }
 
+    .job-title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
     .job-details {
-        text-align: center;
-        padding-left: 7px;
-        font-size: 10px;
+        font-size: 12px;
     }
 
     .job-end-date {

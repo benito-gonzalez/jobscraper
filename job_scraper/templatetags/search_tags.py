@@ -17,3 +17,15 @@ def param_replace(context, **kwargs):
     for k in [k for k, v in d.items() if not v]:
         del d[k]
     return d.urlencode()
+
+
+@register.simple_tag
+def get_first_index(jobs_per_page, current_page):
+    return jobs_per_page * (current_page - 1) + 1
+
+
+@register.simple_tag
+def get_last_index(jobs_per_page, current_page, total_jobs):
+    if total_jobs < jobs_per_page * current_page:
+        return total_jobs
+    return jobs_per_page * current_page
