@@ -2,7 +2,11 @@
 {% load static %}
 {% load search_tags %}
 
+
 {% block content %}
+    <p class="total_jobs text-left pl-5">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.count }} jobs
+    </p>
 
     {% if jobs_list %}
         {% for job in jobs_list %}

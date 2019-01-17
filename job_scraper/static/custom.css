@@ -241,6 +241,10 @@ Bottom up
     border-bottom: 2px solid #dee2e6;
 }
 
+.total_jobs{
+    font-style: italic;
+    color: grey;
+}
 /* featured code */
 
 .featured-div {
