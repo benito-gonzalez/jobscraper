@@ -125,6 +125,13 @@ Jobs
     font-size: 15px;
 }
 
+.logo-img-mobile {
+    max-height: 50px;
+    height: auto;
+    width: auto;
+    max-width: 80px;
+}
+
 /*
 Paginator
  */
