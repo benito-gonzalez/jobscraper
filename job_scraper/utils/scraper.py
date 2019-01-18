@@ -1178,33 +1178,35 @@ class Nordea(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            description_div = soup.find('div', {'class': 'job--content'})
+            description_div = soup.find('div', {'class': 'job-details__content-wrapper'})
             if description_div:
-                for div in description_div.children:
-                    div.attrs = {}
-                    if div.name == 'div':
-                        items_list = div.find_all(['div', 'ul'])
-                        # if div does not contain any div or ul, we get information directly
-                        if not items_list:
-                            if not div.find('a'):
-                                description += self.get_p_tag_from_div(soup, div)
-                        else:
-                            for elem in items_list:
-                                elem.attrs = {}
-                                if elem.text != '\xa0':
-                                    if elem.name == 'div':
-                                        description += self.get_p_tag_from_div(soup, elem)
-                                    else:
-                                        description += str(elem)
-                    elif div.name == "ul":
-                        description += str(div)
-                    elif div.name == 'h2':
-                        if div.text.lower() == "more information" or div.text.lower() == "lisätietoja" or div.text.lower() == "lisätietoja ja hakemuksen lähettäminen":
-                            break
-                        else:
+                description_content = description_div.find('div', {'class': 'content'})
+                if description_content:
+                    for div in description_content.children:
+                        div.attrs = {}
+                        if div.name == 'div':
+                            items_list = div.find_all(['div', 'ul'])
+                            # if div does not contain any div or ul, we get information directly
+                            if not items_list:
+                                if not div.find('a'):
+                                    description += self.get_p_tag_from_div(soup, div)
+                            else:
+                                for elem in items_list:
+                                    elem.attrs = {}
+                                    if elem.text != '\xa0':
+                                        if elem.name == 'div':
+                                            description += self.get_p_tag_from_div(soup, elem)
+                                        else:
+                                            description += str(elem)
+                        elif div.name == "ul":
                             description += str(div)
+                        elif div.name == 'h2':
+                            if div.text.lower() == "more information" or div.text.lower() == "lisätietoja" or div.text.lower() == "lisätietoja ja hakemuksen lähettäminen":
+                                break
+                            else:
+                                description += str(div)
 
-                description = description.replace('\n', '')
+                    description = description.replace('\n', '')
 
         return description
 

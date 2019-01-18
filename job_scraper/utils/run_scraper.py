@@ -77,6 +77,10 @@ def enrich_location(title, job_location):
 
         if locator.has_finnish_cities(job_location):
             cities = locator.get_finnish_cities(job_location)
+            # If location is "Finland" and the title has a specific Finnish city, that city must be used.
+            if len(cities) == 1 and "Finland" in cities:
+                if locator.has_finnish_cities(title):
+                    cities = locator.get_finnish_cities(title)
         else:
             cities = locator.get_finnish_cities(title)
 

@@ -43,12 +43,17 @@ class CityLocator:
         :param text: Job title
         :return: True/False
         """
+        # There are some cities around the world which could provoke skipping Finnish jobs. These must be added to valid_cities array
+        valid_cities = ["Mobile"]
         is_finnish = False
         cities = geotext.GeoText(text).cities
 
         for city in cities:
             if "FI" in geotext.GeoText(city).country_mentions:
                 is_finnish = True
+
+        if set(cities).issubset(valid_cities):
+            is_finnish = True
 
         return len(cities) > 0 and not is_finnish
 
