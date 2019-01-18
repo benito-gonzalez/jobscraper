@@ -174,7 +174,12 @@ Paginator
 Bottom show more
  */
 
+.btn-apply {
+    float: right;
+}
+
 .btn-show-more {
+    margin-top: -15px;
     float: right;
 }
 
@@ -319,7 +324,7 @@ input:focus::-webkit-input-placeholder {
 /*
 Phones
  */
-@media (max-width: 543px) {
+@media (max-width: 640px) {
     html, body {
         background-color: white;
     }
