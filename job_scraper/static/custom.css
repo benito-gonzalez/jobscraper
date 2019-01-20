@@ -20,17 +20,15 @@ Header
 }
 
 .header-title {
-    margin-top: 50px;
     font-size: 2.5rem;
     color: white;
-    text-align: center;
 }
 
 @media (max-width: 768px) {
     .header-title {
         color: black;
         font-weight: bold;
-        font-size: 1rem;
+        font-size: 1.2rem;
     }
 }
 
@@ -328,6 +326,10 @@ input:focus::-webkit-input-placeholder {
     border: blue solid 2px;
 }
 
+.short-title {
+    display: none;
+}
+
 /*
 Phones
  */
@@ -346,6 +348,14 @@ Phones
     }
 
     .job-end-date {
+        display: none;
+    }
+
+    .short-title {
+        display: inline-block;
+    }
+
+    .full-title {
         display: none;
     }
 }
