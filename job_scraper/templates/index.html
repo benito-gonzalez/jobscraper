@@ -2,74 +2,122 @@
 {% load static %}
 {% load search_tags %}
 
+
 {% block content %}
+    <p class="total_jobs text-right">
+        {% if page_obj.paginator.count > 0 %}
+            Showing {% get_first_index 20 page_obj.number %} - {% get_last_index 20 page_obj.number page_obj.paginator.count %} of {{ page_obj.paginator.count }} jobs
+        {% endif %}
+    </p>
 
     {% if jobs_list %}
         {% for job in jobs_list %}
-
             <div class="row row-job mt-3 align-items-center pr-md-5">
-
-            {% if job.is_highlighted %}
-                <div class="media border-bottom border-gray d-flex align-items-stretch mr-3">
-                <div class="p-2 featured-div">
-                    <span id="featuredSpan"> Featured </span>
-                </div>
-            {% else %}
-                <div class="media d-flex align-items-center no-featured-div">
-            {% endif %}
-
-        <div class="col-md-2 d-none d-sm-block text-lg-right job-logo">
-            <img src="{{ job.company.logo.url }}" width="80px" height="auto" alt="{{ job.company.name }}">
-        </div>
-
-        <div class="col-11 col-md-10">
-            <div class="row no-gutters">
-                <div class="col col-md-10 job-title">
-                    {{ job.title }}
-                </div>
-                <div class="d-none d-sm-block col-md-2">
-                    {% if job.is_recent_job %}
-                        <div class="job-tag">New</div>
-                    {% endif %}
-                    {% if job.is_published_again %}
-                        <div class="job-tag">Published again</div>
-                    {% endif %}
-                </div>
-
-            </div>
-            <div class="row align-items-center justify-content-md-start flex-lg-nowrap">
-                <div class="col-auto job-details ">
-                    <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto" alt="">
-                    {{ job.posted_date }}
-                </div>
-                {% if job.end_date %}
-                    <div class="col-auto job-details">
-                        <img src="{% static 'images/end_date.png' %}" width="23px" height="auto" alt="">
-                        <span><strong class="job-end-date">Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
+                <!--
+                {% if job.is_highlighted %}
+                    <div class="media border-bottom border-gray d-flex align-items-stretch mr-4">
+                    <div class="p-2 featured-div">
+                        <span id="featuredSpan"> Featured </span>
                     </div>
+                {% else %}
+                    <div class="media d-flex align-items-center no-featured-div">
                 {% endif %}
-                {% if job.location %}
-                    <div class="col-auto collapse-chevron job-details">
-                        <img src="{% static 'images/location.png' %}" width="18px" height="auto" alt="">
-                        <span>{{ job.location }}</span>
+                -->
+                <div class="col-md-2 d-none d-md-block text-lg-right job-logo">
+                    <img src="{{ job.company.logo.url }}" width="80px" height="auto" alt="{{ job.company.name }}">
+                </div>
+
+                <div class="col-12 col-md-10">
+                    <div class="row">
+
+                        {% if job.is_recent_job %}
+                            <div class="col-12 col-md-11 job-title">
+                                {{ job.title }}
+                            </div>
+                            <div class="d-none d-md-block col-md-1">
+                                <div class="job-tag">New</div>
+                            </div>
+
+                        {% elif job.is_published_again %}
+                            <div class="col-12 col-md-9 job-title">
+                                {{ job.title }}
+                            </div>
+                            <div class="d-none d-md-block col-md-3">
+                                <div class="job-tag">Published again</div>
+                            </div>
+
+                        {% else %}
+                            <div class="col-12 job-title">
+                                {{ job.title }}
+                            </div>
+
+                        {% endif %}
+
                     </div>
-                {% endif %}
 
-            </div>
-            <div class="row mt-3">
-                <div class="col-md">
-                    <p>{{ job.get_initial_description |slice:":500" }}...</p>
-                </div>
-            </div>
-            <div class="row mt-3 mb-1">
-                <div class="col-md">
-                    <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-show-more btn-outline-success btn-sm">Show more</a>
-                </div>
-            </div>
-        </div>
-        </div>
+                    <div class="row job-details pl-2">
+                        <div class="col-6 col-lg-12">
+                            <div class="row">
+                                <div class="col-12 col-lg-auto">
+                                    <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto" alt=""> {{ job.posted_date }}
+                                </div>
 
-        </div>
+                                {% if job.end_date %}
+                                    <div class="col-12 col-lg-auto mt-1 mt-md-0 ">
+                                        <img src="{% static 'images/end_date.png' %}" width="23px" height="auto" alt="">
+                                        <span><strong class="job-end-date">Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
+                                    </div>
+                                {% endif %}
+
+                                {% if job.location %}
+                                    <div class="col-12 col-lg-auto mt-1 mt-md-0 ">
+                                        <img src="{% static 'images/location.png' %}" width="18px" height="auto" alt="">
+                                        <span>{{ job.location }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-md-none justify-content-center align-self-center">
+                            <img class="logo-img-mobile" src="{{ job.company.logo.url }}" alt="{{ job.company.name }}">
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md d-none d-lg-block mt-3">
+                            <p>{{ job.get_initial_description |slice:":500" }}...</p>
+                        </div>
+                    </div>
+
+                    <div class="frm-outer-container">
+                        <div class="frm-container" style="display: none;">
+                            <div class="row">
+                                <div class="col mt-3">
+                                    <p>{{ job.get_initial_description |slice:":250" }}...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3 mt-md-0 mb-2 ">
+                            <div class="col-4 d-md-none pr-1" onClick="return true">
+                                <button class="btn btn-more btn-block btn-outline-success btn-sm">+ More</button>
+                            </div>
+                            <div class="col-4 d-md-none pl-1 pr-1">
+                                <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-block btn-outline-success btn-sm">Job details</a>
+                            </div>
+                            <div class="col-4 col-md d-md-none pl-1">
+                                <a href="{{ job.job_url }}" class="btn btn-block btn-apply btn-sm btn-apply-mbl">Apply!</a>
+                            </div>
+                            <div class="col-4 col-md d-none d-md-block">
+                                <a href="{% url 'job_scraper:detail' job.id %}" class="btn btn-show-more btn-outline-success btn-sm ">Show more</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <!--   </div>  -->
+            </div>
+
         {% endfor %}
 
         {% if is_paginated %}

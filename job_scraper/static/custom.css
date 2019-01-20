@@ -20,17 +20,15 @@ Header
 }
 
 .header-title {
-    margin-top: 50px;
     font-size: 2.5rem;
     color: white;
-    text-align: center;
 }
 
 @media (max-width: 768px) {
     .header-title {
         color: black;
         font-weight: bold;
-        font-size: 1rem;
+        font-size: 1.2rem;
     }
 }
 
@@ -125,6 +123,13 @@ Jobs
     font-size: 15px;
 }
 
+.logo-img-mobile {
+    max-height: 50px;
+    height: auto;
+    width: auto;
+    max-width: 80px;
+}
+
 /*
 Paginator
  */
@@ -174,10 +179,19 @@ Paginator
 Bottom show more
  */
 
-.btn-show-more {
-    margin-top: -20px;
-    margin-bottom: 10px;
+.btn-apply {
     float: right;
+}
+
+.btn-show-more {
+    margin-top: -15px;
+    float: right;
+}
+
+.btn-apply-mbl {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
 }
 
 .btn-outline-success {
@@ -191,6 +205,13 @@ Bottom show more
     background-color: #28a745;
     border-color: #28a745;
 }
+
+.btn-outline-success:focus {
+    color: #28a745;
+    background-color: transparent;
+    border-color: #28a745;
+}
+
 
 /*
 Bottom up
@@ -226,6 +247,7 @@ Bottom up
     color: #212529;
     cursor: pointer; /* Add a mouse pointer on hover */
 }
+
 .about-links:hover {
     color: #212529;
     cursor: pointer;
@@ -236,9 +258,15 @@ Bottom up
     font-weight: bold;
     background-color: #28a745;
 }
+
 .cookies-policy-row {
 
     border-bottom: 2px solid #dee2e6;
+}
+
+.total_jobs {
+    font-style: italic;
+    color: grey;
 }
 
 /* featured code */
@@ -286,21 +314,48 @@ input:focus::-webkit-input-placeholder {
     font-weight: bold;
 }
 
+.bloque {
+    border: red solid 2px;
+}
+
+.bloque2 {
+    border: green solid 2px;
+}
+
+.bloque3 {
+    border: blue solid 2px;
+}
+
+.short-title {
+    display: none;
+}
+
 /*
 Phones
  */
-@media (max-width: 543px) {
+@media (max-width: 640px) {
     html, body {
         background-color: white;
     }
 
+    .job-title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
     .job-details {
-        text-align: center;
-        padding-left: 7px;
-        font-size: 10px;
+        font-size: 12px;
     }
 
     .job-end-date {
+        display: none;
+    }
+
+    .short-title {
+        display: inline-block;
+    }
+
+    .full-title {
         display: none;
     }
 }

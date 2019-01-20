@@ -298,3 +298,13 @@ window.addEventListener("load", function () {
         }
     })
 });
+
+jQuery(document).ready(function($) {
+    $('.btn-more').on('click',function(){
+        $(this).parents('.frm-outer-container').find('.frm-container').slideToggle('slow');
+        if( $(this).text() === '+ More' )
+            $(this).text('- Less');
+        else
+            $(this).text('+ More');
+    });
+});
