@@ -24,7 +24,7 @@
                 {% endif %}
                 -->
                 <div class="col-md-2 d-none d-md-block text-lg-right job-logo">
-                    <a href="?search= {{ job.company.name }}"><img src="{{ job.company.logo.url }}" width="80px" height="auto" alt="{{ job.company.name }}"></a>
+                    <a href="?search={{ job.company.name }}"><img src="{{ job.company.logo.url }}" width="80px" height="auto" alt="{{ job.company.name }}"></a>
                 </div>
 
                 <div class="col-12 col-md-10">
@@ -79,7 +79,7 @@
                         </div>
 
                         <div class="col-6 d-md-none justify-content-center align-self-center">
-                            <a href="?search= {{ job.company.name }}"><img class="logo-img-mobile" src="{{ job.company.logo.url }}" alt="{{ job.company.name }}"></a>
+                            <a href="?search={{ job.company.name }}"><img class="logo-img-mobile" src="{{ job.company.logo.url }}" alt="{{ job.company.name }}"></a>
                         </div>
 
                     </div>
