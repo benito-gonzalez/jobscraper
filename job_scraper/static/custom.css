@@ -88,7 +88,7 @@ Footer
     border-top: 5px solid #eee;
     margin-top: 8em;
     text-align: center;
-    background: linear-gradient(to top, #99ebff 0%, #3385ff 99%);
+    background: linear-gradient(to bottom, #84e19a 10%, #28a745 70%);
 }
 
 /*
@@ -221,7 +221,7 @@ Bottom up
 #myBtn {
     display: none; /* Hidden by default */
     position: fixed; /* Fixed/sticky position */
-    bottom: 155px; /* Place the button at the bottom of the page */
+    bottom: 140px; /* Place the button at the bottom of the page */
     right: 30px; /* Place the button 30px from the right */
     z-index: 99; /* Make sure it does not overlap */
     border: none; /* Remove borders */
@@ -234,7 +234,7 @@ Bottom up
 }
 
 #myBtn:hover {
-    background-color: #2aabd2; /* Add a dark-grey background on hover */
+    background-color: #28a745; /* Add a dark-grey background on hover */
 }
 
 .emptyalert {
