@@ -377,12 +377,35 @@ Tablet or larger
         margin-left: 100px;
         margin-right: 100px;
     }
+
+    .short-title {
+        display: inline-block;
+    }
+
+    .full-title {
+        display: none;
+    }
+
+    .w-md-75 {
+        width: 75% !important;
+    }
 }
 
 /*
 Desktop or larger
  */
-@media (min-width: 991px) {
+@media (min-width: 992px) {
+    .w-lg-100 {
+        width: 100% !important;
+    }
+
+    .short-title {
+        display: none;
+    }
+
+    .full-title {
+        display: inline-block;
+    }
 
 }
 
