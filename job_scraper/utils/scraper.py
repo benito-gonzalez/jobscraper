@@ -1362,8 +1362,8 @@ class Rightware(Scraper):
 
         jobs_div = soup.find_all('div', {'class': 'vacancy-module'})
         for job_div in jobs_div:
-            title, description_url, description = self.get_mandatory_fields(job_div)
-            if self.is_valid_job(title, description_url, description):
+            title, description_url, description, valid = self.get_mandatory_fields(job_div)
+            if valid and self.is_valid_job(title, description_url, description):
                 location = self.get_location(job_div, title)
 
                 job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
@@ -1374,6 +1374,7 @@ class Rightware(Scraper):
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
+        valid = True
 
         title_tag = item.find('a')
         if title_tag:
@@ -1384,9 +1385,13 @@ class Rightware(Scraper):
                 if "https://" not in description_url:
                     description_url = self.url.split("com/")[0] + "com" + description_url
 
-                description = self.get_description(description_url)
+                # The job "Software Engineer – Student or Recent Graduate" points to "https://rightware.teamtailor.com/connect" which is a form, not a job description
+                if "/connect" in description_url:
+                    valid = False
+                else:
+                    description = self.get_description(description_url)
 
-        return title, description_url, description
+        return title, description_url, description, valid
 
     def get_description(self, url):
         description = ""
@@ -1398,7 +1403,7 @@ class Rightware(Scraper):
             # For jobs which have sequential information
             description_div = soup.find('div', {'class': 'body'})
             if description_div:
-                position_h = soup.find(["h2", "h3", "h4"], string='Position')
+                position_h = soup.find(["strong", "h2", "h3", "h4"], string='Position')
                 if position_h:
                     description += str(position_h)
                     for p in position_h.next_siblings:
