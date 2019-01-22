@@ -1,6 +1,7 @@
 import os
 import sys
 import datetime
+import codecs
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -19,7 +20,7 @@ def main():
     now = datetime.datetime.now().strftime("%d-%m-%Y")
     try:
         error_lines = []
-        with open(SCRAPERLOG, "r") as file:
+        with codecs.open(SCRAPERLOG, "r", encoding='utf-8', errors='ignore') as file:
             previous_line = None
             for line in file:
                 if line.startswith("[" + now) and "ERROR" in line:
