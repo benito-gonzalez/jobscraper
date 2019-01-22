@@ -800,13 +800,15 @@ class Eficode(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
 
-        for job_div in soup.find_all('div', {'class': 'job-ad'}):
-            title, description_url, description = self.get_mandatory_fields(job_div)
-            if self.is_valid_job(title, description_url, description):
-                location = self.get_location(job_div, title)
+        ul_jobs = soup.find('ul', {'class': 'jobs'})
+        if ul_jobs:
+            for li in ul_jobs.find_all('li'):
+                title, description_url, description = self.get_mandatory_fields(li)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(li, title)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                jobs.append(job)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
 
         return jobs
 
@@ -814,14 +816,16 @@ class Eficode(Scraper):
         title = description_url = None
         description = ""
 
-        title_tag = item.find('a')
+        title_tag = item.find('span', {'class': 'title'})
         if title_tag:
             title = title_tag.text.strip()
 
-            relative_url = title_tag.get('href')
-            if relative_url:
-                description_url = self.url.split("com/")[0] + "com" + relative_url
-                description = self.get_description(description_url)
+            url_tag = item.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -831,34 +835,27 @@ class Eficode(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            description_div = soup.find('div', {'class': 'jd-description'})
+            description_div = soup.find('div', {'class': 'job'})
             if description_div:
-                description_tag = description_div.find('h1')
-                if description_tag:
-                    for p in description_tag.next_siblings:
-                        p.attrs = {}
-                        if p != "\n":
-                            for match in p.find_all('span'):
-                                match.unwrap()
-                            description += str(p)
+                first_p = description_div.find('p')
+                if first_p:
+                    description += str(first_p)
+                    for p in first_p.next_siblings:
+                        if p.name:
+                            if 'class' in p.attrs and 'video-container' in p.attrs['class']:
+                                continue
+                            if p.text != "\xa0":
+                                description += str(p)
 
         return description
 
-    def get_location(self, job_div, job_title):
+    def get_location(self, item, job_title):
         location = None
-        location_block = job_div.find('p')
-        if location_block:
-            for br in location_block.find_all("br"):
-                br.replace_with(", ")
-
-            location_block = location_block.text
-            location_block = location_block.replace("Eficode Oy,", "")
-            location_block = location_block.replace("Eficode", "")
-            location_list = location_block.split(",")
-            location_list = map(str.strip, location_list)
-            # remove duplicated
-            locations = list(dict.fromkeys(location_list))
-            location = ", ".join(locations)
+        first_span = item.find('span', {'class': 'title'})
+        if first_span:
+            second_span = first_span.find_next_sibling('span')
+            if second_span:
+                location = second_span.get_text()
 
         if not location:
             log_support.set_invalid_location(self.client_name, job_title)

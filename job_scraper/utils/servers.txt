@@ -12,7 +12,7 @@ Silo.AI Oy - https://silo.ai/careers/
 ABB Oy - https://new.abb.com/jobs/center/_api/AbbCareers/Jobs?take=100&country=FI&city=any&function=any&role=any&keywords=
 Qvik Oy - https://qvik.com/careers/
 Blueprint Genetics Oy - https://careers.blueprintgenetics.com/
-Eficode Oy - https://eficode.easycruit.com/index.html
+Eficode Oy - https://eficode.teamtailor.com/jobs
 Ericsson - https://jobs.ericsson.com/api/jobs?location=Finland&page=1&limit=100
 Varjo Technologies - https://varjo.com/jobs/
 Telia Finland Oyj - https://www.telia.fi/.rest/vacancies/youatwork?type=regular
