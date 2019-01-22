@@ -77,7 +77,8 @@ DATABASES = {
 
 # Cron configuration
 CRONJOBS = [
-    ('0 5 * * *', 'job_scraper.utils.run_scraper.main')
+    ('0 5 * * *', 'job_scraper.utils.run_scraper.main'),
+    ('0 6 * * *', 'job_scraper.utils.reporter.main')
 ]
 
 # Password validation
@@ -123,3 +124,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, '../media')
 MEDIA_URL = '/media/'
 if not os.path.exists(MEDIA_ROOT):
     os.makedirs(MEDIA_ROOT)
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'jobs.portal.cron@gmail.com'
+EMAIL_PORT = 587

@@ -21,3 +21,6 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = "DENY"
 SECURE_HSTS_PRELOAD = True
+
+with open(os.path.join(BASE_DIR, 'email_pwd.txt')) as f:
+    EMAIL_HOST_PASSWORD = f.read().strip()
