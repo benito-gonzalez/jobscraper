@@ -10,3 +10,4 @@ job_scraper/*.pyc
 job_scraper/utils/*.pyc
 __pycache__/
 webapp/secretkey.txt
+webapp/email_pwd.txt
