@@ -19,22 +19,22 @@ SCRAPERLOG = os.path.join(my_path, "logs/scraper.log")
 def main():
     now = datetime.datetime.now().strftime("%d-%m-%Y")
     try:
-        error_lines = []
+        error_lines = ""
         with codecs.open(SCRAPERLOG, "r", encoding='utf-8', errors='ignore') as file:
             previous_line = None
             for line in file:
                 if line.startswith("[" + now) and "ERROR" in line:
                     if "ERROR" not in previous_line:
-                        error_lines.append(previous_line)
-                    error_lines.append(line)
+                        error_lines += previous_line
+                    error_lines += line
                 previous_line = line
 
-        if error_lines:
+        if error_lines != "":
             send_mail(
                 'Scraper errors on ' + now,
-                ''.join(error_lines),
+                error_lines.replace("\n", " \n"),
                 settings.EMAIL_HOST_USER,
-                ['gon.beni@gmail.com'],
+                ['gon.beni@gmail.com', 'sorin.patrasoiu@gmail.com'],
                 fail_silently=False,
             )
 
