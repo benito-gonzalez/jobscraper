@@ -86,6 +86,10 @@ def generate_instance_from_client(client_name, url):
         return FSecure(client_name, url)
     if client_name.lower() == "outotec":
         return Outotec(client_name, url)
+    if client_name.lower() == "kone":
+        return Kone(client_name, url)
+    if client_name.lower() == "smartly.io":
+        return Smartly(client_name, url)
     else:
         return None
 
@@ -2057,7 +2061,7 @@ class Danske(Scraper):
         # end date is in the last column (td)
         end_date = None
         columns = row.find_all('td')
-        date_tag = columns[len(columns)-1]
+        date_tag = columns[len(columns) - 1]
         if date_tag:
             date = date_tag.text
             end_date_datetime = parser.parse(date)
@@ -2866,3 +2870,165 @@ class Outotec(Scraper):
                 log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class Kone(Scraper):
+
+    page_offset = 50
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        last_page = False
+        current_page = self.url
+        current_offset = 0
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+        total_jobs = self.get_total_jobs(json_dict)
+
+        while not last_page:
+            jobs_list = self.get_jobs_list(json_dict)
+            if jobs_list:
+                for item in jobs_list:
+                    title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+                    if is_finnish and self.is_valid_job(title, description_url, description):
+                        # location has already being checked in get_mandatory_fields()
+                        location = item["subtitles"][0]["instances"][0]["text"]
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
+
+                current_page, current_offset = self.get_next_page(current_page, Kone.page_offset)
+                if current_page and current_offset:
+                    html = request_support.simple_get(current_page)
+                    json_dict = json.loads(html)
+                else:
+                    # in case of error, finish
+                    last_page = True
+
+            if not jobs or current_offset > total_jobs:
+                last_page = True
+
+        return jobs
+
+    def get_total_jobs(self, json_dict):
+
+        try:
+            total_jobs = json_dict["body"]["children"][0]["facetContainer"]["paginationCount"]["value"]
+            # only the first page contains the proper number of jobs. Rest of them, this value is 0
+        except (IndexError, KeyError, ValueError):
+            total_jobs = 0
+            log_support.set_error_message(self.client_name, "Can not get the total number of jobs")
+
+        return total_jobs
+
+    @staticmethod
+    def get_jobs_list(json_dict):
+        # Jobs list is in "json_dict["body"]["children"][0]["children"][0]["listItems"]"
+        try:
+            jobs_list = json_dict["body"]["children"][0]["children"][0]["listItems"]
+        except (IndexError, KeyError, ValueError):
+            jobs_list = []
+
+        return jobs_list
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        locator = CityLocator()
+        is_finnish = False
+
+        if "title" in item and "instances" in item["title"] and len(item["title"]["instances"]) > 0 and "text" in item["title"]["instances"][0]:
+            title = item["title"]["instances"][0]["text"]
+            if "subtitles" in item and len(item["subtitles"]) > 0 and "instances" in item["subtitles"][0] and\
+                    len(item["subtitles"][0]["instances"]) > 0 and "text" in item["subtitles"][0]["instances"][0]:
+                location = item["subtitles"][0]["instances"][0]["text"]
+                if locator.has_finnish_cities(location):
+                    is_finnish = True
+                    if "commandLink" in item["title"]:
+                        relative_url = item["title"]["commandLink"]
+                        description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                        description = self.get_description(description_url)
+
+        return title, description_url, description, is_finnish
+
+    @staticmethod
+    def get_description(description_url):
+        description = ""
+        job_details_html = request_support.simple_get(description_url)
+        if job_details_html:
+            json_dict = json.loads(job_details_html)
+            try:
+                description = json_dict["body"]["children"][1]["children"][0]["children"][2]["text"]
+            except (ValueError, KeyError, IndexError, AttributeError):
+                try:
+                    # Some jobs has the description in the children #3
+                    description = json_dict["body"]["children"][1]["children"][0]["children"][3]["text"]
+                except (ValueError, KeyError, IndexError, AttributeError):
+                    description = ""
+
+        return description
+
+    def get_next_page(self, current_url, offset):
+        try:
+            result = re.search(r'/([0-9]+)\?clientRequestID', current_url)
+            current_offset = result.group(1)
+            new_offset = int(current_offset) + offset
+            old_pattern = "/" + current_offset + "?clientRequestID"
+            new_pattern = "/%d" % new_offset + "?clientRequestID"
+            new_page = current_url.replace(old_pattern, new_pattern, 1)
+        except Exception as e:
+            new_page = new_offset = None
+            log_support.set_error_message(self.client_name, "Can not get next page: " + str(e))
+
+        return new_page, new_offset
+
+
+class Smartly(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        for item in json_dict:
+            title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+            if is_finnish and self.is_valid_job(title, description_url, description):
+                location = item["categories"]["location"]
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        is_finnish = False
+        locator = CityLocator()
+
+        if "text" in item:
+            title = item["text"]
+            if "categories" in item and "location" in item["categories"] and locator.has_finnish_cities(item["categories"]["location"]):
+                is_finnish = True
+                if "hostedUrl" in item:
+                    description_url = item["hostedUrl"]
+                    description = self.get_description(description_url)
+
+        return title, description_url, description, is_finnish
+
+    @staticmethod
+    def get_description(description_url):
+        description = ""
+        job_details_html = request_support.simple_get(description_url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_block = job_details_soup.find('div', {'class': 'section-wrapper page-full-width'})
+            if description_block:
+                for div in description_block.find_all('div'):
+                    if div.attrs and 'last-section-apply' in div.attrs.get('class'):
+                        break
+                    div.attrs = {}
+                    description += str(div)
+
+        return description
