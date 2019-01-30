@@ -1,6 +1,6 @@
 from webapp.settings.common import *
 
-ALLOWED_HOSTS = ['91.217.83.113']
+ALLOWED_HOSTS = ['91.217.83.113', 'www.jobsportal.fi', 'jobsportal.fi']
 
 DEBUG = False
 
@@ -14,13 +14,15 @@ with open(os.path.join(BASE_DIR, 'secretkey.txt')) as f:
 # Production configs
 SECURE_HSTS_SECONDS = 60
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 X_FRAME_OPTIONS = "DENY"
 SECURE_HSTS_PRELOAD = True
+
+PREPEND_WWW = True
 
 with open(os.path.join(BASE_DIR, 'email_pwd.txt')) as f:
     EMAIL_HOST_PASSWORD = f.read().strip()
