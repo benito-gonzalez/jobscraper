@@ -597,3 +597,4 @@ Vaasa
 Pietarsaari
 Capital region
 Finland
+Helsingin
