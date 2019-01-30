@@ -15,7 +15,7 @@ def simple_get(url):
     """
     log_support.request_url(url)
     try:
-        with closing(get(url, stream=True, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)) as resp:
+        with closing(get(url, stream=True, headers={'User-Agent': 'Mozilla/5.0', 'accept': 'application/json'}, verify=False)) as resp:
             if resp.status_code == 200:
                 return resp.content
             else:
