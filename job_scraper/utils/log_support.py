@@ -137,3 +137,9 @@ def set_invalid_json(company_name):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "ERROR. Can not generate a JSON with jobs information from '{0}'".format(company_name) + "\n")
     f.close()
+
+
+def set_error_message(company_name, message):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "ERROR. From '{0}'. {1}".format(company_name, message) + "\n")
+    f.close()
