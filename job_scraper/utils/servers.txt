@@ -39,3 +39,12 @@ Dream Broker - https://dreambroker.com/careers/
 Relex - https://jsapi.recruiterbox.com/v1/openings?client_name=relex&limit=100
 F-Secure - https://feed.jobylon.com/feeds/561aeed31b804e4586385e67d25ee682/?format=json
 Outotec - https://app.outotec.com/hr/applications.nsf/vwOpenJobsNew?SearchView&Count=1000&SearchMax=1000&SearchOrder=4&Country=Finland&CA=&level=&Q=&Query=(%5BfCountry%5D%3DFinland)
+Kone - https://kone.wd3.myworkdayjobs.com/Careers/0/searchPagination/318c8bb6f553100021d223d9780d30be/0?clientRequestID=ac5ff89f90bb477db4b523c6f8960c3a
+Smartly.io - https://api.lever.co/v0/postings/smartly.io?mode=json
+Cybercom Finland Oy - https://careerfinland.cybercom.com/jobs
+Enfo Oyj - https://www.enfo.fi/Tyopaikat
+Sofigate - https://www.sofigate.com/wp-admin/admin-ajax.php?action=swiss_post_archive&post_type=open-position&page=1&posts_per_page=100
+Blue Meteorite - https://www.meteoriitti.com/tyopaikat/
+Sulava - https://www.sulava.com/yritys/ura-sulavalla/
+Nitor - https://www.nitor.com/en/jobs
+Softability - https://softability.fi/en/career/
