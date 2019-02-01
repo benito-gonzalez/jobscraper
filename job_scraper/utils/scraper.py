@@ -2615,13 +2615,15 @@ class Op(Scraper):
             if description_div:
                 for block in description_div.children:
                     if block.name:
+                        block.attrs = {}
                         # clean html attributes and remove those that contain \xa0
                         for tag in block.find_all(True):
                             tag.attrs = {}
                             if tag.text == "\xa0":
                                 tag.extract()
 
-                        description += str(block)
+                        if block.text != "\xa0":
+                            description += str(block)
 
         return description
 
