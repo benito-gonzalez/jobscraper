@@ -2916,7 +2916,7 @@ class Kone(Scraper):
 
                 current_page, current_offset = self.get_next_page(current_page, Kone.page_offset)
                 if current_page and current_offset:
-                    html = request_support.simple_get(current_page)
+                    html = request_support.simple_get(current_page, accept_json=True)
                     json_dict = json.loads(html)
                 else:
                     # in case of error, finish
@@ -2971,7 +2971,7 @@ class Kone(Scraper):
     @staticmethod
     def get_description(description_url):
         description = ""
-        job_details_html = request_support.simple_get(description_url)
+        job_details_html = request_support.simple_get(description_url, accept_json=True)
         if job_details_html:
             json_dict = json.loads(job_details_html)
             try:
