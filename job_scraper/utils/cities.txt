@@ -596,5 +596,6 @@ Saekylae
 Vaasa
 Pietarsaari
 Capital region
+Capital Region
 Finland
 Helsingin

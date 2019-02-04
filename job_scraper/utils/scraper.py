@@ -560,7 +560,7 @@ class Silo(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
-        job_divs = soup.find_all("div", attrs={'class': 'elementor-icon-box-content'})
+        job_divs = soup.find_all("a", attrs={'class': 'eael-elements-flip-box-flip-card'})
         for job_div in job_divs:
             title, description_url, description = self.get_mandatory_fields(job_div)
             if self.is_valid_job(title, description_url, description):
@@ -577,15 +577,12 @@ class Silo(Scraper):
         title = description_url = None
         description = ""
 
-        title_tag = item.find("h3")
+        title_tag = item.find("h2")
         if title_tag:
             title = title_tag.text.strip()
-
-            relative_url_a = item.find("a")
-            if relative_url_a:
-                description_url = relative_url_a.get('href')
-                if description_url:
-                    description = self.get_description(description_url)
+            description_url = item.get('href')
+            if description_url:
+                description = self.get_description(description_url)
 
         return title, description_url, description
 
