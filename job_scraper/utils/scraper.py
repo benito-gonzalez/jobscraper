@@ -1831,14 +1831,13 @@ class Verto(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
 
-        panel_div = soup.find('div', {'class': 'mk-tabs-panes'})
-        if panel_div:
-            jobs_div = panel_div.find(self.find_location)
-            if jobs_div:
-                url_jobs = jobs_div.find_all('a')
-                for url_job in url_jobs:
-                    url = url_job.get('href')
-                    title, description_url, description = self.get_mandatory_fields(url)
+        helsinki_jobs = soup.find('div', {'class': 'title-mobile'}, string="Helsinki")
+        if helsinki_jobs:
+            items = helsinki_jobs.parent.find_all('div', {'class': 'box-holder'})
+            for item in items:
+                url_tag = item.find('a')
+                if url_tag:
+                    title, description_url, description = self.get_mandatory_fields(url_tag.get('href'))
                     if self.is_valid_job(title, description_url, description):
                         job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
                         jobs.append(job)
@@ -1857,7 +1856,7 @@ class Verto(Scraper):
                 title_tag = soup.find('h2')
                 if title_tag:
                     title = title_tag.text
-                    description_block = soup.find('div', {'id': 'text-block-4'})
+                    description_block = soup.find('div', {'id': 'text-block-7'})
                     if description_block:
                         for tag in description_block.children:
                             if tag != "\n":
