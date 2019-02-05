@@ -1648,7 +1648,7 @@ class Futurice(Scraper):
     @staticmethod
     def get_description(soup):
         description = ""
-        description_div = soup.find('div', {'class': 'container src-components----PostText-module---posttext---2vtIL'})
+        description_div = soup.find('div', {'class': 'src-components----PostText-module---posttext---2vtIL'})
         if description_div:
             for tag in description_div.children:
                 if tag != "\n":
