@@ -10,6 +10,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 with open(os.path.join(BASE_DIR, 'secretkey.txt')) as f:
     SECRET_KEY = f.read().strip()
 
+# Use a separate file for the secret key
+with open(os.path.join(BASE_DIR, 'recaptcha_secretkey.txt')) as f:
+    GOOGLE_RECAPTCHA_SECRET_KEY = f.read().strip()
+
 # Production configs
 SECURE_HSTS_SECONDS = 60
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -26,3 +30,6 @@ PREPEND_WWW = True
 
 with open(os.path.join(BASE_DIR, 'email_pwd.txt')) as f:
     EMAIL_HOST_PASSWORD = f.read().strip()
+
+with open(os.path.join(BASE_DIR, 'email_feedback_pwd.txt')) as f:
+    EMAIL_FEEDBACK_PASSWORD = f.read().strip()

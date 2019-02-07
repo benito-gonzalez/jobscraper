@@ -131,6 +131,14 @@ Jobs
     max-width: 80px;
 }
 
+.field-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    border-radius: 5px;
+    line-height: 1.2;
+}
+
 /*
 Paginator
  */
@@ -395,6 +403,9 @@ Tablet or larger
 Desktop or larger
  */
 @media (min-width: 992px) {
+    .w-lg-50 {
+        width: 50% !important;
+    }
     .w-lg-100 {
         width: 100% !important;
     }

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+
+    <div class="row justify-content-center mt-5">
+        <h2>
+            <strong>
+                Contact us
+            </strong>
+        </h2>
+    </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col col-lg-11">
+            <p>
+                We welcome feedback from our visitors! </p>
+            <p>
+                If you have a suggestion, found a bug or simply want to say hello, please feel free to contact us by using the form below.
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-3 ">
+        <div class="col-12 col-lg-10">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="w-lg-50 field-error">
+                    {{ form.name.errors }}
+                    {{ form.email.errors }}
+                    {{ form.message.errors }}
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-lg-6 ">
+                        <div class="row ">
+                            <div class="col-3 col-lg-3 text-right pl-lg-5 pt-2">
+                                <label for="{{ form.name.id_for_label }}"><strong>Name</strong></label>
+                            </div>
+                            <div class="col-9 col-lg-9 pl-1">
+                                <input type="text"
+                                       class="form-control"
+                                       name="{{ form.name.name }}"
+                                       id="{{ form.name.id_for_label }}"
+                                        {% if form.name.value != None %} value="{{ form.name.value|stringformat:'s' }}" {% endif %}
+                                       maxlength="{{ form.name.field.max_length }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="row  mt-3 mt-lg-0 ">
+                            <div class="col-3 col-lg-3 text-right pl-lg-5 pt-2">
+                                <label for="{{ form.email.id_for_label }}"><strong>Email</strong></label>
+                            </div>
+                            <div class="col-9 col-lg-9 pl-1">
+                                <input type="text"
+                                       class="form-control"
+                                       name="{{ form.email.name }}"
+                                       id="{{ form.email.id_for_label }}"
+                                       {% if form.email.value != None %}value="{{ form.email.value|stringformat:'s' }}"{% endif %}
+                                       maxlength="{{ form.email.field.max_length }}">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12 col-lg-6">
+                        <div class="row">
+                            <div class="col-3 col-lg-3 text-right pl-lg-4 pt-2">
+                                <label for="{{ form.message.id_for_label }}"><strong>Message</strong></label>
+                            </div>
+                            <div class="col-9 col-lg-9 pl-1">
+                                <textarea type="text" class="form-control" rows="7" name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" maxlength="{{ form.message.field.max_length }}">{% if form.message.value != None %}
+                                    {{ form.message.value|stringformat:'s' }} {% endif %}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="row">
+                            <div class="col-6 col-lg-6 pl-4 mr-lg-0 mt-4 ml-lg-5">
+                                <script src='https://www.google.com/recaptcha/api.js'></script>
+                                <div class="g-recaptcha" data-sitekey="6LeXDo8UAAAAAPYQPX8ssFHVVIXaP_Q0lYAjT8w2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="row justify-content-center">
+                    <div class="col-4 col-lg-2 mt-5 mb-lg-5">
+                        <button id="search_button" type="submit" class="btn btn-primary">Send!</button>
+                    </div>
+                </div>
+            </form>
+
+
+        </div>
+
+    </div>
+
+{% endblock %}

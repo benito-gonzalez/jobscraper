@@ -145,7 +145,7 @@ def main():
             log_support.set_company_not_found(scraped_job.company_name)
 
     # disable jobs which no longer exist in the websites (skip jobs that belong to a company that failed)
-    update_active_jobs(scraped_jobs, failed_companies)
+    #update_active_jobs(scraped_jobs, failed_companies)
     log_support.set_completed_scraper()
 
 

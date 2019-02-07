@@ -3,11 +3,27 @@ from django.views import generic
 from django.http import Http404
 from django.shortcuts import redirect
 from django.db.models import Q
+from django.views.generic.edit import FormView
+
 from operator import and_
 import functools
 
+from .forms import ContactForm
 from job_scraper.models import Job
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
+
+
+class ContactFormView(FormView):
+    template_name = 'contact.html'
+    form_class = ContactForm
+    success_url = '/thanks'
+
+    def form_valid(self, form):
+        form.send_email()
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
 
 
 class IndexView(generic.ListView):
