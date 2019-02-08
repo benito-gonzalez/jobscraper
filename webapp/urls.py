@@ -27,7 +27,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('about/cookiepolicy', TemplateView.as_view(template_name='cookiepolicy.html')),
     path('about/contact-us', views.ContactFormView.as_view()),
-    path('thanks', TemplateView.as_view(template_name='thanks.html')),
     path('', include('job_scraper.urls')),
     path('api/jobs/', views.JobListApiView.as_view()),
     path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view()),

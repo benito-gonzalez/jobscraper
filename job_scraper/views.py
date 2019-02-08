@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.db.models import Q
 from django.views.generic.edit import FormView
 from django.conf import settings
+from django.contrib import messages
 
 from operator import and_
 import functools
@@ -18,7 +19,6 @@ from job_scraper.serializers import JobSerializer, JobDetailSerializer
 class ContactFormView(FormView):
     template_name = 'contact.html'
     form_class = ContactForm
-    success_url = '/thanks'
 
     def form_valid(self, form):
         # reCAPTCHA validation
@@ -35,7 +35,8 @@ class ContactFormView(FormView):
             form.add_error(None, "Invalid reCAPTCHA. Please try again.")
             return super().form_invalid(form)
 
-        return super().form_valid(form)
+        messages.success(self.request, 'Form has been sent successfully!')
+        return self.render_to_response(self.get_context_data(form=form))
 
     def form_invalid(self, form):
         return super().form_invalid(form)

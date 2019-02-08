@@ -137,6 +137,12 @@ Jobs
     font-size: 0.9em;
 }
 
+.success-message {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
 /*
 Paginator
  */
@@ -345,6 +351,12 @@ Phones
         background-color: white;
     }
 
+    .success-message {
+        color: #28a745;
+        font-weight: bold;
+        font-size: 0.8em;
+    }
+
     .job-title {
         font-size: 18px;
         font-weight: bold;
@@ -365,6 +377,8 @@ Phones
     .full-title {
         display: none;
     }
+
+
 }
 
 /*
@@ -415,6 +429,10 @@ Desktop or larger
 
     .full-title {
         display: inline-block;
+    }
+
+    .success-form-height {
+        height: 390px;
     }
 
 }
