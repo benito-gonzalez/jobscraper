@@ -26,13 +26,6 @@
         <div class="col-12 col-lg-10">
             <form method="post">
                 {% csrf_token %}
-
-                <div class="w-lg-50 field-error">
-                    {{ form.name.errors }}
-                    {{ form.email.errors }}
-                    {{ form.message.errors }}
-                </div>
-
                 <div class="row">
                     <div class="col-12 col-lg-6 ">
                         <div class="row ">
@@ -48,10 +41,17 @@
                                        maxlength="{{ form.name.field.max_length }}">
                             </div>
                         </div>
+                        {% if form.name.errors %}
+                            <div class="row ml-5">
+                                <div class="field-error mt-1">
+                                    {{ form.name.errors }}
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="col-12 col-lg-6">
-                        <div class="row  mt-3 mt-lg-0 ">
+                        <div class="row mt-3 mt-lg-0 ">
                             <div class="col-3 col-lg-3 text-right pl-lg-5 pt-2">
                                 <label for="{{ form.email.id_for_label }}"><strong>Email</strong></label>
                             </div>
@@ -64,6 +64,13 @@
                                        maxlength="{{ form.email.field.max_length }}">
                             </div>
                         </div>
+                        {% if form.email.errors %}
+                            <div class="row ml-5">
+                                <div class="field-error mt-1">
+                                    {{ form.email.errors }}
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
 
                 </div>
@@ -75,18 +82,28 @@
                                 <label for="{{ form.message.id_for_label }}"><strong>Message</strong></label>
                             </div>
                             <div class="col-9 col-lg-9 pl-1">
-                                <textarea type="text" class="form-control" rows="7" name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" maxlength="{{ form.message.field.max_length }}">{% if form.message.value != None %}
-                                    {{ form.message.value|stringformat:'s' }} {% endif %}</textarea>
+                                <textarea type="text" class="form-control" rows="7" name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" maxlength="{{ form.message.field.max_length }}">{% if form.message.value != None %}{{ form.message.value|stringformat:'s' }} {% endif %}</textarea>
                             </div>
                         </div>
+                        {% if form.message.errors %}
+                            <div class="row ml-5">
+                                <div class="field-error mt-1">
+                                    {{ form.message.errors }}
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
 
-                    <div class="col-12 col-lg-6">
+                    <div class="col-12 col-lg-5 ml-5 pl-lg-5 mt-3">
                         <div class="row">
-                            <div class="col-6 col-lg-6 pl-4 mr-lg-0 mt-4 ml-lg-5">
-                                <script src='https://www.google.com/recaptcha/api.js'></script>
-                                <div class="g-recaptcha" data-sitekey="6LeXDo8UAAAAAPYQPX8ssFHVVIXaP_Q0lYAjT8w2"></div>
-                            </div>
+                            <div class="g-recaptcha" data-sitekey="6LeUKpAUAAAAAJnNR3JY4hsT2U6frLow2IKHPRIW"></div>
+                            {% if form.non_field_errors %}
+                                <div class="row">
+                                    <div class="catchup-error mt-1">
+                                        {{ form.non_field_errors }}
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
 

@@ -132,11 +132,9 @@ Jobs
 }
 
 .field-error {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    border-radius: 5px;
-    line-height: 1.2;
+    color: red;
+    font-weight: bold;
+    font-size: 0.9em;
 }
 
 /*
@@ -406,6 +404,7 @@ Desktop or larger
     .w-lg-50 {
         width: 50% !important;
     }
+
     .w-lg-100 {
         width: 100% !important;
     }

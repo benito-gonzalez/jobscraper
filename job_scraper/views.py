@@ -4,9 +4,11 @@ from django.http import Http404
 from django.shortcuts import redirect
 from django.db.models import Q
 from django.views.generic.edit import FormView
+from django.conf import settings
 
 from operator import and_
 import functools
+import requests
 
 from .forms import ContactForm
 from job_scraper.models import Job
@@ -19,7 +21,20 @@ class ContactFormView(FormView):
     success_url = '/thanks'
 
     def form_valid(self, form):
-        form.send_email()
+        # reCAPTCHA validation
+        recaptcha_response = self.request.POST.get('g-recaptcha-response')
+        data = {
+            'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+            'response': recaptcha_response
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = r.json()
+        if result['success']:
+            form.send_email()
+        else:
+            form.add_error(None, "Invalid reCAPTCHA. Please try again.")
+            return super().form_invalid(form)
+
         return super().form_valid(form)
 
     def form_invalid(self, form):
