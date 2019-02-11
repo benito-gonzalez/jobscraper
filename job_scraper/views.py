@@ -35,7 +35,7 @@ class ContactFormView(FormView):
             form.add_error(None, "Invalid reCAPTCHA. Please try again.")
             return super().form_invalid(form)
 
-        messages.success(self.request, 'Form has been sent successfully!')
+        messages.success(self.request, 'Form has been sent successfully! Thank you!')
         return self.render_to_response(self.get_context_data(form=form))
 
     def form_invalid(self, form):

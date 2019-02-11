@@ -359,7 +359,7 @@ Phones
     .success-message {
         color: #28a745;
         font-weight: bold;
-        font-size: 0.8em;
+        font-size: 1em;
     }
 
     .job-title {
@@ -437,7 +437,7 @@ Desktop or larger
     }
 
     .success-form-height {
-        height: 390px;
+        height: 362px;
     }
 
 }
