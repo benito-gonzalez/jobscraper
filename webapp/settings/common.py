@@ -130,4 +130,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'jobs.portal.cron@gmail.com'
 EMAIL_FEEDBACK_USER = 'jobs.portal.feedback@gmail.com'
 EMAIL_PORT = 587
-EMAIL_RECIPIENT_LIST = ['gon.beni@gmail.com']
+EMAIL_RECIPIENT_LIST = ['gon.beni@gmail.com', 'sorin.patrasoiu@gmail.com']

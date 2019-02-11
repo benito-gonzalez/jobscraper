@@ -34,7 +34,7 @@ def main():
                 'Scraper errors on ' + now,
                 error_lines.replace("\n", " \n"),
                 settings.EMAIL_HOST_USER,
-                ['gon.beni@gmail.com', 'sorin.patrasoiu@gmail.com'],
+                settings.EMAIL_RECIPIENT_LIST,
                 fail_silently=False,
             )
 
