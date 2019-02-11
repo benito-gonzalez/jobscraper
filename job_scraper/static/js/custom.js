@@ -299,12 +299,19 @@ window.addEventListener("load", function () {
     })
 });
 
-jQuery(document).ready(function($) {
-    $('.btn-more').on('click',function(){
+jQuery(document).ready(function ($) {
+    $('.btn-more').on('click', function () {
         $(this).parents('.frm-outer-container').find('.frm-container').slideToggle('slow');
-        if( $(this).text() === '+ More' )
+        if ($(this).text() === '+ More')
             $(this).text('- Less');
         else
             $(this).text('+ More');
     });
+});
+
+$("button").click(function () {
+    $(".sa-success").addClass("hide");
+    setTimeout(function () {
+        $(".sa-success").removeClass("hide");
+    }, 10);
 });

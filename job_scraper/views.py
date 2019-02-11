@@ -3,11 +3,43 @@ from django.views import generic
 from django.http import Http404
 from django.shortcuts import redirect
 from django.db.models import Q
+from django.views.generic.edit import FormView
+from django.conf import settings
+from django.contrib import messages
+
 from operator import and_
 import functools
+import requests
 
+from .forms import ContactForm
 from job_scraper.models import Job
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
+
+
+class ContactFormView(FormView):
+    template_name = 'contact.html'
+    form_class = ContactForm
+
+    def form_valid(self, form):
+        # reCAPTCHA validation
+        recaptcha_response = self.request.POST.get('g-recaptcha-response')
+        data = {
+            'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+            'response': recaptcha_response
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = r.json()
+        if result['success']:
+            form.send_email()
+        else:
+            form.add_error(None, "Invalid reCAPTCHA. Please try again.")
+            return super().form_invalid(form)
+
+        messages.success(self.request, 'Form has been sent successfully!')
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
 
 
 class IndexView(generic.ListView):

@@ -131,6 +131,18 @@ Jobs
     max-width: 80px;
 }
 
+.field-error {
+    color: red;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.success-message {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
 /*
 Paginator
  */
@@ -339,6 +351,12 @@ Phones
         background-color: white;
     }
 
+    .success-message {
+        color: #28a745;
+        font-weight: bold;
+        font-size: 0.8em;
+    }
+
     .job-title {
         font-size: 18px;
         font-weight: bold;
@@ -359,6 +377,8 @@ Phones
     .full-title {
         display: none;
     }
+
+
 }
 
 /*
@@ -395,6 +415,10 @@ Tablet or larger
 Desktop or larger
  */
 @media (min-width: 992px) {
+    .w-lg-50 {
+        width: 50% !important;
+    }
+
     .w-lg-100 {
         width: 100% !important;
     }
@@ -405,6 +429,10 @@ Desktop or larger
 
     .full-title {
         display: inline-block;
+    }
+
+    .success-form-height {
+        height: 390px;
     }
 
 }
