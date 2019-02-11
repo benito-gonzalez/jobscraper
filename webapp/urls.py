@@ -26,6 +26,7 @@ from job_scraper import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('about/cookiepolicy', TemplateView.as_view(template_name='cookiepolicy.html')),
+    path('about/about-us', TemplateView.as_view(template_name='about.html')),
     path('about/contact-us', views.ContactFormView.as_view()),
     path('', include('job_scraper.urls')),
     path('api/jobs/', views.JobListApiView.as_view()),

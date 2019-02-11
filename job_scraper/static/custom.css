@@ -266,6 +266,11 @@ Bottom up
     cursor: pointer;
 }
 
+.about-style-link{
+    color: #28a745;
+    font-weight: bold;
+}
+
 .cookies-policy-header {
     border-radius: 2px;
     font-weight: bold;
