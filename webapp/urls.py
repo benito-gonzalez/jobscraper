@@ -24,6 +24,7 @@ from django.views.generic.base import TemplateView
 from job_scraper import views
 
 urlpatterns = [
+    url(r'', include('webmaster_verification.urls')),
     path('admin/', admin.site.urls),
     path('about/cookiepolicy', TemplateView.as_view(template_name='cookiepolicy.html')),
     path('about/about-us', TemplateView.as_view(template_name='about.html')),

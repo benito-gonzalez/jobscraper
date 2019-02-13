@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_crontab',
     'bootstrap4',
+    'webmaster_verification',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +132,7 @@ EMAIL_HOST_USER = 'jobs.portal.cron@gmail.com'
 EMAIL_FEEDBACK_USER = 'jobs.portal.feedback@gmail.com'
 EMAIL_PORT = 587
 EMAIL_RECIPIENT_LIST = ['gon.beni@gmail.com', 'sorin.patrasoiu@gmail.com']
+
+WEBMASTER_VERIFICATION = {
+    'google': '3aae9f35b16ecc0d',
+}
