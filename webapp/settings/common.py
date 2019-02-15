@@ -136,3 +136,5 @@ EMAIL_RECIPIENT_LIST = ['gon.beni@gmail.com', 'sorin.patrasoiu@gmail.com']
 WEBMASTER_VERIFICATION = {
     'google': '3aae9f35b16ecc0d',
 }
+
+APPEND_SLASH = False
