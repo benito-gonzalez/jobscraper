@@ -19,8 +19,7 @@ from django.conf import settings
 from django.views.static import serve
 from django.conf.urls import url, include
 from django.views.generic.base import TemplateView
-
-
+from django.views.generic.base import RedirectView
 from job_scraper import views
 
 urlpatterns = [
@@ -33,6 +32,9 @@ urlpatterns = [
     path('api/jobs/', views.JobListApiView.as_view()),
     path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view()),
 ]
+
+if not settings.DEBUG:
+    urlpatterns.append(url(r'^.*$', RedirectView.as_view(url='/', permanent=False), name='index'))
 
 if settings.DEBUG:
     urlpatterns += [
