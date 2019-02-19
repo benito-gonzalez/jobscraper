@@ -211,11 +211,11 @@ class Dna(Scraper):
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
             details_block = job_details_soup.find('div', attrs={'class': 'news-single'})
             if details_block:
-                p = details_block.find("p")
-                if p:
-                    description += str(p)
-                    for p in p.next_siblings:
-                        if p.name and p.name == "p":
+                # Find "Task description"
+                first_tag = details_block.find("h5", string="Tehtävän kuvaus")
+                if first_tag:
+                    for p in first_tag.next_siblings:
+                        if p.name and p.name == "p" and p.text != '\xa0':
                             description += str(p)
                         elif p.name in self.h_tags:
                             break
