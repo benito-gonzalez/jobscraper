@@ -2677,6 +2677,8 @@ class DreamBroker(Scraper):
             details_bock = soup.find('article', {'class': 'db_career'})
             if details_bock:
                 for tag in details_bock.children:
+                    if tag.name and tag.find("script"):
+                        continue
                     if tag != "\n":
                         description += str(tag)
 
