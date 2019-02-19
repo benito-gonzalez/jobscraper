@@ -35,6 +35,15 @@ class Job(models.Model):
         return self.title
 
     @property
+    def get_title_slug(self):
+        """
+        Returns the job title well formatted for URL, changing white spaces by "-" and removing all special characters
+        :return: Job title splited by "-" and lower
+        """
+        title_no_spaces = "-".join(self.title.split())
+        return re.sub(r'[^A-Za-z-0-9]', '', title_no_spaces).lower()
+
+    @property
     def get_initial_description(self):
         """
         Gets the first N characters from a description removing all HTML tags and including only the text within the <p></p> tags.
