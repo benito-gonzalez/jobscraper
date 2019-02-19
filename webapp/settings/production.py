@@ -7,11 +7,11 @@ DEBUG = False
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Use a separate file for the secret key
-with open(os.path.join(BASE_DIR, 'secretkey.txt')) as f:
+with open(os.path.join(BASE_DIR, '../../.keys/secretkey.txt')) as f:
     SECRET_KEY = f.read().strip()
 
 # Use a separate file for the secret key
-with open(os.path.join(BASE_DIR, 'recaptcha_secretkey.txt')) as f:
+with open(os.path.join(BASE_DIR, '../../.keys/recaptcha_secretkey.txt')) as f:
     GOOGLE_RECAPTCHA_SECRET_KEY = f.read().strip()
 
 # Production configs
@@ -28,8 +28,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 
 PREPEND_WWW = True
 
-with open(os.path.join(BASE_DIR, 'email_pwd.txt')) as f:
+with open(os.path.join(BASE_DIR, '../../.keys/email_pwd.txt')) as f:
     EMAIL_HOST_PASSWORD = f.read().strip()
 
-with open(os.path.join(BASE_DIR, 'email_feedback_pwd.txt')) as f:
+with open(os.path.join(BASE_DIR, '../../.keys/email_feedback_pwd.txt')) as f:
     EMAIL_FEEDBACK_PASSWORD = f.read().strip()
