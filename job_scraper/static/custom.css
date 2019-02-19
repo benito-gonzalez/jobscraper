@@ -143,8 +143,13 @@ Jobs
     font-size: 1.5em;
 }
 
-.logo-size{
+.logo-size-60{
     max-width: 60px;
+    height: auto;
+}
+
+.logo-size-100{
+    max-width: 100px;
     height: auto;
 }
 

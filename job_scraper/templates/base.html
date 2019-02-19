@@ -7,7 +7,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Time for a new job?  Search, find and apply to jobs from the largest companies in Finland. The Finland's #1 job site. Start your new career with us today." />
+    <meta name="description" content="Time for a new job?  Search, find and apply to jobs from the largest companies in Finland. The Finland's #1 job site. Start your new career with us today."/>
     <meta name="keywords" content="Jobs, vacancies in Finland, Finland careers, Finland employment, Finland job listings, Finland job search, Finland search engine, work in Helsinki, Helsinki jobs">
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}"/>
 
@@ -21,102 +21,105 @@
 
 <body>
 
+<header>
 
-<div class="header">
-    <div class="container container-header">
+    <div class="header">
+        <div class="container container-header">
 
-        <div class="row pt-4 pt-lg-5 align-items-center justify-content-center">
-            <div class="col-3 d-lg-none text-right pr-1">
-                <a href="/"><img src="{% static 'images/logo.png' %}" alt="" class="logo-size"></a>
-            </div>
-            <div class="col-9 col-lg-12 text-lg-center pl-sm-5 pl-md-0 pl-lg-4">
-                <div class="header-title">
-                    <span class="short-title">Search Jobs In Finland</span>
-                    <span class="full-title">Search Jobs In Finland</span>
+            <div class="row pt-4 pt-lg-5 align-items-center justify-content-center">
+                <div class="col-3 d-lg-none text-right pr-1">
+                    <a href="/"><img src="{% static 'images/logo.png' %}" alt="JobsPortal logo" class="logo-size-60"></a>
                 </div>
-            </div>
-        </div>
-
-        <form action="{% url 'job_scraper:index' %}" method="get">
-            <div class="row row-header flex-lg-nowrap w-md-75 w-lg-100 mx-auto">
-
-                <div class="d-none d-lg-block col-md header-logo">
-                    <a href="/"><img src="{% static 'images/logo.png' %}" width="100px" height="auto" alt=""></a>
-                </div>
-                <div class="d-none d-lg-block col-md">
-                    <div class="search-tag">
-                        What
+                <div class="col-9 col-lg-12 text-lg-center pl-sm-5 pl-md-0 pl-lg-4">
+                    <div class="header-title">
+                        <span class="short-title">Search Jobs In Finland</span>
+                        <span class="full-title">Search Jobs In Finland</span>
                     </div>
-                </div>
-
-                <div class="col-12 col-lg-3">
-                    <div class="search-input">
-                        {% if request.GET.keyword %}
-                            <input type="search" class="form-control" name="keyword" value="{{ request.GET.keyword }}" placeholder="Keywords, company..."/>
-                        {% else %}
-                            <input type="search" class="form-control" name="keyword" placeholder="Keywords, company..."/>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="d-none d-lg-block col-md">
-                    <div class="search-tag">
-                        Where
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-3 mt-2 mt-lg-0">
-                    <div class="location-input">
-                        {% if request.GET.location %}
-                            <input type="search" class="form-control" name="location" value="{{ request.GET.location }}" placeholder="Location"/>
-                        {% else %}
-                            <input type="search" class="form-control" name="location" placeholder="Location"/>
-                        {% endif %}
-
-                    </div>
-                </div>
-                <div class="col-12 col-lg-2 d-flex justify-content-center justify-content-lg-start mt-4 mt-md-2 mt-lg-0 pl-lg-4">
-                    <button id="search_button" type="submit">Search</button>
                 </div>
             </div>
-        </form>
+
+            <form action="{% url 'job_scraper:index' %}" method="get">
+                <div class="row row-header flex-lg-nowrap w-md-75 w-lg-100 mx-auto">
+
+                    <div class="d-none d-lg-block col-md header-logo">
+                        <a href="/"><img src="{% static 'images/logo.png' %}" alt="JobsPortal logo" class="logo-size-100"></a>
+                    </div>
+                    <div class="d-none d-lg-block col-md">
+                        <div class="search-tag">
+                            <label for="keyword">What</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-3">
+                        <div class="search-input">
+                            {% if request.GET.keyword %}
+                                <input type="search" class="form-control" id="keyword" name="keyword" value="{{ request.GET.keyword }}" placeholder="Keywords, company..."/>
+                            {% else %}
+                                <input type="search" class="form-control" id="keyword" name="keyword" placeholder="Keywords, company..."/>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-none d-lg-block col-md">
+                        <div class="search-tag">
+                            <label for="location">Where</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-3 mt-2 mt-lg-0">
+                        <div class="location-input">
+                            {% if request.GET.location %}
+                                <input type="search" class="form-control" id="location" name="location" value="{{ request.GET.location }}" placeholder="Location"/>
+                            {% else %}
+                                <input type="search" class="form-control" id="location" name="location" placeholder="Location"/>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-2 d-flex justify-content-center justify-content-lg-start mt-4 mt-md-2 mt-lg-0 pl-lg-4">
+                        <button id="search_button" type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
 
     </div>
+</header>
 
-</div>
+<main>
+    <!-- Main container (list of jobs and job descriptions) -->
+    <div class="container ">
+        <div class="main-border">
+            <div class="main-div">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
 
-<!-- Main container (list of jobs and job descriptions) -->
-<div class="container ">
-    <div class="main-border">
-        <div class="main-div">
-            {% block content %}
-            {% endblock %}
+        <div class="col-md-9">
+            <div class="emptyalert alert alert-danger" id="alertmsg" style="display: none; text-align: center"></div>
         </div>
     </div>
+</main>
 
-    <div class="col-md-9">
-        <div class="emptyalert alert alert-danger" id="alertmsg" style="display: none; text-align: center"></div>
-    </div>
-
-
-</div>
-
-<div class="footer text-center">
-    <div class="row mt-2">
-        <div class="col">
-            <a href="/about/about-us" class="about-links">About us</a>
+<footer>
+    <div class="footer text-center">
+        <div class="row mt-2">
+            <div class="col">
+                <a href="/about/about-us" class="about-links">About us</a>
+            </div>
+            <div class="col">
+                <a href="/about/contact-us" class="about-links">Contact us</a>
+            </div>
+            <div class="col">
+                <a href="/about/cookiepolicy" class="about-links">Cookie Policy</a>
+            </div>
         </div>
-        <div class="col">
-            <a href="/about/contact-us" class="about-links">Contact us</a>
-        </div>
-        <div class="col">
-            <a href="/about/cookiepolicy" class="about-links">Cookie Policy</a>
+        <div class="row mt-5 justify-content-center align-items-center">
+            Copyright © 2019 JobsPortal. All rights reserved
         </div>
     </div>
-    <div class="row mt-5 justify-content-center align-items-center">
-        Copyright © 2019 JobsPortal. All rights reserved
-    </div>
-</div>
-
+</footer>
 
 <!-- content -->
 <script src='https://www.google.com/recaptcha/api.js'></script>

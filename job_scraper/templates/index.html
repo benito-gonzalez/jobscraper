@@ -115,22 +115,22 @@
                         </div>
                     </div>
                 </div>
-            <!--   </div>  -->
+                <!--   </div>  -->
             </div>
 
         {% endfor %}
 
         {% if is_paginated %}
             <div class="paginator float-left" style="display: inline-block" id="pageindex">
+                <div class="d-none d-sm-block">
 
-                <ul class="pagination">
+                    <ul class="pagination">
 
-                    {% if page_obj.number > 1 %}
-                        <li><a href="search?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>
-                    {% endif %}
+                        {% if page_obj.number > 1 %}
+                            <li><a href="search?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>
+                        {% endif %}
 
-                    {% for i in page_obj.paginator.page_range %}
-                        <div class="d-none d-sm-block">
+                        {% for i in page_obj.paginator.page_range %}
 
                             {% if page_obj.number == i %}
                                 <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
@@ -148,13 +148,14 @@
                             {% elif page_obj.number == page_obj.paginator.num_pages and i > page_obj.number|add:'-5' %}
                                 <li><a href="search?{% param_replace page=i %}">{{ i }}</a></li>
                             {% endif %}
-                        </div>
 
-                    {% endfor %}
-                    {% if page_obj.paginator.num_pages > page_obj.number %}
-                        <li><a href="search?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
-                    {% endif %}
-                </ul>
+                        {% endfor %}
+                        {% if page_obj.paginator.num_pages > page_obj.number %}
+                            <li><a href="search?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+
             </div>
         {% endif %}
 
