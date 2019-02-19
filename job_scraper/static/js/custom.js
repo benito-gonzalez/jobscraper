@@ -19,12 +19,14 @@ function showAlert() {
 
 $(document).ready(function () {
     var input = document.getElementById("searchfield");
-    input.addEventListener("keyup", function (event) {
-        event.preventDefault();
-        if (event.keyCode == 13) {
-            document.getElementById("searchbutton").click();
-        }
-    });
+    if (input) {
+        input.addEventListener("keyup", function (event) {
+            event.preventDefault();
+            if (event.keyCode == 13) {
+                document.getElementById("searchbutton").click();
+            }
+        })
+    }
 
     $("#searchfield").click(function () {
         $("#searchbutton span i").removeClass("fa-times");
