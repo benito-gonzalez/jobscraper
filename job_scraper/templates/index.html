@@ -126,7 +126,7 @@
                 <ul class="pagination">
 
                     {% if page_obj.number > 1 %}
-                        <li><a href="jobs?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>
+                        <li><a href="search?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>
                     {% endif %}
 
                     {% for i in page_obj.paginator.page_range %}
@@ -136,23 +136,23 @@
                                 <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
 
                             {% elif page_obj.number == 1 and i < page_obj.number|add:'5' %}
-                                <li><a href="jobs?{% param_replace page=i %}">{{ i }}</a></li>
+                                <li><a href="search?{% param_replace page=i %}">{{ i }}</a></li>
                             {% elif page_obj.number == 2 and i > page_obj.number|add:'-1' and i < page_obj.number|add:'4' %}
-                                <li><a href="jobs?{% param_replace page=i %}">{{ i }}</a></li>
+                                <li><a href="search?{% param_replace page=i %}">{{ i }}</a></li>
 
                             {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' and i < page_obj.paginator.num_pages|add:'1' %}
-                                <li><a href="jobs?{% param_replace page=i %}">{{ i }}</a></li>
+                                <li><a href="search?{% param_replace page=i %}">{{ i }}</a></li>
 
                             {% elif page_obj.number == page_obj.paginator.num_pages|add:'-1' and i > page_obj.number|add:'-4' and i < page_obj.number|add:'2' %}
-                                <li><a href="jobs?{% param_replace page=i %}">{{ i }}</a></li>
+                                <li><a href="search?{% param_replace page=i %}">{{ i }}</a></li>
                             {% elif page_obj.number == page_obj.paginator.num_pages and i > page_obj.number|add:'-5' %}
-                                <li><a href="jobs?{% param_replace page=i %}">{{ i }}</a></li>
+                                <li><a href="search?{% param_replace page=i %}">{{ i }}</a></li>
                             {% endif %}
                         </div>
 
                     {% endfor %}
                     {% if page_obj.paginator.num_pages > page_obj.number %}
-                        <li><a href="jobs?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
+                        <li><a href="search?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
                     {% endif %}
                 </ul>
             </div>

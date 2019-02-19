@@ -48,18 +48,18 @@ class IndexView(generic.ListView):
     context_object_name = 'jobs_list'
 
     def get_queryset(self):
-        search_query = self.request.GET.get('search', None)
+        keyword_query = self.request.GET.get('keyword', None)
         location_query = self.request.GET.get('location', None)
-        search_words = []
+        keyword_words = []
 
-        if search_query:
-            search_words = search_query.split(" ")
+        if keyword_query:
+            keyword_words = keyword_query.split(" ")
 
-        if search_query and location_query:
-            return Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in search_words])
+        if keyword_query and location_query:
+            return Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in keyword_words])
                                       & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
-        if search_query:
-            return Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in search_words]) & Q(is_active=True)).order_by('-updated_at')
+        if keyword_query:
+            return Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in keyword_words]) & Q(is_active=True)).order_by('-updated_at')
         if location_query:
             return Job.objects.filter(is_active=True, location__icontains=location_query).order_by('-updated_at')
         else:

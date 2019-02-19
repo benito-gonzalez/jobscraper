@@ -51,10 +51,10 @@
 
                 <div class="col-12 col-lg-3">
                     <div class="search-input">
-                        {% if request.GET.search %}
-                            <input type="search" class="form-control" name="search" value="{{ request.GET.search }}" placeholder="Keywords, company..."/>
+                        {% if request.GET.keyword %}
+                            <input type="search" class="form-control" name="keyword" value="{{ request.GET.keyword }}" placeholder="Keywords, company..."/>
                         {% else %}
-                            <input type="search" class="form-control" name="search" placeholder="Keywords, company..."/>
+                            <input type="search" class="form-control" name="keyword" placeholder="Keywords, company..."/>
                         {% endif %}
                     </div>
                 </div>
