@@ -1,0 +1,6 @@
+Sitemap: https://www.jobsportal.fi/sitemap.xml
+
+User-agent: *
+Disallow: /admin*
+Disallow: /api*
+Allow: /
