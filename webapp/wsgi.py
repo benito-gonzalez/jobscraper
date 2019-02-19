@@ -12,7 +12,7 @@ import os
 from django.core.wsgi import get_wsgi_application
 
 BASE_DIR = os.path.dirname(__file__)
-if os.path.isfile(BASE_DIR + '/secretkey.txt'):
+if os.path.isfile(BASE_DIR + '../../.keys/secretkey.txt'):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.production')
 else:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.development')
