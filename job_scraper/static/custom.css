@@ -153,6 +153,11 @@ Jobs
     height: auto;
 }
 
+.logo-size-250{
+    max-width: 250px;
+    height: auto;
+}
+
 .arrow-size{
     max-width: 50px;
     height: auto;

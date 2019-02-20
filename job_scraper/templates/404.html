@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="success-form-height">
+        <div class="row mt-5"></div>
+        <div class="row mt-5"></div>
+        <div class="col-11 col-lg-12 text-center">
+            <div class="row mt-5 mb-5">
+                <div class="col-12 col-lg-5 text-center pl-lg-5">
+                    <img src="{% static 'images/404.png' %}" alt="404 logo" class="logo-size-250">
+                </div>
+                <div class="col-12 col-lg-7 justify-content-center align-self-center mt-5 mt-lg-0 mb-3">
+                    <div class="row">
+                        <h5><strong>The requested URL was not found on this server.</strong></h5>
+                    </div>
+                    <div class="row">
+                        <h6>If you need assistance you can <a href="/about/contact-us" class="about-links about-style-link"> contact us </a> or visit our <a href="/"
+                                                                                                                                                             class="about-links about-style-link">
+                            home page </a></h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

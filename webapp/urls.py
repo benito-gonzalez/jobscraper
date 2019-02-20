@@ -20,6 +20,7 @@ from django.views.static import serve
 from django.conf.urls import url, include
 from django.views.generic.base import TemplateView
 from django.views.generic.base import RedirectView
+from django.shortcuts import render_to_response
 from job_scraper import views
 
 urlpatterns = [
@@ -32,6 +33,13 @@ urlpatterns = [
     # path('api/jobs/', views.JobListApiView.as_view()),
     # path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view()),
 ]
+
+
+def handler404(request, exception, template_name="404.html"):
+    response = render_to_response(template_name)
+    response.status_code = 404
+    return response
+
 
 if not settings.DEBUG:
     urlpatterns.append(url(r'^.*$', RedirectView.as_view(url='/', permanent=False), name='index'))
