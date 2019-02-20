@@ -29,8 +29,8 @@ urlpatterns = [
     path('about/about-us', TemplateView.as_view(template_name='about.html')),
     path('about/contact-us', views.ContactFormView.as_view()),
     path('', include('job_scraper.urls')),
-    path('api/jobs/', views.JobListApiView.as_view()),
-    path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view()),
+    # path('api/jobs/', views.JobListApiView.as_view()),
+    # path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view()),
 ]
 
 if not settings.DEBUG:
