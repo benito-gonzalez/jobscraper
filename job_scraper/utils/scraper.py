@@ -2192,7 +2192,11 @@ class Nebula(Scraper):
                 title_line = block_description.find('h3')
                 if title_line:
                     for sibling in title_line.next_siblings:
-                        description += str(sibling)
+                        if sibling.name:
+                            sibling.attrs = {}
+                            for tag in sibling.find_all(True):
+                                tag.attrs = {}
+                            description += str(sibling)
 
         return description
 
