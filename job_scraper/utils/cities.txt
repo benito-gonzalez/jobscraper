@@ -599,3 +599,5 @@ Capital region
 Capital Region
 Finland
 Helsingin
+Mariehamn
+Helsingfors
