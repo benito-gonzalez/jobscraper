@@ -104,6 +104,10 @@ def generate_instance_from_client(client_name, url):
         return Nitor(client_name, url)
     if client_name.lower() == "softability":
         return Softability(client_name, url)
+    if client_name.lower() == "fleetonomy.ai":
+        return Fleetonomy(client_name, url)
+    if client_name.lower() == "ubisoft redlynx":
+        return Ubisoft(client_name, url)
     else:
         return None
 
@@ -140,18 +144,14 @@ class Scraper(object):
         """
         application_job_titles = ["avoin hakemus",
                                   "open application",
-                                  "open application (finland & sweden)",
-                                  "avoin hakemus innofactorille",
-                                  "avoin hakemus / open application",
+                                  "open applications",
                                   "Every tech position at Futurice. Ever.",
-                                  "your title here",
-                                  "open application for internship programs and master thesis projects",
-                                  "open applications / finland"]
+                                  "your title here"]
         valid = False
 
         if not title:
             log_support.set_invalid_title(self.client_name)
-        elif title.lower() not in application_job_titles:
+        elif not any(s in title.lower() for s in application_job_titles):
             if not description_url:
                 log_support.set_invalid_description_url(self.client_name, title)
             elif description == "":
@@ -3550,6 +3550,174 @@ class Softability(Scraper):
                         for sibling in title_tag.next_siblings:
                             if sibling != "\n":
                                 description += str(sibling)
+
+        return description
+
+    @staticmethod
+    def get_location(description):
+        """
+        It tries to get a Finnish city from the job description
+        :param description: job description
+        :return: Finnish cities as a String
+        """
+        locator = CityLocator()
+        cities = locator.get_finnish_cities(description)
+        if cities:
+            location = ", ".join(cities)
+        else:
+            location = None
+
+        return location
+
+
+class Fleetonomy(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        # Jobs appears withing a <p> tag with text "Now we are looking for:"
+        p_tag = soup.find(self.find_jobs_tag)
+        if p_tag:
+            jobs_list = p_tag.find_all('a')
+            for item in jobs_list:
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(description)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    @staticmethod
+    def find_jobs_tag(tag):
+        return tag.name == 'p' and 'Now we are looking for:' in tag.text
+
+    def get_mandatory_fields(self, item):
+        title = None
+        description = ""
+
+        relative_url = item.get('href')
+        description_url = self.url.split(".ai/")[0] + ".ai" + relative_url
+
+        job_details_html = request_support.simple_get(description_url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            job_block = job_details_soup.find('section', class_='Main-content')
+
+            h2_tags = job_block.find_all('h2')
+            # There are two H2 tags, the second one contains the title
+            if len(h2_tags) == 2:
+                title = h2_tags[1].text
+                description = self.get_full_description(job_block)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(job_block):
+        description = ""
+
+        description_blocks = job_block.find_all('div', class_="row")
+        for block in description_blocks:
+            first_p = block.find('p')
+            if first_p:
+                first_p.attrs = {}
+                description += str(first_p)
+
+                for tag in first_p.next_siblings:
+                    tag.attrs = {}
+                    description += str(tag)
+            # Block #2 has three <h3> tags
+            h3_tags = block.find_all('h3')
+            for h3_tag in h3_tags:
+                h3_tag.attrs = {}
+                description += str(h3_tag)
+
+                parent = h3_tag.parent
+                if parent:
+                    ul = parent.find('ul')
+                    if ul:
+                        ul.attrs = {}
+                        for child in ul.find_all(True):
+                            child.attrs = {}
+                        description += str(ul)
+
+        return description
+
+    @staticmethod
+    def get_location(description):
+        """
+        It tries to get a Finnish city from the job description
+        :param description: job description
+        :return: Finnish cities as a String
+        """
+        locator = CityLocator()
+        cities = locator.get_finnish_cities(description)
+        if cities:
+            location = ", ".join(cities)
+        else:
+            location = None
+
+        return location
+
+
+class Ubisoft(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        jobs_block = soup.find('div', class_='b-open-positions__content')
+        if jobs_block:
+            for item in jobs_block.find_all('div', class_="c-accordion__item"):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(description)
+                    if not location:
+                        # Ubisoft has a unique office located in Helsinki. If this information is not in the job description, we can hard-code it
+                        location = "Helsinki"
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # First element contains an image, second one contains the title
+        title_tag = item.find('div', class_='c-accordion__item-title')
+
+        if title_tag:
+            title = title_tag.text
+
+            description_url_item = item.find('div', class_='c-accordion__item-button')
+            if description_url_item:
+                description_url_tag = description_url_item.find('a')
+                if description_url_tag:
+                    description_url = description_url_tag.get('href')
+
+            description_tag = item.find('div', class_='c-accordion__item-content')
+            if description_tag:
+                description = self.get_full_description(description_tag)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(description_tag):
+        description = ""
+
+        for block in description_tag.children:
+            if block.name:
+                for child in block.find_all(True):
+                    child.attrs = {}
+
+                if block.name == "div" and block.has_attr('class') and "c-accordion__item-button" in block['class']:
+                    break
+
+                description += str(block)
 
         return description
 
