@@ -46,18 +46,11 @@ class Job(models.Model):
     @property
     def get_initial_description(self):
         """
-        Gets the first N characters from a description removing all HTML tags and including only the text within the <p></p> tags.
+        Gets the description removing all HTML tags.
         :return: String
         """
-        raw_description = self.description
-        description_split = self.description.split('<p>', 1)
-
-        if len(description_split) == 2:
-            raw_description = description_split[1]
-            raw_description = raw_description.replace('</p>', '\n')
-
         reg_exp = re.compile('<.*?>')
-        description = re.sub(reg_exp, ' ', raw_description)
+        description = re.sub(reg_exp, ' ', self.description)
 
         return description
 
