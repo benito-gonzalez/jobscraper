@@ -161,6 +161,12 @@ class Scraper(object):
 
         return valid
 
+    @staticmethod
+    def clean_attrs(tag):
+        tag.attrs = {}
+        for child in tag.find_all(True):
+            child.attrs = {}
+
 
 class Dna(Scraper):
 
@@ -1419,30 +1425,10 @@ class Rightware(Scraper):
             # For jobs which have sequential information
             description_div = soup.find('div', {'class': 'body'})
             if description_div:
-                position_h = soup.find(["strong", "h2", "h3", "h4"], string='Position')
-                if position_h:
-                    description += str(position_h)
-                    for p in position_h.next_siblings:
-                        if self.is_apply_block(p):
-                            break
-                        if p != "\n" and p.name != "hr":
-                            description += str(p)
-            else:
-                # Job description appears in parallel divs
-                description_div = soup.find('div', {'class': 'span12 widget-span widget-type-cell main-content'})
-                if description_div:
-                    block_tags = description_div.find_all(["h2", "h3", "h4"])
-                    for tag in block_tags:
-                        if self.is_apply_block(tag):
-                            break
-                        # Firt paragraph is a definition of the company which we don't want to store.
-                        if "team" in tag.text.lower():
-                            continue
-                        else:
-                            description += str(tag)
-                            for p in tag.next_siblings:
-                                if p != "\n" and p.name != "hr":
-                                    description += str(p)
+                for child in description_div.children:
+                    if child.name:
+                        self.clean_attrs(child)
+                        description += str(child)
 
         return description
 
