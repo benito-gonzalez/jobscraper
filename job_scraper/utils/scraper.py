@@ -1355,9 +1355,9 @@ class Tieto(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             description_soup = BeautifulSoup(job_details_html, 'html.parser')
-            dates_label = description_soup.find('label', string='Appliation period:')
+            dates_label = description_soup.find('label', string='Application period:')
             if dates_label:
-                # dates_string is something like "Appliation period: 05 December 2018 - 23 December 2018"
+                # dates_string is something like "Application period: 05 December 2018 - 23 December 2018"
                 dates_string = dates_label.parent.text
                 dates_fields = dates_string.split(":")
                 if len(dates_fields) == 2:
