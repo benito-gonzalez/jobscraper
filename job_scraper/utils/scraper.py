@@ -114,6 +114,8 @@ def generate_instance_from_client(client_name, url):
         return Paf(client_name, url)
     if client_name.lower() == "fluido":
         return Fluido(client_name, url)
+    if client_name.lower() == "atea":
+        return Atea(client_name, url)
     else:
         return None
 
@@ -152,7 +154,8 @@ class Scraper(object):
                                   "open application",
                                   "open applications",
                                   "Every tech position at Futurice. Ever.",
-                                  "your title here"]
+                                  "your title here",
+                                  "avoin työharjoitteluhakemus"]
         valid = False
 
         if not title:
@@ -3970,3 +3973,78 @@ class Fluido(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class Atea(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        table = soup.find('tbody')
+        if table:
+            for row in table.find_all("tr"):
+                title, description_url, description = self.get_mandatory_fields(row)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(row, title)
+                    end_date = self.get_end_date(row, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find("a")
+        if url_tag:
+            title = url_tag.text
+            description_url = url_tag.get('href')
+            description = self.get_full_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_block = job_details_soup.find('div', class_='jobDescription')
+            if description_block:
+                for child in description_block.children:
+                    if child.name:
+                        Scraper.clean_attrs(child)
+                        if child.text != "":
+                            description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location_tag = item.find('td', class_='jobtown')
+        if location_tag:
+            location = location_tag.text
+        else:
+            location = None
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        date_div = item.find('td', class_="publishto")
+        if date_div:
+            date_span = date_div.find('span')
+            if date_span:
+                if date_span:
+                    date_raw = date_span.text
+                    try:
+                        end_date_datetime = parser.parse(date_raw)
+                        end_date = end_date_datetime.strftime('%Y-%m-%d')
+                    except ValueError:
+                        log_support.set_invalid_location(self.client_name, title)
+
+        return end_date
