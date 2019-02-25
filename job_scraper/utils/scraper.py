@@ -958,11 +958,11 @@ class Varjo(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
 
-        job_divs = soup.find_all('a', {'class': 'jobs-position'})
-        for job_div in job_divs:
+        positions = soup.find_all('li', {'class': 'block--jobs-list__list__item'})
+        for job_div in positions:
             title, description_url, description = self.get_mandatory_fields(job_div)
             if self.is_valid_job(title, description_url, description):
-                location_div = job_div.find('span', {'class': 'jobs-position-location'})
+                location_div = job_div.find('h6', {'class': 'block--jobs-list__list__item__job-location'})
                 if location_div:
                     location = location_div.text
                 else:
@@ -978,10 +978,10 @@ class Varjo(Scraper):
         title = description_url = None
         description = ""
 
-        title_tag = item.find('span', {'class': 'jobs-position-title'})
-        if title_tag:
-            title = title_tag.text.strip()
-            description_url = item.get('href')
+        url_tag = item.find('a')
+        if url_tag:
+            title = url_tag.text.strip()
+            description_url = url_tag.get('href')
             if description_url:
                 description = self.get_description(description_url)
 
@@ -993,14 +993,14 @@ class Varjo(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            description_div = soup.find('div', {'class': 'jobs-override'})
-            if description_div:
-                tags = description_div.find_all(['p', 'h3'])
-                for tag in tags:
-                    if tag.text.strip().lower() == "job description":
-                        for p in tag.next_siblings:
-                            description += str(p)
-                        break
+            first_line = soup.find('h1')
+            if first_line:
+                for tag in first_line.next_siblings:
+                    if tag.name:
+                        Scraper.clean_attrs(tag)
+                        if tag.name == "iframe" or tag.find('iframe'):
+                            break
+                        description += str(tag)
 
         return description
 
