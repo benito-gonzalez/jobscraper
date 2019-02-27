@@ -120,6 +120,10 @@ def generate_instance_from_client(client_name, url):
         return If(client_name, url)
     if client_name.lower() == "epic games":
         return EpicGames(client_name, url)
+    if client_name.lower() == "sanoma":
+        return Sanoma(client_name, url)
+    if client_name.lower() == "orion":
+        return Orion(client_name, url)
     else:
         return None
 
@@ -4307,3 +4311,163 @@ class EpicGames(Scraper):
             log_support.set_error_message(self.client_name, "Can not get next page: " + str(e))
 
         return new_page, new_offset
+
+
+class Sanoma(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        for job_div in soup.find_all('div', class_="single-job"):
+            title, description_url, description = self.get_mandatory_fields(job_div)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(job_div, title)
+                end_date = self.get_date(job_div, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        title_div = item.find('h3')
+        if title_div:
+            title = title_div.text
+
+            # Check description_url
+            url_span = item.find('a')
+            if url_span:
+                description_url = url_span.get('href')
+                if description_url:
+                    description = self.get_full_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            details_block = job_details_soup.find('main', class_='page-position')
+            if details_block:
+                # Find "Task description"
+                first_tag = details_block.find("p")
+                if first_tag:
+                    description += str(first_tag)
+                    for p in first_tag.next_siblings:
+                        if p.name and p.name == "p" and p.text != '\xa0':
+                            description += str(p)
+
+        return description
+
+    def get_date(self, item, title):
+        end_date = None
+        end_date_div = item.find('div', class_='single-job__deadline')
+        if end_date_div:
+            end_date_span = end_date_div.find("span", class_="single-job__value")
+            if end_date_span:
+                end_date_raw = end_date_span.text
+                try:
+                    pub_date_datetime = parser.parse(end_date_raw)
+                    end_date = pub_date_datetime.strftime('%Y-%m-%d')
+                except ValueError:
+                    pass
+
+        if not end_date:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return end_date
+
+    def get_location(self, item, title):
+        location = None
+        location_div = item.find('div', class_='single-job__location')
+        if location_div:
+            location_span = location_div.find("span", class_="single-job__value")
+            if location_span:
+                location = location_span.text
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Orion(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        table = soup.find('tbody')
+        if table:
+            for row in table.find_all("tr"):
+                title, description_url, description = self.get_mandatory_fields(row)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(row, title)
+                    end_date = self.get_end_date(row, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find("a")
+        if url_tag:
+            title = url_tag.text
+            description_url = url_tag.get('href')
+            description = self.get_full_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_full_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_block = job_details_soup.find('div', class_='jobDescription')
+            if description_block:
+                for child in description_block.children:
+                    if child.name:
+                        Scraper.clean_attrs(child)
+                        if child.text != "":
+                            description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location_tag = item.find('td', class_='jobtown')
+        if location_tag:
+            location = location_tag.text
+        else:
+            location = None
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        date_div = item.find('td', class_="publishto")
+        if date_div:
+            date_span = date_div.find('span')
+            if date_span:
+                if date_span:
+                    date_raw = date_span.text
+                    try:
+                        end_date_datetime = parser.parse(date_raw)
+                        end_date = end_date_datetime.strftime('%Y-%m-%d')
+                    except ValueError:
+                        log_support.set_invalid_location(self.client_name, title)
+
+        return end_date
