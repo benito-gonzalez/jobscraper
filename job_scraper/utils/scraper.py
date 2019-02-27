@@ -116,6 +116,10 @@ def generate_instance_from_client(client_name, url):
         return Fluido(client_name, url)
     if client_name.lower() == "atea":
         return Atea(client_name, url)
+    if client_name.lower() == "if":
+        return If(client_name, url)
+    if client_name.lower() == "epic games":
+        return EpicGames(client_name, url)
     else:
         return None
 
@@ -4048,3 +4052,258 @@ class Atea(Scraper):
                         log_support.set_invalid_location(self.client_name, title)
 
         return end_date
+
+
+class If(Scraper):
+
+    page_offset = 50
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        last_page = False
+        current_page = self.url
+        current_offset = 0
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+        total_jobs = self.get_total_jobs(json_dict)
+
+        while not last_page:
+            jobs_list = self.get_jobs_list(json_dict)
+            if jobs_list:
+                for item in jobs_list:
+                    title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+                    if is_finnish and self.is_valid_job(title, description_url, description):
+                        # location has already being checked in get_mandatory_fields()
+                        location = item["subtitles"][0]["instances"][0]["text"]
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
+
+                current_page, current_offset = self.get_next_page(current_page, If.page_offset)
+                if current_page and current_offset:
+                    html = request_support.simple_get(current_page, accept_json=True)
+                    json_dict = json.loads(html)
+                else:
+                    # in case of error, finish
+                    last_page = True
+
+            if not jobs or current_offset > total_jobs:
+                last_page = True
+
+        return jobs
+
+    def get_total_jobs(self, json_dict):
+
+        try:
+            total_jobs = json_dict["body"]["children"][0]["facetContainer"]["paginationCount"]["value"]
+            # only the first page contains the proper number of jobs. Rest of them, this value is 0
+        except (IndexError, KeyError, ValueError):
+            total_jobs = 0
+            log_support.set_error_message(self.client_name, "Can not get the total number of jobs")
+
+        return total_jobs
+
+    @staticmethod
+    def get_jobs_list(json_dict):
+        # Jobs list is in "json_dict["body"]["children"][0]["children"][0]["listItems"]"
+        try:
+            jobs_list = json_dict["body"]["children"][0]["children"][0]["listItems"]
+        except (IndexError, KeyError, ValueError):
+            jobs_list = []
+
+        return jobs_list
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        locator = CityLocator()
+        is_finnish = False
+
+        if "title" in item and "instances" in item["title"] and len(item["title"]["instances"]) > 0 and "text" in item["title"]["instances"][0]:
+            title = item["title"]["instances"][0]["text"]
+            if "subtitles" in item and len(item["subtitles"]) > 0 and "instances" in item["subtitles"][0] and\
+                    len(item["subtitles"][0]["instances"]) > 0 and "text" in item["subtitles"][0]["instances"][0]:
+                location = item["subtitles"][0]["instances"][0]["text"]
+                if locator.has_finnish_cities(location):
+                    is_finnish = True
+                    if "commandLink" in item["title"]:
+                        relative_url = item["title"]["commandLink"]
+                        description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                        description = self.get_description(description_url)
+
+        return title, description_url, description, is_finnish
+
+    @staticmethod
+    def get_description(description_url):
+        description = ""
+        job_details_html = request_support.simple_get(description_url, accept_json=True)
+        if job_details_html:
+            json_dict = json.loads(job_details_html)
+            try:
+                description = json_dict["body"]["children"][1]["children"][0]["children"][2]["text"]
+            except (ValueError, KeyError, IndexError, AttributeError):
+                try:
+                    # Some jobs has the description in the children #3
+                    description = json_dict["body"]["children"][1]["children"][0]["children"][3]["text"]
+                except (ValueError, KeyError, IndexError, AttributeError):
+                    try:
+                        # Some jobs has the description in the children #4
+                        description = json_dict["body"]["children"][1]["children"][0]["children"][4]["text"]
+                    except (ValueError, KeyError, IndexError, AttributeError):
+                        description = ""
+
+        # Remove <h1> from tag
+        description_soup = BeautifulSoup(description, "html.parser")
+        h1_tag = description_soup.find('h1')
+        if h1_tag:
+            h1_tag.extract()
+            description = str(description_soup)
+
+        return description
+
+    def get_next_page(self, current_url, offset):
+        try:
+            result = re.search(r'/([0-9]+)\?clientRequestID', current_url)
+            current_offset = result.group(1)
+            new_offset = int(current_offset) + offset
+            old_pattern = "/" + current_offset + "?clientRequestID"
+            new_pattern = "/%d" % new_offset + "?clientRequestID"
+            new_page = current_url.replace(old_pattern, new_pattern, 1)
+        except Exception as e:
+            new_page = new_offset = None
+            log_support.set_error_message(self.client_name, "Can not get next page: " + str(e))
+
+        return new_page, new_offset
+
+
+class EpicGames(Scraper):
+
+    page_offset = 50
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        last_page = False
+        current_page = self.url
+        current_offset = 0
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+        total_jobs = self.get_total_jobs(json_dict)
+
+        while not last_page:
+            jobs_list = self.get_jobs_list(json_dict)
+            if jobs_list:
+                for item in jobs_list:
+                    title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+                    if is_finnish and self.is_valid_job(title, description_url, description):
+                        # location has already being checked in get_mandatory_fields()
+                        location = self.get_location(description_url, title)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
+
+                current_page, current_offset = self.get_next_page(current_page, EpicGames.page_offset)
+                if current_page and current_offset:
+                    html = request_support.simple_get(current_page, accept_json=True)
+                    json_dict = json.loads(html)
+                else:
+                    # in case of error, finish
+                    last_page = True
+
+            if not jobs or current_offset > total_jobs:
+                last_page = True
+
+        return jobs
+
+    def get_total_jobs(self, json_dict):
+
+        try:
+            total_jobs = json_dict["body"]["children"][0]["facetContainer"]["paginationCount"]["value"]
+            # only the first page contains the proper number of jobs. Rest of them, this value is 0
+        except (IndexError, KeyError, ValueError):
+            total_jobs = 0
+            log_support.set_error_message(self.client_name, "Can not get the total number of jobs")
+
+        return total_jobs
+
+    @staticmethod
+    def get_jobs_list(json_dict):
+        # Jobs list is in "json_dict["body"]["children"][0]["children"][0]["listItems"]"
+        try:
+            jobs_list = json_dict["body"]["children"][0]["children"][0]["listItems"]
+        except (IndexError, KeyError, ValueError):
+            jobs_list = []
+
+        return jobs_list
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        locator = CityLocator()
+        is_finnish = False
+
+        if "title" in item and "instances" in item["title"] and len(item["title"]["instances"]) > 0 and "text" in item["title"]["instances"][0]:
+            title = item["title"]["instances"][0]["text"]
+            if "subtitles" in item and len(item["subtitles"]) > 0 and "instances" in item["subtitles"][0] and\
+                    len(item["subtitles"][0]["instances"]) > 0 and "text" in item["subtitles"][0]["instances"][0]:
+                location = item["subtitles"][0]["instances"][0]["text"]
+                # JSON response can not contain all cities but just one or two and "More...". We need to check those in case some city is from Finland
+                if locator.has_finnish_cities(location) or "More" in location:
+                    is_finnish = True
+                    if "commandLink" in item["title"]:
+                        relative_url = item["title"]["commandLink"]
+                        description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                        description = self.get_description(description_url)
+
+        return title, description_url, description, is_finnish
+
+    @staticmethod
+    def get_description(description_url):
+        description = ""
+        job_details_html = request_support.simple_get(description_url, accept_json=True)
+        if job_details_html:
+            json_dict = json.loads(job_details_html)
+            try:
+                for child in json_dict["body"]["children"][1]["children"][0]["children"]:
+                    if "text" in child:
+                        description = child["text"]
+            except (ValueError, KeyError, IndexError, AttributeError):
+                # Error message will be handled by "is_valid_job()" method
+                pass
+
+        description_soup = BeautifulSoup(description, "html.parser")
+        Scraper.clean_attrs(description_soup)
+        description = str(description_soup)
+
+        return description
+
+    def get_location(self, description_url, title):
+        location = ""
+        job_details_html = request_support.simple_get(description_url, accept_json=True)
+        if job_details_html:
+            json_dict = json.loads(job_details_html)
+            try:
+                for child in json_dict["body"]["children"][1]["children"][0]["children"]:
+                    if "imageLabel" in child:
+                        location += child["imageLabel"] + ", "
+            except (ValueError, KeyError, IndexError, AttributeError):
+                pass
+
+        if location == "":
+            location = None
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_next_page(self, current_url, offset):
+        try:
+            result = re.search(r'/([0-9]+)\?clientRequestID', current_url)
+            current_offset = result.group(1)
+            new_offset = int(current_offset) + offset
+            old_pattern = "/" + current_offset + "?clientRequestID"
+            new_pattern = "/%d" % new_offset + "?clientRequestID"
+            new_page = current_url.replace(old_pattern, new_pattern, 1)
+        except Exception as e:
+            new_page = new_offset = None
+            log_support.set_error_message(self.client_name, "Can not get next page: " + str(e))
+
+        return new_page, new_offset
