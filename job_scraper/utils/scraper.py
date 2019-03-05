@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup
+from bs4 import Tag, BeautifulSoup
 import re
 import dateutil.parser as parser
 from dateutil import tz
@@ -124,6 +124,8 @@ def generate_instance_from_client(client_name, url):
         return Sanoma(client_name, url)
     if client_name.lower() == "orion":
         return Orion(client_name, url)
+    if client_name.lower() == "aktia":
+        return Aktia(client_name, url)
     else:
         return None
 
@@ -180,9 +182,10 @@ class Scraper(object):
 
     @staticmethod
     def clean_attrs(tag):
-        tag.attrs = {}
-        for child in tag.find_all(True):
-            child.attrs = {}
+        if isinstance(tag, Tag):
+            tag.attrs = {}
+            for child in tag.find_all(True):
+                child.attrs = {}
 
 
 class Dna(Scraper):
@@ -4469,5 +4472,74 @@ class Orion(Scraper):
                         end_date = end_date_datetime.strftime('%Y-%m-%d')
                     except ValueError:
                         log_support.set_invalid_location(self.client_name, title)
+
+        return end_date
+
+
+class Aktia(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        json_dict = json.loads(html)
+
+        if "data" in json_dict:
+            for item in json_dict["data"]:
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+                    end_date = self.get_end_date(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "jobTitle" in item:
+            title = item["jobTitle"]
+            if "link" in item:
+                description_url = item["link"]
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            table_body = soup.find('table')
+            if table_body:
+                tr_tag = table_body.find('tr')
+                if tr_tag:
+                    first_td = tr_tag.find('td')
+                    if first_td:
+                        description_block = first_td.find_next_sibling('td')
+                        for child in description_block.children:
+                            Scraper.clean_attrs(child)
+                            description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        if "locations" in item and len(item["locations"]) > 0 and "city" in item["locations"][0]:
+            location = item["locations"][0]["city"]
+        else:
+            location = None
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        if "endDate" in item and "year" in item["endDate"] and "month" in item["endDate"] and "day" in item["endDate"]:
+            end_date = item["endDate"]["year"] + "-" + str(item["endDate"]["month"]) + "-" + item["endDate"]["day"]
+        else:
+            end_date = None
+            log_support.set_invalid_dates(self.client_name, title)
 
         return end_date
