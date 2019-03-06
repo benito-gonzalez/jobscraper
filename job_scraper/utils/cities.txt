@@ -602,3 +602,5 @@ Helsingin
 Mariehamn
 Helsingfors
 Useita paikkakuntia
+Pääkaupunkiseutu
+Capital area
