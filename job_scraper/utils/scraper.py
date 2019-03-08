@@ -138,6 +138,8 @@ def generate_instance_from_client(client_name, url):
         return BonGames(client_name, url)
     if client_name.lower() == "lightneer inc":
         return Lightneer(client_name, url)
+    if client_name.lower() == "unity technologies":
+        return UnityTechnologies(client_name, url)
     else:
         return None
 
@@ -4977,3 +4979,59 @@ class Lightneer(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class UnityTechnologies(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        script = soup.find("script", {"type": "application/json"})
+        if script:
+            try:
+                json_resp = json.loads(script.text)
+                if "jobData" in json_resp and "jobs" in json_resp["jobData"]:
+                    jobs_list = json_resp["jobData"]["jobs"]
+
+                    for item in jobs_list:
+                        if self.is_finnish(item):
+                            title, description_url, description = self.get_mandatory_fields(item)
+                            if self.is_valid_job(title, description_url, description):
+
+                                # All its jobs are located in Helsinki, besides this has already being checked in "is_finnish()"
+                                job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
+                                jobs.append(job)
+
+            except json.decoder.JSONDecodeError:
+                log_support.set_error_message(self.client_name, "Invalid JSON message from HTML response")
+
+        return jobs
+
+    @staticmethod
+    def is_finnish(item):
+        finnish = False
+        if "offices" in item and len(item["offices"]) > 0:
+            for office in item["offices"]:
+                if "name" in office:
+                    if office["name"] == "Helsinki":
+                        finnish = True
+                        break
+
+        return finnish
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "title" in item:
+            title = item["title"]
+            if "absolute_url" in item:
+                description_url = item["absolute_url"]
+                if "content" in item:
+                    description_raw = item["content"].replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"')
+                    soup = BeautifulSoup(description_raw, 'html.parser')
+                    Scraper.clean_attrs(soup)
+                    description = str(soup)
+
+        return title, description_url, description
