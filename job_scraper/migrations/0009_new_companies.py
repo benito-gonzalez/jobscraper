@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             """
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Fleetonomy.ai', 'fleetonomy.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Ubisoft RedLynx', 'ubisoft.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Remedy Entertainment Plc.', 'remedy.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Remedy Entertainment Plc', 'remedy.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Paf', 'paf.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Fluido', 'fluido.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Dodreams', 'dodreams.png');

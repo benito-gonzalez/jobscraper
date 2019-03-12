@@ -20,7 +20,7 @@ def simple_get(url, accept_json=False):
         else:
             headers_req = {'User-Agent': 'Mozilla/5.0'}
 
-        with closing(get(url, stream=True, headers=headers_req, verify=False)) as resp:
+        with closing(get(url, stream=True, headers=headers_req, verify=False,  timeout=60)) as resp:
             if resp.status_code == 200:
                 return resp.content
             else:
