@@ -2952,7 +2952,7 @@ class Kone(Scraper):
                     # in case of error, finish
                     last_page = True
 
-            if not jobs or current_offset > total_jobs:
+            if not jobs_list or current_offset >= total_jobs:
                 last_page = True
 
         return jobs
@@ -4116,7 +4116,7 @@ class If(Scraper):
                     # in case of error, finish
                     last_page = True
 
-            if not jobs_list or current_offset > total_jobs:
+            if not jobs_list or current_offset >= total_jobs:
                 last_page = True
 
         return jobs
@@ -4238,7 +4238,7 @@ class EpicGames(Scraper):
                     # in case of error, finish
                     last_page = True
 
-            if not jobs or current_offset > total_jobs:
+            if not jobs_list or current_offset >= total_jobs:
                 last_page = True
 
         return jobs
