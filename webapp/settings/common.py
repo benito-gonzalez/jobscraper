@@ -79,7 +79,7 @@ DATABASES = {
 # Cron configuration
 CRONJOBS = [
     ('0 5 * * *', 'job_scraper.utils.run_scraper.main'),
-    ('0 6 * * *', 'job_scraper.utils.reporter.main')
+    ('0 7 * * *', 'job_scraper.utils.reporter.main')
 ]
 
 # Password validation
