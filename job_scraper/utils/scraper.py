@@ -3194,21 +3194,21 @@ class Enfo(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            details_block = job_details_soup.find('div', attrs={'class': 'col-xs-12 column'})
-            if details_block:
-                p = details_block.find("p")
-                if p:
-                    p.attrs = {}
-                    for child in p.find_all(True):
-                        child.attrs = {}
-                    description += str(p)
 
-                    for p in p.next_siblings:
-                        if p.name:
-                            p.attrs = {}
-                            for child in p.find_all(True):
-                                child.attrs = {}
-                            description += str(p)
+            # Two kind of HTML: one with a div id="job-description" and other
+            details_block = job_details_soup.find('div', attrs={'id': 'job-description'})
+            if details_block:
+                details_div = details_block.find('div')
+                if details_div:
+                    for child in details_div.children:
+                        if child.name:
+                            Scraper.clean_attrs(child)
+                            description += str(child)
+            else:
+                details_block = job_details_soup.find('div', attrs={'class': 'col-xs-12 column'})
+                if details_block:
+                    Scraper.clean_attrs(details_block)
+                    description = str(details_block)
 
         return description
 
