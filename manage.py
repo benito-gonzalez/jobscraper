@@ -4,10 +4,10 @@ import sys
 
 if __name__ == '__main__':
     BASE_DIR = os.path.dirname(__file__)
-    if os.path.isfile(BASE_DIR + '/webapp/secretkey.txt'):
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.production')
-    else:
+    if os.path.isfile(BASE_DIR + '/webapp/.is_development'):
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.development')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.production')
 
     try:
         from django.core.management import execute_from_command_line
