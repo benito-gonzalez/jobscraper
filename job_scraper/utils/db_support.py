@@ -1,9 +1,8 @@
 import os
 import django
-from django.conf import settings
 from django.utils import timezone
 
-if settings.DEBUG:
+if os.path.isfile(os.path.dirname(os.path.dirname(__file__)) + '/../webapp/.is_development'):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.development')
 else:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.production')

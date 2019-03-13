@@ -6,11 +6,10 @@ import codecs
 from django.conf import settings
 from django.core.mail import send_mail
 
-if os.path.isfile(os.path.dirname(os.path.dirname(__file__)) + '/../webapp/secretkey.txt'):
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.production')
-else:
+if os.path.isfile(os.path.dirname(os.path.dirname(__file__)) + '/../webapp/.is_development'):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.development')
-
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.production')
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 SCRAPERLOG = os.path.join(my_path, "logs/scraper.log")
