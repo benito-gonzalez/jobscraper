@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Nightingale Health', 'nightingale.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Sandvik', 'sandvik.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('CRF Health', 'crf.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Op', 'op.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('OP Financial Group', 'op.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Dream Broker', 'dream.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Relex', 'relex.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('F-Secure', 'f-secure.png');
