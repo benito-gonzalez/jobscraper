@@ -18,6 +18,7 @@ from itertools import chain
 
 from .forms import ContactForm
 from job_scraper.models import Job
+from job_scraper.models import Company
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
 
 
@@ -51,6 +52,12 @@ class IndexView(generic.ListView):
     template_name = 'index.html'
     paginate_by = 20
     context_object_name = 'jobs_list'
+    company = None
+
+    def get_context_data(self, **kwargs):
+        ctx = super(IndexView, self).get_context_data(**kwargs)
+        ctx['company'] = self.company
+        return ctx
 
     def get_queryset(self):
         keyword_query = self.request.GET.get('keyword', None)
@@ -77,6 +84,10 @@ class IndexView(generic.ListView):
 
         if keyword_query:
             keyword_words = keyword_query.split(" ")
+            try:
+                self.company = Company.objects.get(name__iexact=keyword_query)
+            except (Company.DoesNotExist, Company.MultipleObjectsReturned):
+                pass
 
         if keyword_query and location_query:
             if "++" in keyword_query:
@@ -120,6 +131,22 @@ class DetailView(generic.DetailView):
         try:
             self.object = self.get_object()
             if self.object.get_title_slug != kwargs.get('slug'):
+                raise Http404
+
+            context = self.get_context_data(object=self.object)
+            return self.render_to_response(context)
+        except Http404:
+            return redirect('job_scraper:index')
+
+
+class CompanyDetailsView(generic.DetailView):
+    model = Company
+    template_name = 'company_details.html'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            if self.object.get_name_slug != kwargs.get('slug'):
                 raise Http404
 
             context = self.get_context_data(object=self.object)
