@@ -76,7 +76,7 @@ def generate_instance_from_client(client_name, url):
         return Sandvik(client_name, url)
     if client_name.lower() == "crf health":
         return Crf(client_name, url)
-    if client_name.lower() == "op":
+    if client_name.lower() == "op financial group":
         return Op(client_name, url)
     if client_name.lower() == "dream broker":
         return DreamBroker(client_name, url)
