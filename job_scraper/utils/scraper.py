@@ -1765,8 +1765,8 @@ class Nokia(Scraper):
         last_page = False
         while not last_page:
             for job in soup.find_all('div', {'class': 'job_list_row'}):
-                title, description_url, description = self.get_mandatory_fields(job)
-                if self.is_valid_job(title, description_url, description):
+                title, description_url, description, is_finnish = self.get_mandatory_fields(job)
+                if is_finnish and self.is_valid_job(title, description_url, description):
                     location = self.get_location(job, title)
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
@@ -1791,6 +1791,7 @@ class Nokia(Scraper):
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
+        finnish = False
 
         title_tag = item.find('a')
         if title_tag:
@@ -1799,7 +1800,9 @@ class Nokia(Scraper):
             if description_url:
                 description = self.get_description(description_url)
 
-        return title, description_url, description
+            finnish = self.is_finnish(item, title)
+
+        return title, description_url, description, finnish
 
     @staticmethod
     def get_description(url):
@@ -1819,6 +1822,22 @@ class Nokia(Scraper):
                         description += str(block)
 
         return description
+
+    def is_finnish(self, item, title):
+        # It will skip those jobs which are not located in Finland. Due to that, if we can not get a job location, we will not store it. It needs to raise an error in that case.
+        finnish = False
+        location_tag = item.find("span", {"class": "location"})
+        locator = CityLocator()
+
+        if location_tag:
+            full_location = location_tag.text.strip()
+            cities = locator.get_finnish_cities(full_location)
+            if cities:
+                finnish = True
+        else:
+            log_support.set_error_message(self.client_name, "Could not get location from job " + title)
+
+        return finnish
 
     def get_location(self, item, title):
         location = None
