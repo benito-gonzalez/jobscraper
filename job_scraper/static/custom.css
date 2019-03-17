@@ -15,7 +15,7 @@ html, body {
 Header
  */
 .header {
-    background: linear-gradient(to bottom, #99ebff 0%, #3385ff 99%);
+    background: linear-gradient(to bottom, #2aa847 0%, #8fd19e 99%);
     height: 250px;
 }
 
@@ -88,7 +88,7 @@ Footer
     border-top: 5px solid #eee;
     margin-top: 8em;
     text-align: center;
-    background: linear-gradient(to top right, #5c8dd6 0%, #3385ff 99%);
+    background: linear-gradient(to bottom, #2aa847 0%, #8fd19e 99%);
 }
 
 /*
@@ -111,7 +111,7 @@ Jobs
     text-align: center;
     font-family: Proximanova, Helvetica, Arial, sans-serif;
     border-radius: 3px;
-    background-color: #0e51a5;
+    background-color: #2aa847;
     color: #fff;
     font-weight: bold;
     font-size: 12px;
@@ -159,7 +159,7 @@ Jobs
 }
 
 .arrow-size{
-    max-width: 50px;
+    max-width: 25px;
     height: auto;
 }
 /*
@@ -179,16 +179,16 @@ Paginator
     float: left;
     padding: 8px 16px;
     text-decoration: none;
-    border: 1px solid #0e51a5;
+    border: 1px solid #2aa847;
     margin: 3px;
 }
 
 .paginator li.active {
     border-radius: 5px;
-    background-color: #0e51a5;
+    background-color: #2aa847;
     padding: 8px 16px;
     color: white;
-    border: 1px solid #2aabd2;
+    border: 1px solid #8fd19e;
     margin: 3px;
 
 }
@@ -257,15 +257,17 @@ Bottom up
     z-index: 99; /* Make sure it does not overlap */
     border: none; /* Remove borders */
     outline: none; /* Remove outline */
-    background-color: #0e51a5; /* Set a background color */
+    background-color: #28a745; /* Set a background color */
     color: white; /* Text color */
     cursor: pointer; /* Add a mouse pointer on hover */
     padding: 1px; /* Some padding */
     border-radius: 10px; /* Rounded corners */
+    width: 50px;
+    height: 50px;
 }
 
 #myBtn:hover {
-    background-color: #28a745; /* Add a dark-grey background on hover */
+    background-color: #32cd56; /* Add a dark-grey background on hover */
 }
 
 .emptyalert {
