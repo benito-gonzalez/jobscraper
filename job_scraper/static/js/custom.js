@@ -288,11 +288,11 @@ window.addEventListener("load", function () {
     window.cookieconsent.initialise({
         "palette": {
             "popup": {
-                "background": "#3385ff"
+                "background": "#28a745"
             },
             "button": {
                 "background": "#fff",
-                "text": "#3385ff"
+                "text": "#28a745"
             }
         },
         "content": {
