@@ -271,9 +271,13 @@ function scrollFunction() {
         document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
 
     if ((height - document.body.scrollTop) < 1000 || (height - document.documentElement.scrollTop) < 1000) {
-        document.getElementById("myBtn").style.display = "block";
+        if (document.getElementById("myBtn") !== null) {
+            document.getElementById("myBtn").style.display = "block";
+        }
     } else {
-        document.getElementById("myBtn").style.display = "none";
+        if (document.getElementById("myBtn") !== null) {
+            document.getElementById("myBtn").style.display = "none";
+        }
     }
 }
 
