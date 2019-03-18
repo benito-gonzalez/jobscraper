@@ -31,7 +31,9 @@
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css"/>
     <link rel="stylesheet" type="text/css" href="{% static 'custom.css' %}">
 
-    <title>Search & Find jobs in Finland • Jobs Portal</title>
+    <title>
+        {% block title %}Search & Find jobs in Finland • Jobs Portal{% endblock %}
+    </title>
 </head>
 
 <body>
@@ -45,11 +47,8 @@
                 <div class="col-3 d-lg-none text-right pr-1">
                     <a href="/"><img src="{% static 'images/logo.png' %}" alt="JobsPortal logo" class="logo-size-60"></a>
                 </div>
-                <div class="col-9 col-lg-12 text-lg-center pl-sm-5 pl-md-0 pl-lg-4">
-                    <div class="header-title">
-                        <span class="short-title">Search Jobs In Finland</span>
-                        <span class="full-title">Search Jobs In Finland</span>
-                    </div>
+                <div class="col-9 col-lg-12 text-lg-center pl-sm-5 pl-md-0 pl-lg-4 pt-2 pt-md-0">
+                    <h1 class="header-title">Search Jobs In Finland</h1>
                 </div>
             </div>
 

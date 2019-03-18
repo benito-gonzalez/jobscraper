@@ -11,25 +11,32 @@ html, body {
     background-color: #e6e6e6;
 }
 
+h1 {
+    font-size: 32px;
+}
+
+h2 {
+    font-size: 26px;
+}
+
+h3 {
+    font-size: 20px;
+}
+
+h4 {
+    font-size: 16px;
+}
+
+h5 {
+    font-size: 14px;
+}
+
 /*
 Header
  */
 .header {
     background: linear-gradient(to bottom, #2aa847 0%, #8fd19e 99%);
     height: 250px;
-}
-
-.header-title {
-    font-size: 2.5rem;
-    color: white;
-}
-
-@media (max-width: 768px) {
-    .header-title {
-        color: black;
-        font-weight: bold;
-        font-size: 1.2rem;
-    }
 }
 
 .row-header {
@@ -143,25 +150,26 @@ Jobs
     font-size: 1.5em;
 }
 
-.logo-size-60{
+.logo-size-60 {
     max-width: 60px;
     height: auto;
 }
 
-.logo-size-100{
+.logo-size-100 {
     max-width: 100px;
     height: auto;
 }
 
-.logo-size-250{
+.logo-size-250 {
     max-width: 250px;
     height: auto;
 }
 
-.arrow-size{
+.arrow-size {
     max-width: 25px;
     height: auto;
 }
+
 /*
 Paginator
  */
@@ -365,8 +373,10 @@ input:focus::-webkit-input-placeholder {
     border: blue solid 2px;
 }
 
-.short-title {
-    display: none;
+.header-title {
+    color: white;
+    font-size: 2.5rem;
+    display: inline-block;
 }
 
 /*
@@ -396,15 +406,36 @@ Phones
         display: none;
     }
 
-    .short-title {
+    .header-title {
+        color: black;
+        font-weight: bold;
+        font-size: 20px;
         display: inline-block;
     }
 
-    .full-title {
-        display: none;
+    h1 {
+        font-size: 20px;
     }
 
+    h2 {
+        font-size: 18px;
+    }
 
+    h3 {
+        font-size: 16px;
+    }
+
+    h4 {
+        font-size: 14px;
+    }
+
+    h5 {
+        font-size: 12px;
+    }
+
+    ul {
+        padding: 1em;
+    }
 }
 
 /*
@@ -424,14 +455,6 @@ Tablet or larger
         margin-right: 100px;
     }
 
-    .short-title {
-        display: inline-block;
-    }
-
-    .full-title {
-        display: none;
-    }
-
     .w-md-75 {
         width: 75% !important;
     }
@@ -447,14 +470,6 @@ Desktop or larger
 
     .w-lg-100 {
         width: 100% !important;
-    }
-
-    .short-title {
-        display: none;
-    }
-
-    .full-title {
-        display: inline-block;
     }
 
     .success-form-height {
