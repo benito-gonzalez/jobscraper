@@ -4580,7 +4580,7 @@ class Aktia(Scraper):
 
     def get_end_date(self, item, title):
         if "endDate" in item and "year" in item["endDate"] and "month" in item["endDate"] and "day" in item["endDate"]:
-            end_date = item["endDate"]["year"] + "-" + str(item["endDate"]["month"]) + "-" + item["endDate"]["day"]
+            end_date = item["endDate"]["year"] + "-" + str(item["endDate"]["month"] + 1) + "-" + item["endDate"]["day"]
         else:
             end_date = None
             log_support.set_invalid_dates(self.client_name, title)
