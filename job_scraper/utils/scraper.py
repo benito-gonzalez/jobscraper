@@ -3287,12 +3287,14 @@ class Sofigate(Scraper):
             details_block = job_details_soup.find('div', attrs={'class': 'b-single-post__wrapper'})
             first_p = details_block.find('p')
             if first_p:
+                Scraper.clean_attrs(first_p)
                 description += str(first_p)
                 for sibling in first_p.next_siblings:
                     if sibling.name:
                         # Button apply
-                        if sibling.attrs and 'c-btn' in sibling.attrs.get('class'):
+                        if sibling.attrs and sibling.attrs.get('class') and 'c-btn' in sibling.attrs.get('class'):
                             break
+                        Scraper.clean_attrs(sibling)
                         description += str(sibling)
 
         return description
