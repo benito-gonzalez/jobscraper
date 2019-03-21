@@ -366,11 +366,8 @@ class Elisa(Scraper):
         description = ""
 
         soup = BeautifulSoup(description_raw, 'html.parser')
-        for tag in soup.find_all():
-            for match in tag.find_all('img'):
-                match.decompose()
-            if tag.name:
-                description += str(tag)
+        Scraper.clean_attrs(soup)
+        description += str(soup)
 
         return description
 
