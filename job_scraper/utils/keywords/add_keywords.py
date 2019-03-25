@@ -10,7 +10,8 @@ else:
 
 django.setup()
 
-FILENAME = "keywords.csv"
+my_path = os.path.abspath(os.path.dirname(__file__))
+FILENAME = os.path.join(my_path, "keywords.csv")
 
 
 def read_keywords_csv():
