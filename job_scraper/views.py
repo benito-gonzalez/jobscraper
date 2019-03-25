@@ -8,8 +8,11 @@ from django.conf import settings
 from django.contrib import messages
 
 from operator import and_
+from operator import or_
 import functools
 import requests
+from collections import OrderedDict
+from itertools import chain
 
 from .forms import ContactForm
 from job_scraper.models import Job
@@ -56,10 +59,20 @@ class IndexView(generic.ListView):
             keyword_words = keyword_query.split(" ")
 
         if keyword_query and location_query:
-            return Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in keyword_words])
-                                      & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
+            list1 = Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in keyword_words])
+                                       & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
+            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & Q(is_active=True) &
+                                       Q(location__icontains=location_query)).order_by('-jobtagmap__num_times')
+            result_list = list(chain(list1, list2))
+            return list(OrderedDict.fromkeys(result_list))
+
         if keyword_query:
-            return Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in keyword_words]) & Q(is_active=True)).order_by('-updated_at')
+            list1 = Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in keyword_words]) & Q(is_active=True)).order_by('-updated_at')
+            # select j.* from Jobs j inner join JobsTagsMap jt on j.id == jt.job_id inner join Tags t on jt.tag_id == t.id  where t.name like "keyword_query"
+            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & Q(is_active=True)).order_by('-jobtagmap__num_times')
+            result_list = list(chain(list1, list2))
+            return list(OrderedDict.fromkeys(result_list))
+
         if location_query:
             return Job.objects.filter(is_active=True, location__icontains=location_query).order_by('-updated_at')
         else:
