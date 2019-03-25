@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import random
+import re
 
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
@@ -90,6 +91,22 @@ def enrich_location(title, job_location):
     return location, valid_location
 
 
+def find_whole_world(tag, description):
+    matches = re.findall(r'\b' + re.escape(tag) + r'\b', description, flags=re.IGNORECASE)
+    return matches
+
+
+def map_tag_job_descriptions(job):
+    tags = db_support.get_tags()
+    for tag in tags:
+        # If tag and job have been already mapped skip
+        mapped = db_support.is_job_tag_mapped(job, tag)
+        if not mapped:
+            matches = find_whole_world(tag.name, job.description)
+            if matches:
+                db_support.map_job_tag(job, tag, len(matches))
+
+
 def main():
     # Companies that return HTTP != 200 should not delete jobs from DB
     failed_companies = []
@@ -137,7 +154,10 @@ def main():
                             db_support.update_new_job(job_db)
                 else:
                     # if it does not exist
-                    db_support.save_to_db(scraped_job, company)
+                    job_db = db_support.save_to_db(scraped_job, company)
+
+                # Map tags with job description
+                map_tag_job_descriptions(job_db)
 
             else:
                 log_support.skipping_job_due_location(scraped_job.title, scraped_job.location, scraped_job.company_name)

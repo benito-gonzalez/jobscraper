@@ -1,6 +1,7 @@
 import os
 import django
 from django.utils import timezone
+from django.db import IntegrityError
 
 if os.path.isfile(os.path.dirname(os.path.dirname(__file__)) + '/../webapp/.is_development'):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings.development')
@@ -11,6 +12,8 @@ django.setup()
 
 from job_scraper.models import Company  # noqa: E402
 from job_scraper.models import Job  # noqa: E402
+from job_scraper.models import Tag  # noqa: E402
+from job_scraper.models import JobTagMap  # noqa: E402
 from job_scraper.utils import log_support  # noqa: E402
 
 
@@ -33,20 +36,21 @@ def get_company_by_name(name):
 
 
 def save_to_db(job_offer, company):
-    Job.objects.create(title=job_offer.title,
-                       description=job_offer.description,
-                       location=job_offer.location,
-                       salary=job_offer.salary,
-                       pub_date=job_offer.pub_date,
-                       end_date=job_offer.end_date,
-                       job_type=job_offer.job_type,
-                       is_highlighted=False,
-                       company=company,
-                       job_url=job_offer.url,
-                       is_active=True,
-                       is_new=True)
+    job = Job.objects.create(title=job_offer.title,
+                             description=job_offer.description,
+                             location=job_offer.location,
+                             salary=job_offer.salary,
+                             pub_date=job_offer.pub_date,
+                             end_date=job_offer.end_date,
+                             job_type=job_offer.job_type,
+                             is_highlighted=False,
+                             company=company,
+                             job_url=job_offer.url,
+                             is_active=True,
+                             is_new=True)
 
     log_support.saved_job(job_offer)
+    return job
 
 
 def is_new_job(scraped_job, company):
@@ -123,3 +127,28 @@ def get_active_jobs():
     :return: QuerySet<Job> with the list of jobs
     """
     return Job.objects.filter(is_active=True)
+
+
+def get_tags():
+    """
+    Get all tags from DB
+    :return: QuerySet<Tag> with the list of tags
+    """
+    return Tag.objects.all()
+
+
+def map_job_tag(job, tag, num_times):
+    entry = JobTagMap(job=job, tag=tag, num_times=num_times)
+    entry.save()
+
+
+def is_job_tag_mapped(job, tag):
+    return JobTagMap.objects.filter(job=job, tag=tag).exists()
+
+
+def add_keyword(keyword):
+    try:
+        Tag.objects.create(name=keyword)
+    except IntegrityError:
+        # If a tag with the same name already exists, we pass
+        pass

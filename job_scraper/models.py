@@ -30,6 +30,7 @@ class Job(models.Model):
     job_url = models.URLField(max_length=500)
     created_at = models.DateTimeField(default=timezone.now)  # UTC time by default
     updated_at = models.DateTimeField(default=timezone.now)  # UTC time by default
+    tags = models.ManyToManyField('Tag', through='JobTagMap')
 
     def __str__(self):
         return self.title
@@ -120,3 +121,22 @@ class Job(models.Model):
 
     class Meta:
         db_table = "Jobs"
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "Tags"
+
+
+class JobTagMap(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    num_times = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        db_table = "JobsTagsMap"
