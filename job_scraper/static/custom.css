@@ -122,6 +122,15 @@ Jobs
     font-weight: bold;
 }
 
+.job-title-link {
+    color: black;
+}
+
+.job-title-link:hover {
+    color: #2aa847;
+    text-decoration: none;
+}
+
 .job-logo {
     margin: auto;
 }
