@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.views.generic.edit import FormView
 from django.conf import settings
 from django.contrib import messages
+from re import escape
 
 from operator import and_
 from operator import or_
@@ -59,15 +60,28 @@ class IndexView(generic.ListView):
             keyword_words = keyword_query.split(" ")
 
         if keyword_query and location_query:
-            list1 = Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in keyword_words])
-                                       & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
+            if "++" in keyword_query:
+                # If the search is like "C++", the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q)) | Q(company__name__iregex=r"\b" + escape(q)) for q in keyword_words])
+                                           & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
+            else:
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words])
+                                           & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
             list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & Q(is_active=True) &
                                        Q(location__icontains=location_query)).order_by('-jobtagmap__num_times')
             result_list = list(chain(list1, list2))
             return list(OrderedDict.fromkeys(result_list))
 
         if keyword_query:
-            list1 = Job.objects.filter(functools.reduce(and_, [Q(title__icontains=q) | Q(company__name__icontains=q) for q in keyword_words]) & Q(is_active=True)).order_by('-updated_at')
+            if "++" in keyword_query:
+                # If the search is like "C++", the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
+                list1 = Job.objects.filter(
+                    functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q)) | Q(company__name__iregex=r"\b" + escape(q)) for q in keyword_words]) & Q(is_active=True)).order_by('-updated_at')
+            else:
+                list1 = Job.objects.filter(
+                    functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) & Q(is_active=True)).order_by(
+                    '-updated_at')
+
             # select j.* from Jobs j inner join JobsTagsMap jt on j.id == jt.job_id inner join Tags t on jt.tag_id == t.id  where t.name like "keyword_query"
             list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & Q(is_active=True)).order_by('-jobtagmap__num_times')
             result_list = list(chain(list1, list2))
