@@ -4973,13 +4973,14 @@ class Lightneer(Scraper):
                         # Remove 'svg' and 'a' tag
                         [s.extract() for s in sibling('svg')]
                         [s.extract() for s in sibling('a')]
+                        [s.extract() for s in sibling('style')]
 
                         h2_tag = sibling.find("h2")
                         if h2_tag:
                             h2_tag.name = "h3"
                             h2_tag.string = h2_tag.text.strip().capitalize()
-
-                        description += str(sibling)
+                        if sibling.name != "style" and sibling.text.replace("\n", "") != "":
+                            description += str(sibling)
 
         description = description.replace("<br/>\n", " ")
         description = description.replace("\xa0", " ")
