@@ -17,11 +17,16 @@ body {
     background-color: #e6e6e6;
     position: relative;
     margin: 0;
-    padding-bottom: 16em;
+    padding-bottom: 32em;
     min-height: 100%;
     font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
+.ul-jobs-list {
+    list-style-type: none;
+    padding: 0;
+
+}
 
 h1 {
     font-size: 32px;
@@ -108,6 +113,22 @@ Footer
     left: 0;
     text-align: center;
     background: linear-gradient(to bottom, #2aa847 0%, #8fd19e 99%);
+}
+
+.footer-jobs-location {
+    padding-top: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 15px;
+}
+
+.footer-legend {
+    margin: 0 auto;
+    padding: 0 5px;
+    color: white;
+    border-bottom: 0;
+    width: inherit;
+    text-transform: uppercase;
+    font-size: 14px;
 }
 
 /*
@@ -281,7 +302,7 @@ Bottom up
 #myBtn {
     display: none; /* Hidden by default */
     position: fixed; /* Fixed/sticky position */
-    bottom: 140px; /* Place the button at the bottom of the page */
+    bottom: 420px; /* Place the button at the bottom of the page */
     right: 30px; /* Place the button 30px from the right */
     z-index: 99; /* Make sure it does not overlap */
     border: none; /* Remove borders */
@@ -312,7 +333,7 @@ Bottom up
 }
 
 .about-links:hover {
-    color: #212529;
+    color: #2d3339;
     cursor: pointer;
 }
 
@@ -407,6 +428,7 @@ Phones
     html, body {
         background-color: white;
         overflow-x: hidden;
+        padding-bottom: 65em;
 
     }
 
@@ -459,6 +481,15 @@ Phones
     ul {
         padding: 1em;
     }
+
+    #myBtn {
+        bottom: 100px; /* Place the button at the bottom of the page */
+        right: 5px; /* Place the button 30px from the right */
+        z-index: 99; /* Make sure it does not overlap */
+        width: 40px;
+        height: 40px;
+    }
+
 }
 
 /*

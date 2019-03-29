@@ -7,6 +7,7 @@ from django.views.generic.edit import FormView
 from django.conf import settings
 from django.contrib import messages
 from re import escape
+from urllib.parse import unquote
 
 from operator import and_
 from operator import or_
@@ -55,6 +56,24 @@ class IndexView(generic.ListView):
         keyword_query = self.request.GET.get('keyword', None)
         location_query = self.request.GET.get('location', None)
         keyword_words = []
+
+        if self.request.get_full_path().startswith("/jobs-in-"):
+            location_query = self.request.get_full_path().split("/jobs-in-")[1]
+            self.request.GET._mutable = True
+            self.request.GET["location"] = location_query
+
+        if self.request.get_full_path().startswith("/jobs-at-"):
+            keyword_query_raw = self.request.get_full_path().split("/jobs-at-")[1]
+            keyword_query = unquote(keyword_query_raw)
+            self.request.GET._mutable = True
+            self.request.GET["keyword"] = keyword_query
+
+        if self.request.get_full_path().endswith("-developer"):
+            keyword_query_raw = self.request.get_full_path().split("-developer")[0]
+            # remove initial "/"
+            keyword_query = unquote(keyword_query_raw[1:])
+            self.request.GET._mutable = True
+            self.request.GET["keyword"] = keyword_query
 
         if keyword_query:
             keyword_words = keyword_query.split(" ")
