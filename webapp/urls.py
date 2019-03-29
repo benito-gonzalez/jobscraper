@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.conf import settings
 from django.views.static import serve
 from django.conf.urls import url, include
@@ -29,6 +29,10 @@ urlpatterns = [
     path('about/cookiepolicy', TemplateView.as_view(template_name='cookiepolicy.html')),
     path('about/about-us', TemplateView.as_view(template_name='about.html')),
     path('about/contact-us', views.ContactFormView.as_view()),
+    re_path(r'jobs-in-\w+', views.IndexView.as_view(), name='index'),
+    re_path(r'jobs-at-\w+', views.IndexView.as_view(), name='index'),
+    re_path(r'\w+-developer', views.IndexView.as_view(), name='index'),
+
     path('', include('job_scraper.urls')),
     # path('api/jobs/', views.JobListApiView.as_view()),
     # path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view()),
