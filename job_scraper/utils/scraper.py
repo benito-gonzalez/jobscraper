@@ -185,9 +185,10 @@ class Scraper(object):
         application_job_titles = ["avoin hakemus",
                                   "open application",
                                   "open applications",
-                                  "Every tech position at Futurice. Ever.",
+                                  "every tech position at futurice. ever.",
                                   "your title here",
-                                  "avoin työharjoitteluhakemus"]
+                                  "avoin työharjoitteluhakemus",
+                                  "women who code"]
         valid = False
 
         if not title:
