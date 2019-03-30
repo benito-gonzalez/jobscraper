@@ -68,8 +68,8 @@ class IndexView(generic.ListView):
             self.request.GET._mutable = True
             self.request.GET["keyword"] = keyword_query
 
-        if self.request.get_full_path().endswith("-developer"):
-            keyword_query_raw = self.request.get_full_path().split("-developer")[0]
+        if self.request.get_full_path().endswith("-jobs"):
+            keyword_query_raw = self.request.get_full_path().split("-jobs")[0]
             # remove initial "/"
             keyword_query = unquote(keyword_query_raw[1:])
             self.request.GET._mutable = True
