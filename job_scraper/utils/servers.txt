@@ -16,7 +16,7 @@ Eficode Oy - https://eficode.teamtailor.com/jobs
 Ericsson - https://jobs.ericsson.com/api/jobs?location=Finland&page=1&limit=100
 Varjo Technologies - https://varjo.com/jobs/
 Telia Finland Oyj - https://www.telia.fi/.rest/vacancies/youatwork?type=regular
-Wärtsilä - https://careers.wartsila.com/search/?q=&optionsFacetsDD_title=&optionsFacetsDD_country=Fi&optionsFacetsDD_customfield4=&optionsFacetsDD_customfield2=&optionsFacetsDD_customfield1=&optionsFacetsDD_customfield3=
+Wärtsilä - https://careers.wartsila.com/search/?createNewAlert=false&q=&optionsFacetsDD_title=&optionsFacetsDD_country=FI&optionsFacetsDD_customfield4=&optionsFacetsDD_customfield2=&optionsFacetsDD_customfield1=&optionsFacetsDD_customfield3=
 Nordea - https://www.nordea.com/en/careers/vacant-positions/?p=3&cty=19420
 Tieto - https://www.tieto.com/en/careers/open-positions/search-our-jobs/?area=&country=Finland&city=&q=
 Rightware - https://www.rightware.com/careers/

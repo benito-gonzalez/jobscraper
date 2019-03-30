@@ -1145,8 +1145,9 @@ class Wartsila(Scraper):
                             log_support.set_invalid_location(self.client_name, title)
 
                         pub_date = self.get_pub_date(item.find('span', {'class': 'jobDate'}), title)
+                        end_date = self.get_end_date(title, description)
 
-                        job = ScrapedJob(title, description, location, self.client_name, None, pub_date, None, None, description_url)
+                        job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, None, description_url)
                         jobs.append(job)
 
         return jobs
@@ -1176,7 +1177,7 @@ class Wartsila(Scraper):
             if description_div:
                 for p in description_div.children:
                     # remove tag attributes
-                    p.attrs = {}
+                    Scraper.clean_attrs(p)
                     if p != "\n" and p.text.strip() != "":
                         for match in p.find_all('span'):
                             match.unwrap()
@@ -1195,6 +1196,35 @@ class Wartsila(Scraper):
                 log_support.set_invalid_dates(self.client_name, title)
 
         return pub_date
+
+    def get_end_date(self, title, description):
+        end_date = None
+
+        soup = BeautifulSoup(description, "lxml")
+        end_date_tag1 = soup.find(lambda tag: tag.name == "p" and "Last application date:" in tag.text)
+        end_date_tag2 = soup.find(lambda tag: tag.name == "p" and "Please apply by " in tag.text)
+        if end_date_tag1:
+            tag_splitted = end_date_tag1.text.split("Last application date:")
+            if len(tag_splitted) > 1:
+                date_raw = tag_splitted[1]
+                try:
+                    end_date = parser.parse(date_raw, dayfirst=True).strftime('%Y-%m-%d')
+                except ValueError:
+                    log_support.set_invalid_dates(self.client_name, title)
+
+        elif end_date_tag2:
+            tag_splitted = end_date_tag2.text.split("Please apply by ")
+            if len(tag_splitted) > 1:
+                date_raw = tag_splitted[1]
+                try:
+                    end_date = parser.parse(date_raw, dayfirst=True).strftime('%Y-%m-%d')
+                except ValueError:
+                    log_support.set_invalid_dates(self.client_name, title)
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
 
 
 class Nordea(Scraper):
