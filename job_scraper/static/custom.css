@@ -138,6 +138,14 @@ Jobs
     border-bottom: 2px solid #dee2e6 !important;
 }
 
+.row-company {
+    border-bottom: 3px solid #e6e6e6 !important;
+    width: 122%; /*100*(100/80)*/
+    /* width: 109%; Phone*/
+    margin-left: 50%;
+    transform: translateX(-50%);
+}
+
 .job-title {
     font-size: 20px;
     font-weight: bold;

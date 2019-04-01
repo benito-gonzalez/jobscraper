@@ -7,12 +7,22 @@ import time
 class Company(models.Model):
     name = models.CharField(max_length=200)
     logo = models.ImageField()
+    description = models.CharField(max_length=5000, blank=True, null=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
         db_table = "Companies"
+
+    @property
+    def get_name_slug(self):
+        """
+        Returns the company title well formatted for URL, changing white spaces by "-" and removing all special characters
+        :return: Company title splited by "-" and lower
+        """
+        title_no_spaces = "-".join(self.name.split())
+        return re.sub(r'[^A-Za-z-0-9]', '', title_no_spaces).lower()
 
 
 class Job(models.Model):
