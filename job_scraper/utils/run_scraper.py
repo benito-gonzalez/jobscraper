@@ -12,10 +12,10 @@ from job_scraper.utils.locator import CityLocator
 my_path = os.path.abspath(os.path.dirname(__file__))
 FILENAME = os.path.join(my_path, "servers.txt")
 
-if os.path.isfile(os.path.dirname(os.path.dirname(__file__)) + '/../webapp/secretkey.txt'):
-    PRODUCTION_ENV = True
-else:
+if os.path.isfile(os.path.dirname(os.path.dirname(__file__)) + '/../webapp/.is_development'):
     PRODUCTION_ENV = False
+else:
+    PRODUCTION_ENV = True
 
 
 def read_server_urls():
@@ -129,6 +129,7 @@ def main():
                         log_support.no_jobs_found(server.get('url'))
                 except Exception as e:
                     log_support.scraper_failure(server.get('name') + str(e))
+                    failed_companies.append(server.get('name'))
             else:
                 jobs = client.extract_info(html)
                 if jobs:

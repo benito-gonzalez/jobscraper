@@ -1,5 +1,6 @@
 from requests import get
 from requests.exceptions import RequestException
+from requests.exceptions import HTTPError
 from contextlib2 import closing
 from job_scraper.utils import log_support
 from django.conf import settings
@@ -29,8 +30,8 @@ def simple_get(url, accept_json=False):
                 return resp.content
             else:
                 log_support.set_invalid_response(url, resp.status_code)
-                return None
+                raise HTTPError("Invalid response from " + url)
 
     except RequestException as e:
         log_support.set_invalid_request(url, e)
-        return None
+        raise HTTPError("Invalid response from " + url)
