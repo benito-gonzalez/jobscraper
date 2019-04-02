@@ -16,22 +16,16 @@ def simple_get(url, accept_json=False):
     text content, otherwise return None.
     """
     log_support.request_url(url)
-    try:
-        if accept_json:
-            headers_req = {'User-Agent': 'Mozilla/5.0', 'accept': 'application/json'}
+    if accept_json:
+        headers_req = {'User-Agent': 'Mozilla/5.0', 'accept': 'application/json'}
+    else:
+        headers_req = {'User-Agent': 'Mozilla/5.0'}
+
+    with closing(get(url, stream=True, headers=headers_req, verify=False,  timeout=60)) as resp:
+        if not settings.DEBUG:
+            time.sleep(0.5)
+
+        if resp.status_code == 200:
+            return resp.content
         else:
-            headers_req = {'User-Agent': 'Mozilla/5.0'}
-
-        with closing(get(url, stream=True, headers=headers_req, verify=False,  timeout=60)) as resp:
-            if not settings.DEBUG:
-                time.sleep(0.5)
-
-            if resp.status_code == 200:
-                return resp.content
-            else:
-                log_support.set_invalid_response(url, resp.status_code)
-                raise HTTPError("Invalid response from " + url)
-
-    except RequestException as e:
-        log_support.set_invalid_request(url, e)
-        raise HTTPError("Invalid response from " + url)
+            raise HTTPError("Invalid response from " + url + " HTTP %d" % resp.status_code)

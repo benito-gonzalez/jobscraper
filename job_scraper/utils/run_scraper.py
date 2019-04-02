@@ -128,7 +128,7 @@ def main():
                     else:
                         log_support.no_jobs_found(server.get('url'))
                 except Exception as e:
-                    log_support.scraper_failure(server.get('name') + str(e))
+                    log_support.scraper_failure(server.get('name'), e)
                     failed_companies.append(server.get('name'))
             else:
                 jobs = client.extract_info(html)

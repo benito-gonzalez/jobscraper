@@ -19,18 +19,6 @@ def set_company_not_found(company_name):
     f.close()
 
 
-def set_invalid_request(url, e):
-    f = open(SCRAPERLOG, 'a')
-    f.write(get_formatted_date() + "ERROR. Invalid requests to {0} : {1}".format(url, str(e)) + "\n")
-    f.close()
-
-
-def set_invalid_response(url, status_code):
-    f = open(SCRAPERLOG, 'a')
-    f.write(get_formatted_date() + "ERROR. Invalid response from {0} HTTP {1}".format(url, status_code) + "\n")
-    f.close()
-
-
 def saved_job(job_offer):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "Saving job {0}".format(job_offer) + "\n")
@@ -67,9 +55,9 @@ def updated_active_job(job):
     f.close()
 
 
-def scraper_failure(client_name):
+def scraper_failure(client_name, exception):
     f = open(SCRAPERLOG, 'a')
-    f.write(get_formatted_date() + "ERROR. Invalid information from {0}".format(client_name) + "\n")
+    f.write(get_formatted_date() + "ERROR. '{0}' - {1}".format(client_name, exception) + "\n")
     f.close()
 
 
