@@ -92,7 +92,11 @@ def enrich_location(title, job_location):
 
 
 def find_whole_world(tag, description):
-    matches = re.findall(r'\b' + re.escape(tag) + r'\b', description, flags=re.IGNORECASE)
+    # ++ is a special character in the regex. If we add r'\b' it will return nothing.
+    if tag == "C++":
+        matches = re.findall(r'\b' + re.escape(tag), description, flags=re.IGNORECASE)
+    else:
+        matches = re.findall(r'\b' + re.escape(tag) + r'\b', description, flags=re.IGNORECASE)
     return matches
 
 
