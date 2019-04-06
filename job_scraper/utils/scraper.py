@@ -156,6 +156,8 @@ def generate_instance_from_client(client_name, url):
         return Intopalo(client_name, url)
     if client_name == "Reaktor":
         return Reaktor(client_name, url)
+    if client_name == "Bittium":
+        return Bittium(client_name, url)
     else:
         return None
 
@@ -5544,3 +5546,88 @@ class Reaktor(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class Bittium(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        for item in soup.find_all('div', class_="openjob"):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+                end_date = self.get_end_date(description_url, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        url_tag = item.find('a')
+        if url_tag:
+            description_url = url_tag.get('href')
+            title = url_tag.get_text().strip()
+
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html5lib')
+
+            # Two blocks, the first one contains nothing.
+            block = job_details_soup.find('div', {'id': 'left70'})
+            if block:
+                for child in block.children:
+                    Scraper.clean_attrs(child)
+                    if isinstance(child, Tag):
+                        description += str(child).strip()
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find_previous_sibling('h3')
+        if location_tag:
+            location = location_tag.get_text()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, url, title):
+        end_date = None
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html5lib')
+
+            date_label = job_details_soup.find(lambda tag: tag.name == "b" and "Last apply date:" in tag.text)
+            if date_label:
+                date_tag = date_label.next_sibling
+                if date_tag:
+                    try:
+                        date_raw = date_tag.strip()
+                        end_date = parser.parse(date_raw, dayfirst=True).strftime('%Y-%m-%d')
+                    except (ValueError, TypeError) as e:
+                        log_support.set_error_message(self.client_name, "Invalid date string " + str(e))
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
