@@ -174,6 +174,8 @@ def generate_instance_from_client(client_name, url):
         return Matchmade(client_name, url)
     if client_name == "ultimate.ai":
         return Ultimate(client_name, url)
+    if client_name == "Yousician":
+        return Yousician(client_name, url)
     else:
         return None
 
@@ -6220,3 +6222,65 @@ class Ultimate(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class Yousician(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        if "offices" in json_dict:
+            if "departments" in json_dict["offices"][0]:
+                for department in json_dict["offices"][0]["departments"]:
+                    if "jobs" in department:
+                        for item in department["jobs"]:
+                            title, description_url, description = self.get_mandatory_fields(item)
+                            if self.is_valid_job(title, description_url, description):
+                                if "location" in item and "name" in item["location"]:
+                                    location = item["location"]["name"]
+                                else:
+                                    location = None
+
+                                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "title" in item:
+            title = item["title"]
+            if "absolute_url" in item:
+                description_url = item["absolute_url"]
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            job_container = job_details_soup.find('div', {'id': 'content'})
+
+            # skip the first h3
+            first_tag = job_container.find('h3')
+            if first_tag:
+                for sibling in first_tag.next_siblings:
+                    if isinstance(sibling, Tag):
+                        if sibling.name == "h3" and sibling.text == "HOW TO APPLY":
+                            break
+                        if sibling.name == "h3":
+                            sibling.string = sibling.text.capitalize()
+
+                        Scraper.clean_attrs(sibling)
+                        description += str(sibling)
+
+        return description
