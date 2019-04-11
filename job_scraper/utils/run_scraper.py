@@ -119,7 +119,12 @@ def main():
     scraped_jobs = []
     for server in servers:
         client = scraper.generate_instance_from_client(server.get('name'), server.get('url'))
-        html = request_support.simple_get(server.get('url'))
+        try:
+            html = request_support.simple_get(server.get('url'))
+        except Exception as e:
+            log_support.scraper_failure(server.get('name'), e)
+            failed_companies.append(server.get('name'))
+            continue
 
         if not html:
             failed_companies.append(server.get('name'))
