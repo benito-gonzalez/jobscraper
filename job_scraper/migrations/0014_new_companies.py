@@ -26,6 +26,7 @@ class Migration(migrations.Migration):
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Anders', 'anders.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Small Giant Games', 'small_giant_games.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Oura', 'oura.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Matchmade', 'matchmade.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('ultimate.ai', 'ultimate_ai.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Jolla', 'jolla.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Yousician', 'yousician.png');

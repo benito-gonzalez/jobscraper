@@ -168,6 +168,12 @@ def generate_instance_from_client(client_name, url):
         return Anders(client_name, url)
     if client_name == "Small Giant Games":
         return SmallGiantGames(client_name, url)
+    if client_name == "Oura":
+        return Oura(client_name, url)
+    if client_name == "Matchmade":
+        return Matchmade(client_name, url)
+    if client_name == "ultimate.ai":
+        return Ultimate(client_name, url)
     else:
         return None
 
@@ -6019,3 +6025,198 @@ class SmallGiantGames(Scraper):
                         description += str(tag).strip()
 
         return description
+
+
+class Oura(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('div', class_="item-container"):
+            title, description_url, description, location = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        location = None
+
+        # Description page shows a better job title than the main page so we get the title from description
+        url_tag = item.find('a')
+        if url_tag:
+            description_url = url_tag.get('href')
+            if description_url:
+                job_details_html = request_support.simple_get(description_url)
+
+                if job_details_html:
+                    job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+
+                    title_tag = job_details_soup.find('h1')
+                    if title_tag:
+                        title = title_tag.get_text()
+                        description = self.get_description(job_details_soup)
+
+                    # since we are in the description page, we get also the location here
+                    header_section = job_details_soup.find('section', class_='section--header')
+                    if header_section:
+                        location_tag = header_section.find('p', class_='meta')
+                        if location_tag:
+                            location = location_tag.get_text()
+
+        return title, description_url, description, location
+
+    @staticmethod
+    def get_description(job_details_soup):
+        description = ""
+
+        for section in job_details_soup.find_all('section', class_='section--text'):
+            for child in section.children:
+                if isinstance(child, Tag):
+                    Scraper.clean_attrs(child)
+                    if child.name == "h2":
+                        child.name = "h3"
+                    if child.text != "":
+                        description += str(child)
+
+        return description
+
+
+class Matchmade(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        html_str = html.decode('utf-8')
+        json_html = re.findall(r'\((.*)\)', html_str)
+        if len(json_html) == 1:
+            html = json_html[0]
+            json_dict = json.loads(html)
+            if "results" in json_dict:
+                for item in json_dict["results"]:
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        if "location" in item:
+                            location = item["location"]
+                        else:
+                            location = None
+
+                        if "typeOfEmployment" in item:
+                            job_type = item["typeOfEmployment"]
+                        else:
+                            job_type = None
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, job_type, description_url)
+                        jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "vacancyName" in item:
+            title = item["vacancyName"]
+            if "companyName" in item and "publicationId" in item and "urlJobName" in item:
+                description_url = self.url.split(".com/")[0] + ".com/" + item["companyName"] + "/" + item["publicationId"] + "/" + item["urlJobName"]
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            for section in job_details_soup.find_all('section', class_='job-section'):
+                if section.has_attr('id') and ("st-additionalInformation" in section['id'] or "st-embed-map" in section['id']):
+                    break
+
+                for child in section.children:
+                    if isinstance(child, Tag):
+                        if child.name == "h2":
+                            child.name = "h3"
+                        Scraper.clean_attrs(child)
+                        description += str(child).strip()
+
+        return description
+
+
+class Ultimate(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('li', class_="careers-list-item"):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        title_tag = item.find('h1', class_="careers-heading")
+        if title_tag:
+            title = title_tag.get_text().strip().capitalize()
+            url_tag = item.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".ai/")[0] + ".ai" + relative_url
+                    if description_url:
+                        description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            job_container = job_details_soup.find('div', class_='w-container')
+
+            for child in job_container.children:
+                if isinstance(child, Tag):
+                    Scraper.clean_attrs(child)
+
+                    if child.name == "ul":
+                        description += str(child)
+                    else:
+                        for ch in child.children:
+                            if ch.name == "h2":
+                                ch.name = "h3"
+                            if ch.text != "\u200d":
+                                description += str(ch)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('div', class_='careers-description')
+        if location_tag:
+            location = location_tag.get_text()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
