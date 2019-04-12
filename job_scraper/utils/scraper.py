@@ -367,8 +367,10 @@ class Elisa(Scraper):
         description = ""
 
         soup = BeautifulSoup(description_raw, 'html.parser')
-        Scraper.clean_attrs(soup)
-        description += str(soup)
+        for child in soup.children:
+            if isinstance(child, Tag):
+                Scraper.clean_attrs(child)
+                description += str(child).replace(u'\xa0', "").replace("  ", "")
 
         return description
 
