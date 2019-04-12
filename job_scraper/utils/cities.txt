@@ -604,3 +604,4 @@ Helsingfors
 Useita paikkakuntia
 Pääkaupunkiseutu
 Capital area
+Remote
