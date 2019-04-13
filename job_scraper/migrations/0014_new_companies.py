@@ -38,7 +38,6 @@ class Migration(migrations.Migration):
             INSERT INTO 'Companies'('name', 'logo') VALUES ('SSH Communications Security', 'ssh_communications_security.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Vizor', 'vizor.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Frosmo', 'frosmo.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Vizor', 'vizor.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Everywear Games Oy', 'everywear_games.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Supermetrics', 'supermetrics.png');
             """
