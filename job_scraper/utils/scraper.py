@@ -6384,7 +6384,7 @@ class ZenRobotics(Scraper):
 
         jobs_ul = soup.find('ul', class_='jobs')
         if jobs_ul:
-            for item in jobs_ul.find('li'):
+            for item in jobs_ul.find_all('li'):
                 title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
 
