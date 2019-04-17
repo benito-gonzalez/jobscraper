@@ -70,3 +70,31 @@ FuturePlay - http://www.futureplaygames.com/join-us/
 Redhill Games - https://www.redhillgames.com/jobs
 Seriously Digital Entertainment - https://app.recruiterbox.com/widget/65241/openings/
 Housemarque - https://app.recruiterbox.com/widget/78174/openings/
+Hatch Entertainment Oy - https://playhatch.com/careers/
+Qentinel - https://api.teamtailor.com/v1/jobs?api_version=20161108&include=department,location&fields[departments]=name&fields[locations]=name,city&page[size]=20&filter[feed]=public&api_key=6JxQDiHbFxKE5sci2TIFss_m_c5Yh-PU1pm36DRz&
+Tuxera - https://www.tuxera.com/company/careers/#job_openings
+Taiste - https://www.taiste.fi/en/careers/
+Intopalo Digital Oy - https://www.intopalo.fi/careers/
+Reaktor - https://www.reaktor.com/careers/
+Bittium - https://jobs.bittium.com/
+Accenture - https://www.accenture.com/fi-en/careers/jobsearch
+Efima - https://cdn.jobylon.com/jobs/companies/605/embed/v2/?target=jobylon-jobs-widget&page_size=20
+Napa - https://www.napa.fi/careers/#positions
+AJR solutions Oy - https://ajr.fi/careers/
+Anders - https://www.anders.fi/en/careers/
+Small Giant Games - https://www.smallgiantgames.com/#jobs
+Oura - https://ouraring.com/careers/
+Matchmade - https://www.smartrecruiters.com/job-api/public/search/widgets/Matchmade/postings?&offset=0&limit=100&fq=&langCode=en&callback=jQuery11240969907988245692_1554996319993&_=1554996319994
+ultimate.ai - https://www.ultimate.ai/careers
+Jolla - https://jolla.com/careers/
+Yousician - https://api.greenhouse.io/v1/boards/yousician/offices
+Leadfeeder - https://www.leadfeeder.com/jobs/
+ZenRobotics - https://careers.zenrobotics.com/
+Callstats.io - https://www.callstats.io/jobs/
+Bitbar - https://bitbar.com/about/careers/
+Aiven - https://aiven.io/careers
+SSH Communications Security - https://careers.ssh.com/jobs
+Vizor - https://site.vizor.io/jobs
+Frosmo - https://frosmo.com/careers/?type=career&country%5B%5D=finland
+Everywear Games Oy - https://everyweargames.com/
+Superetrics - https://supermetrics.com/jobs

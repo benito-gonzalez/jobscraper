@@ -22,7 +22,7 @@ class CityLocator:
 
         if text:
             for city in self.finnish_cities:
-                if city in text:
+                if city.lower() in text.lower():
                     result = True
                     break
 
@@ -60,7 +60,7 @@ class CityLocator:
     def get_finnish_cities(self, text):
         cities = []
         for city in self.finnish_cities:
-            if city in text:
+            if city.lower() in text.lower():
                 cities.append(city)
 
         # If it finds a city, we can remove "Finland"
