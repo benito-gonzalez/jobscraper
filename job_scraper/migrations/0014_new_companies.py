@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Hatch Entertainment Oy', 'hatch_entertainment.png.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Hatch Entertainment Oy', 'hatch_entertainment.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Qentinel', 'qentinel.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Tuxera', 'tuxera.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Taiste', 'taiste.png');
