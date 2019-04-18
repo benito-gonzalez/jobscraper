@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+{% load search_tags %}
+
+
+{% block content %}
+    <div class="row mt-5 mb-4">
+        <div class="col text-center">
+            <h4>
+                <strong>
+                    Wondering what companies we already cover? Here are all of them!
+                </strong>
+            </h4>
+        </div>
+    </div>
+
+    <div class="row justify-content-center align-items-center">
+        {% for company in companies_list %}
+            {% if forloop.counter0|divisibleby:6 %}
+                </div><br>
+                <div class="row justify-content-center align-items-center">
+            {% endif %}
+
+            <div class="col-4 col-lg-2 text-center">
+                <a href="/jobs-at-{{ company.name }}"><img class="zoom hoverable" src="{{ company.logo.url }}" width="80px" height="auto" alt="{{ company.name }}"></a>
+            </div>
+        {% endfor %}
+
+        </div>
+
+    <div class="row mt-5">
+        <div class="col mt-5 mb-5">
+            <h5>
+                <strong>
+                    Are you representing a company that has open jobs in Finland? <a href="/about/contact-us" class="about-links about-style-link">Let us know</a> and we will for sure include you in
+                    our list, as soon as time allows us!
+                </strong>
+            </h5>
+        </div>
+    </div>
+
+    <div>
+        <button onclick="topFunction()" id="myBtn" title="Go to top"><img src="{% static 'images/arrow_up.png' %}" alt="" class="arrow-size"></button>
+    </div>
+
+{% endblock %}

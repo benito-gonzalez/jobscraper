@@ -5,6 +5,6 @@ app_name = 'job_scraper'
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
     path('search', views.IndexView.as_view(), name='index'),
+    path('companies', views.CompanyIndexView.as_view(template_name='companies.html')),
     path('job/<int:pk>/<slug:slug>', views.DetailView.as_view(), name='detail'),
-    path('company/<int:pk>/<slug:slug>', views.CompanyDetailsView.as_view(), name='company_details'),
 ]

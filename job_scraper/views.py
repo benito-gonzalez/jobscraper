@@ -139,20 +139,12 @@ class DetailView(generic.DetailView):
             return redirect('job_scraper:index')
 
 
-class CompanyDetailsView(generic.DetailView):
-    model = Company
-    template_name = 'company_details.html'
+class CompanyIndexView(generic.ListView):
+    template_name = 'companies.html'
+    context_object_name = 'companies_list'
 
-    def get(self, request, *args, **kwargs):
-        try:
-            self.object = self.get_object()
-            if self.object.get_name_slug != kwargs.get('slug'):
-                raise Http404
-
-            context = self.get_context_data(object=self.object)
-            return self.render_to_response(context)
-        except Http404:
-            return redirect('job_scraper:index')
+    def get_queryset(self):
+        return Company.objects.all()
 
 
 class JobListApiView(generics.ListAPIView):
