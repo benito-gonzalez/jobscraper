@@ -310,7 +310,7 @@ Bottom up
 #myBtn {
     display: none; /* Hidden by default */
     position: fixed; /* Fixed/sticky position */
-    bottom: 420px; /* Place the button at the bottom of the page */
+    bottom: 30px; /* Place the button at the bottom of the page */
     right: 30px; /* Place the button 30px from the right */
     z-index: 99; /* Make sure it does not overlap */
     border: none; /* Remove borders */
@@ -428,6 +428,19 @@ input:focus::-webkit-input-placeholder {
     font-size: 2.5rem;
     display: inline-block;
 }
+
+
+/*
+Companies logo zoom
+ */
+.zoom {
+  transition: transform .2s; /* Animation */
+}
+
+.zoom:hover {
+  transform: scale(1.2); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+}
+
 
 /*
 Phones
