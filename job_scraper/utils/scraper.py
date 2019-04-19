@@ -3557,10 +3557,8 @@ class Nitor(Scraper):
             for item in jobs_div.find_all('div', {'class': 'section'}):
                 title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
-                    location = self.get_location(description)
-                    if not location:
-                        # Nitor has a unique office located in Helsinki. If this information is not in the job description, we can hard-code it
-                        location = "Helsinki"
+                    # Nitor has a unique office located in Helsinki
+                    location = "Helsinki"
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                     jobs.append(job)
@@ -3613,22 +3611,6 @@ class Nitor(Scraper):
                         break
 
         return description
-
-    @staticmethod
-    def get_location(description):
-        """
-        It tries to get a Finnish city from the job description
-        :param description: job description
-        :return: Finnish cities as a String
-        """
-        locator = CityLocator()
-        cities = locator.get_finnish_cities(description)
-        if cities:
-            location = ", ".join(cities)
-        else:
-            location = None
-
-        return location
 
 
 class Softability(Scraper):
