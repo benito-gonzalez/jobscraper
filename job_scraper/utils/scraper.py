@@ -801,7 +801,7 @@ class Qvik(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
-        job_divs = soup.find_all("div", attrs={'class': 'boxes-col'})
+        job_divs = soup.find_all("div", class_="l-simple-listing__item")
 
         for item in job_divs:
             title, description_url, description = self.get_mandatory_fields(item)
@@ -816,13 +816,14 @@ class Qvik(Scraper):
         title = description_url = None
         description = ""
 
-        title_tag = item.find("h3")
-        if title_tag:
-            title = title_tag.text.strip()
+        url_a = item.find("a")
+        if url_a:
+            title = url_a.get_text().strip()
 
-            url_a = item.find("a")
-            if url_a:
-                description_url = url_a.get('href')
+            relative_url = url_a.get('href')
+            if relative_url:
+                description_url = self.url.split(".com/")[0] + ".com" + relative_url
+
                 if description_url:
                     description = self.get_description(description_url)
 
@@ -834,10 +835,16 @@ class Qvik(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            description_div = soup.find("div", attrs={'class': 'article-container'})
-            if description_div:
-                for p in description_div.find_all('p'):
-                    description += str(p)
+            article = soup.find("article", class_="h-wysiwyg-html")
+            if article:
+                for child in article.children:
+                    if isinstance(child, Tag):
+                        # If apply button
+                        if child.find('a', class_="c-btn"):
+                            break
+
+                        Scraper.clean_attrs(child)
+                        description += str(child)
 
         return description
 
