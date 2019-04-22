@@ -137,6 +137,7 @@ class Job(models.Model):
             click_counter_instance = ClickCounter(job=self)
 
         click_counter_instance.details += 1
+        click_counter_instance.updated_at = timezone.now()
         click_counter_instance.save()
 
     def update_apply_counter(self):
@@ -146,6 +147,7 @@ class Job(models.Model):
             click_counter_instance = ClickCounter(job=self)
 
         click_counter_instance.apply += 1
+        click_counter_instance.updated_at = timezone.now()
         click_counter_instance.save()
 
     class Meta:
@@ -184,6 +186,7 @@ class ClickCounter(models.Model):
     details = models.PositiveSmallIntegerField(default=0)
     apply = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = "ClickCounter"
