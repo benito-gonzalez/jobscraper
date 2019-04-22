@@ -7,8 +7,35 @@ from .models import JobTagMap
 from .models import ClickCounter
 
 
-admin.site.register(Job)
-admin.site.register(Company)
 admin.site.register(Tag)
-admin.site.register(JobTagMap)
-admin.site.register(ClickCounter)
+
+
+class CompanyAdmin(admin.ModelAdmin):
+    search_fields = (['name'])
+    list_display = ('name', 'description')
+
+
+class JobAdmin(admin.ModelAdmin):
+    search_fields = ('title', 'location', 'company__name')
+    list_display = ('title', 'company', 'location', 'end_date', 'is_active', 'is_new', 'created_at', 'updated_at')
+    date_hierarchy = "created_at"
+    ordering = ('-updated_at',)
+
+
+class ClickCounterAdmin(admin.ModelAdmin):
+    search_fields = ('job__title',)
+    list_display = ('job', 'details', 'apply', 'created_at', 'updated_at')
+    date_hierarchy = "created_at"
+    ordering = ('-updated_at',)
+
+
+class JobTagMapAdmin(admin.ModelAdmin):
+    search_fields = ('job__title', 'tag__name')
+    list_display = ('job', 'tag', 'num_times')
+    ordering = ('-id',)
+
+
+admin.site.register(Job, JobAdmin)
+admin.site.register(ClickCounter, ClickCounterAdmin)
+admin.site.register(Company, CompanyAdmin)
+admin.site.register(JobTagMap, JobTagMapAdmin)
