@@ -170,6 +170,14 @@ class JobTagMap(models.Model):
     class Meta:
         db_table = "JobsTagsMap"
 
+    def __str__(self):
+        if self.num_times > 1:
+            time = " times"
+        else:
+            time = " time"
+
+        return "'" + self.job.title + "' linked to tag: '" + self.tag.name + "' %d" % self.num_times + time
+
 
 class ClickCounter(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
@@ -179,3 +187,6 @@ class ClickCounter(models.Model):
 
     class Meta:
         db_table = "ClickCounter"
+
+    def __str__(self):
+        return "'" + self.job.title + "'\tDetail job clicks: %d" % self.details + "\tApply job clicks: %d" % self.apply
