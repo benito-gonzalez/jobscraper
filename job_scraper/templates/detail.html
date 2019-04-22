@@ -65,7 +65,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-2 text-center text-lg-right mb-1 mb-md-0">
-                    <a href="{{ job.job_url }}" class="btn btn-outline-success btn-sm" target="_blank"><strong>Apply!</strong></a>
+                    <a href="{% url 'job_scraper:apply' job.id job.get_title_slug %}" class="btn btn-outline-success btn-sm" target="_blank" rel="nofollow"><strong>Apply!</strong></a>
                 </div>
             </div>
         </div>

@@ -131,7 +131,7 @@
                                 <a href="{% url 'job_scraper:detail' job.id job.get_title_slug %}" class="btn btn-block btn-outline-success btn-sm">Job details</a>
                             </div>
                             <div class="col-4 col-md d-lg-none pl-1">
-                                <a href="{{ job.job_url }}" class="btn btn-block btn-apply btn-sm btn-apply-mbl">Apply!</a>
+                                <a href="{% url 'job_scraper:apply' job.id job.get_title_slug %}" class="btn btn-block btn-apply btn-sm btn-apply-mbl" rel="nofollow">Apply!</a>
                             </div>
                             <div class="col-4 col-md d-none d-lg-block">
                                 <a href="{% url 'job_scraper:detail' job.id job.get_title_slug %}" class="btn btn-show-more btn-outline-success btn-sm ">Show more</a>

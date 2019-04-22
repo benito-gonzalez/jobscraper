@@ -130,6 +130,24 @@ class Job(models.Model):
         offset = 60 * 60 * 24 * days
         return current_epoch + offset
 
+    def update_details_counter(self):
+        try:
+            click_counter_instance = ClickCounter.objects.get(job=self)
+        except ClickCounter.DoesNotExist:
+            click_counter_instance = ClickCounter(job=self)
+
+        click_counter_instance.details += 1
+        click_counter_instance.save()
+
+    def update_apply_counter(self):
+        try:
+            click_counter_instance = ClickCounter.objects.get(job=self)
+        except ClickCounter.DoesNotExist:
+            click_counter_instance = ClickCounter(job=self)
+
+        click_counter_instance.apply += 1
+        click_counter_instance.save()
+
     class Meta:
         db_table = "Jobs"
 

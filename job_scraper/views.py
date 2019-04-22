@@ -1,7 +1,7 @@
 from rest_framework import generics
 from django.views import generic
 from django.http import Http404
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.views.generic.edit import FormView
 from django.conf import settings
@@ -19,7 +19,6 @@ from itertools import chain
 from .forms import ContactForm
 from job_scraper.models import Job
 from job_scraper.models import Company
-from job_scraper.models import ClickCounter
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
 
 
@@ -128,26 +127,28 @@ class DetailView(generic.DetailView):
     model = Job
     template_name = 'detail.html'
 
-    def get(self, request, *args, **kwargs):
-        try:
-            self.object = self.get_object()
-            if self.object.get_title_slug != kwargs.get('slug'):
-                raise Http404
+    def get_object(self, **kwargs):
+        job = get_object_or_404(Job, pk=self.kwargs['pk'])
+        if job.get_title_slug != self.kwargs.get('slug'):
+            raise Http404
 
-            context = self.get_context_data(object=self.object)
-            self.update_details_counter()
-            return self.render_to_response(context)
-        except Http404:
-            return redirect('job_scraper:index')
+        if not job.is_active:
+            raise Http404
 
-    def update_details_counter(self):
-        try:
-            click_counter_instance = ClickCounter.objects.get(job=self.object)
-        except ClickCounter.DoesNotExist:
-            click_counter_instance = ClickCounter(job=self.object)
+        job.update_details_counter()
+        return job
 
-        click_counter_instance.details += 1
-        click_counter_instance.save()
+
+class ApplyView(generic.RedirectView):
+    permanent = False
+    query_string = False
+    pattern_name = 'apply'
+
+    def get_redirect_url(self, *args, **kwargs):
+        job = get_object_or_404(Job, pk=kwargs['pk'])
+        print("Sumandole uno a " + job.title)
+        job.update_apply_counter()
+        return job.job_url
 
 
 class CompanyIndexView(generic.ListView):
