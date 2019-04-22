@@ -1956,7 +1956,7 @@ class Verto(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
 
-        helsinki_jobs = soup.find('div', {'class': 'title-mobile'}, string="Helsinki")
+        helsinki_jobs = soup.find('div', {'class': 'title-mobile'}, string="Finland")
         if helsinki_jobs:
             items = helsinki_jobs.parent.find_all('div', {'class': 'box-holder'})
             for item in items:
