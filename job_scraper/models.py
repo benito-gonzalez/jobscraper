@@ -14,6 +14,7 @@ class Company(models.Model):
 
     class Meta:
         db_table = "Companies"
+        verbose_name_plural = "companies"
 
     @property
     def get_name_slug(self):
@@ -129,6 +130,26 @@ class Job(models.Model):
         offset = 60 * 60 * 24 * days
         return current_epoch + offset
 
+    def update_details_counter(self):
+        try:
+            click_counter_instance = ClickCounter.objects.get(job=self)
+        except ClickCounter.DoesNotExist:
+            click_counter_instance = ClickCounter(job=self)
+
+        click_counter_instance.details += 1
+        click_counter_instance.updated_at = timezone.now()
+        click_counter_instance.save()
+
+    def update_apply_counter(self):
+        try:
+            click_counter_instance = ClickCounter.objects.get(job=self)
+        except ClickCounter.DoesNotExist:
+            click_counter_instance = ClickCounter(job=self)
+
+        click_counter_instance.apply += 1
+        click_counter_instance.updated_at = timezone.now()
+        click_counter_instance.save()
+
     class Meta:
         db_table = "Jobs"
 
@@ -150,3 +171,25 @@ class JobTagMap(models.Model):
 
     class Meta:
         db_table = "JobsTagsMap"
+
+    def __str__(self):
+        if self.num_times > 1:
+            time = " times"
+        else:
+            time = " time"
+
+        return "'" + self.job.title + "' linked to tag: '" + self.tag.name + "' %d" % self.num_times + time
+
+
+class ClickCounter(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    details = models.PositiveSmallIntegerField(default=0)
+    apply = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "ClickCounter"
+
+    def __str__(self):
+        return "'" + self.job.title + "'\tDetail job clicks: %d" % self.details + "\tApply job clicks: %d" % self.apply
