@@ -146,7 +146,6 @@ class ApplyView(generic.RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         job = get_object_or_404(Job, pk=kwargs['pk'])
-        print("Sumandole uno a " + job.title)
         job.update_apply_counter()
         return job.job_url
 

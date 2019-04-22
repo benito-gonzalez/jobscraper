@@ -173,12 +173,7 @@ class JobTagMap(models.Model):
         db_table = "JobsTagsMap"
 
     def __str__(self):
-        if self.num_times > 1:
-            time = " times"
-        else:
-            time = " time"
-
-        return "'" + self.job.title + "' linked to tag: '" + self.tag.name + "' %d" % self.num_times + time
+        return "'" + self.job.title + "' linked to tag: '" + self.tag.name + "' %d" % self.num_times + " time(s)"
 
 
 class ClickCounter(models.Model):
