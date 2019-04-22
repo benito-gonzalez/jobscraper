@@ -158,6 +158,9 @@ def main():
                 job_db = db_support.get_job_from_db(scraped_job, company)
 
                 if job_db:
+                    # update end_date in case it has changed
+                    db_support.update_end_date(scraped_job, job_db)
+
                     if not job_db.is_active:
                         db_support.enable_job(job_db)
                         if job_db.is_new:

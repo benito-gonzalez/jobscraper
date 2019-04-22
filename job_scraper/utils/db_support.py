@@ -121,6 +121,27 @@ def disable_job(job):
     log_support.disabled_job(job)
 
 
+def update_end_date(scraped_job, job_db):
+    """
+    Updates the end_date job in case it has been updated
+    :param scraped_job:
+    :param job_db:
+    :return:
+    """
+    end_date_db = None
+
+    if not scraped_job.end_date:
+        return
+
+    if job_db.end_date:
+        end_date_db = job_db.end_date.strftime('%Y-%m-%d')
+
+    if scraped_job.end_date != end_date_db:
+        job_db.end_date = scraped_job.end_date
+        job_db.save()
+        log_support.updated_end_date(job_db, scraped_job.end_date)
+
+
 def get_active_jobs():
     """
     Get a list of jobs that are active.

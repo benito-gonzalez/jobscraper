@@ -55,6 +55,12 @@ def updated_active_job(job):
     f.close()
 
 
+def updated_end_date(job, new_end_date):
+    f = open(SCRAPERLOG, 'a')
+    f.write(get_formatted_date() + "Updated end_date in job '{0}' ('{1}') to {2}".format(job, job.company, new_end_date) + "\n")
+    f.close()
+
+
 def scraper_failure(client_name, exception):
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "ERROR. '{0}' - {1}".format(client_name, exception) + "\n")
