@@ -6302,7 +6302,7 @@ class Leadfeeder(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'lxml')
 
-        for item in soup.find_all('li', class_="accordion-item"):
+        for item in soup.find_all('div', class_="row jobs__listing"):
             title, description_url, description = self.get_mandatory_fields(item)
             if self.is_valid_job(title, description_url, description):
 
@@ -6317,10 +6317,10 @@ class Leadfeeder(Scraper):
         description = ""
 
         # Check title
-        title_tag = item.find('h3', class_="accordion__title")
+        title_tag = item.find('h3', class_="jobs__title")
         if title_tag:
             title = title_tag.get_text().strip()
-            url_tag = item.find('a', class_='accordion__button')
+            url_tag = item.find('a', class_='jobs__button')
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
