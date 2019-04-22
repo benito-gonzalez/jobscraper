@@ -4533,7 +4533,7 @@ class Orion(Scraper):
 
         url_tag = item.find("a")
         if url_tag:
-            title = url_tag.text
+            title = url_tag.text.rstrip(".")  # remove last '.' from the jobs
             description_url = url_tag.get('href')
             description = self.get_full_description(description_url)
 
