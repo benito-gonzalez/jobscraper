@@ -14,6 +14,7 @@ class Company(models.Model):
 
     class Meta:
         db_table = "Companies"
+        verbose_name_plural = "companies"
 
     @property
     def get_name_slug(self):
@@ -150,3 +151,13 @@ class JobTagMap(models.Model):
 
     class Meta:
         db_table = "JobsTagsMap"
+
+
+class ClickCounter(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    details = models.PositiveSmallIntegerField(default=0)
+    apply = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "ClickCounter"

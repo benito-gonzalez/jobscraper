@@ -19,6 +19,7 @@ from itertools import chain
 from .forms import ContactForm
 from job_scraper.models import Job
 from job_scraper.models import Company
+from job_scraper.models import ClickCounter
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
 
 
@@ -134,9 +135,19 @@ class DetailView(generic.DetailView):
                 raise Http404
 
             context = self.get_context_data(object=self.object)
+            self.update_details_counter()
             return self.render_to_response(context)
         except Http404:
             return redirect('job_scraper:index')
+
+    def update_details_counter(self):
+        try:
+            click_counter_instance = ClickCounter.objects.get(job=self.object)
+        except ClickCounter.DoesNotExist:
+            click_counter_instance = ClickCounter(job=self.object)
+
+        click_counter_instance.details += 1
+        click_counter_instance.save()
 
 
 class CompanyIndexView(generic.ListView):
