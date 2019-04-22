@@ -83,19 +83,19 @@
                         <div class="col-6 col-lg-12">
                             <div class="row">
                                 <div class="col-12 col-lg-auto">
-                                    <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto" alt=""> {{ job.posted_date }}
+                                    <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto" alt="Published date"> {{ job.posted_date }}
                                 </div>
 
                                 {% if job.end_date %}
                                     <div class="col-12 col-lg-auto mt-1 mt-lg-0 ">
-                                        <img src="{% static 'images/end_date.png' %}" width="23px" height="auto" alt="">
+                                        <img src="{% static 'images/end_date.png' %}" width="23px" height="auto" alt="End date">
                                         <span><strong class="job-end-date">Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
                                     </div>
                                 {% endif %}
 
                                 {% if job.location %}
                                     <div class="col-12 col-lg-auto mt-1 mt-lg-0 ">
-                                        <img src="{% static 'images/location.png' %}" width="18px" height="auto" alt="">
+                                        <img src="{% static 'images/location.png' %}" width="18px" height="auto" alt="Location">
                                         <span>{{ job.location }}</span>
                                     </div>
                                 {% endif %}
@@ -190,7 +190,7 @@
     {% endif %}
 
     <div>
-        <button onclick="topFunction()" id="myBtn" title="Go to top"><img src="{% static 'images/arrow_up.png' %}" alt="" class="arrow-size"></button>
+        <button onclick="topFunction()" id="myBtn" title="Go to top"><img src="{% static 'images/arrow_up.png' %}" alt="Arrow up" class="arrow-size"></button>
     </div>
 
 

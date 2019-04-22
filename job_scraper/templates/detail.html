@@ -18,7 +18,7 @@
                     <div class="row">
                         <div class="col-6 col-md-5">
                             <div class="d-md-none">
-                                <img src="{% static 'images/pub_date.png' %}" width="15px" height="auto">
+                                <img src="{% static 'images/pub_date.png' %}" width="15px" height="auto" alt="Published date">
                                 <strong>{{ job.posted_date_details }}</strong>
                             </div>
                             <div class="d-none d-md-block">
@@ -28,7 +28,7 @@
                         </div>
                         <div class="col-6 col-md-5">
                             <div class="d-md-none">
-                                <img src="{% static 'images/building.png' %}" width="17px" height="auto">
+                                <img src="{% static 'images/building.png' %}" width="17px" height="auto" alt="Company">
                                 <strong>{{ job.company }}</strong>
                             </div>
                             <div class="d-none d-md-block">
@@ -41,7 +41,7 @@
                         <div class="col-6 col-md-5">
                             {% if job.end_date %}
                                 <div class="d-md-none">
-                                    <img src="{% static 'images/end_date.png' %}" width="17px" height="auto">
+                                    <img src="{% static 'images/end_date.png' %}" width="17px" height="auto" alt="End date">
                                     <strong>{{ job.end_date }}</strong>
                                 </div>
                                 <div class="d-none d-md-block">
@@ -53,7 +53,7 @@
                         <div class="col-6 col-md-5">
                             {% if job.location %}
                                 <div class="d-md-none">
-                                    <img src="{% static 'images/location.png' %}" width="14px" height="auto">
+                                    <img src="{% static 'images/location.png' %}" width="14px" height="auto" alt="Location">
                                     <strong>{{ job.location }}</strong>
                                 </div>
                                 <div class="d-none d-md-block">
