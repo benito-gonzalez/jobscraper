@@ -3876,8 +3876,8 @@ class Remedy(Scraper):
         positions = soup.find('div', class_='positions')
         if positions:
             for item in positions.find_all('a'):
-                title, description_url, description, location = self.get_mandatory_fields(item)
-                if self.is_valid_job(title, description_url, description):
+                title, description_url, description, location, is_valid = self.get_mandatory_fields(item)
+                if is_valid and self.is_valid_job(title, description_url, description):
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                     jobs.append(job)
 
@@ -3885,14 +3885,20 @@ class Remedy(Scraper):
 
     def get_mandatory_fields(self, item):
         description = ""
-        location = None
+        description_url = location = None
 
-        title = item.text
-        description_url = item.get('href')
-        if description_url:
-            description, location = self.get_full_description(description_url, title)
+        # Remedy has a job called "Animation Tracking Artist" which points to an invalid description URL (HTTP 404). It must be skipped
+        is_valid = True
 
-        return title, description_url, description, location
+        title = item.text.strip()
+        if title == "Animation Tracking Artist":
+            is_valid = False
+        else:
+            description_url = item.get('href')
+            if description_url:
+                description, location = self.get_full_description(description_url, title)
+
+        return title, description_url, description, location, is_valid
 
     def get_full_description(self, url, title):
         description = ""
@@ -6583,8 +6589,8 @@ class Aiven(Scraper):
         jobs_div = soup.find('div', class_='open-positions')
         if jobs_div:
             for item in jobs_div.find_all('div', class_='career'):
-                title, description_url, description = self.get_mandatory_fields(item)
-                if self.is_valid_job(title, description_url, description):
+                title, description_url, description, is_valid = self.get_mandatory_fields(item)
+                if is_valid and self.is_valid_job(title, description_url, description):
 
                     location = self.get_location(item, title)
 
@@ -6601,15 +6607,21 @@ class Aiven(Scraper):
         title = description_url = None
         description = ""
 
+        # Aiven has one job called "Backend Developer Intern" which points to an invalid URL (HTTP 404). In this case, we must invalidate it
+        is_valid = True
+
         # Check title
         url_tag = item.find('a')
         if url_tag:
             title = url_tag.get_text().strip()
-            description_url = url_tag.get('href')
-            if description_url:
-                description = self.get_description(description_url)
+            if title == "Backend Developer Intern":
+                is_valid = False
+            else:
+                description_url = url_tag.get('href')
+                if description_url:
+                    description = self.get_description(description_url)
 
-        return title, description_url, description
+        return title, description_url, description, is_valid
 
     @staticmethod
     def get_description(url):
