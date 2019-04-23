@@ -7,6 +7,7 @@ from django.views.generic.edit import FormView
 from django.conf import settings
 from django.contrib import messages
 from re import escape
+from re import search
 from urllib.parse import unquote
 
 from operator import and_
@@ -90,8 +91,8 @@ class IndexView(generic.ListView):
                 pass
 
         if keyword_query and location_query:
-            if "++" in keyword_query:
-                # If the search is like "C++", the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
+            if search("[^a-zA-Z0-9]+", keyword_query):
+                # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
                 list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q)) | Q(company__name__iregex=r"\b" + escape(q)) for q in keyword_words])
                                            & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
             else:
@@ -103,10 +104,10 @@ class IndexView(generic.ListView):
             return list(OrderedDict.fromkeys(result_list))
 
         if keyword_query:
-            if "++" in keyword_query:
-                # If the search is like "C++", the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
+            # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
+            if search("[^a-zA-Z0-9]+", keyword_query):
                 list1 = Job.objects.filter(
-                    functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q)) | Q(company__name__iregex=r"\b" + escape(q)) for q in keyword_words]) & Q(is_active=True)).order_by('-updated_at')
+                    functools.reduce(and_, [Q(title__iregex=escape(q)) | Q(company__name__iregex=escape(q)) for q in keyword_words]) & Q(is_active=True)).order_by('-updated_at')
             else:
                 list1 = Job.objects.filter(
                     functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) & Q(is_active=True)).order_by(
