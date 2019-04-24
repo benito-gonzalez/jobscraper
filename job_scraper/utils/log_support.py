@@ -99,7 +99,7 @@ def set_invalid_description(company, title):
 
 def set_invalid_description_url(company, title):
     f = open(SCRAPERLOG, 'a')
-    f.write(get_formatted_date() + "ERROR. Descriptin URL could not be scraped from the company {0} for the job {1}".format(company, title) + "\n")
+    f.write(get_formatted_date() + "ERROR. Description URL could not be scraped from the company {0} for the job {1}".format(company, title) + "\n")
     f.close()
 
 
