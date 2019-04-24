@@ -39,6 +39,7 @@ class JobTagMapAdmin(admin.ModelAdmin):
 class UserSearchesAdmin(admin.ModelAdmin):
     list_display = ('what_entry', 'where_entry', 'created_at')
     ordering = ('-created_at',)
+    date_hierarchy = "created_at"
 
 
 admin.site.register(Job, JobAdmin)
