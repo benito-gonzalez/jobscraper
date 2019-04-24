@@ -4725,8 +4725,8 @@ class Holvi(Scraper):
         section = soup.find('section', {'id': 'work-with-us'})
         if section:
             for row in section.find_all("li"):
-                title, description_url, description = self.get_mandatory_fields(row)
-                if self.is_valid_job(title, description_url, description):
+                title, description_url, description, is_enabled = self.get_mandatory_fields(row)
+                if is_enabled and self.is_valid_job(title, description_url, description):
                     location = self.get_location(description_url, title)
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
@@ -4737,32 +4737,39 @@ class Holvi(Scraper):
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
+        is_enabled = True
 
         url_tag = item.find("a")
         if url_tag:
             title = url_tag.text
             description_url = url_tag.get('href')
             if description_url:
-                description = self.get_full_description(description_url)
+                description, is_enabled = self.get_full_description(description_url)
 
-        return title, description_url, description
+        return title, description_url, description, is_enabled
 
     @staticmethod
     def get_full_description(url):
         description = ""
+        is_enabled = True
+
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            sections = job_details_soup.find_all('section', class_='section section--text')
-            for section in sections:
-                for child in section.children:
-                    Scraper.clean_attrs(child)
-                    if child.name:
-                        if child.name == "h2":
-                            child.name = "h4"
-                        description += str(child)
 
-        return description
+            # Holvi has some jobs which are no longer valid. Those invalid jobs do not have '<section class="section section--header">'
+            is_enabled = job_details_soup.find('section', class_='section section--header')
+            if is_enabled:
+                sections = job_details_soup.find_all('section', class_='section section--text')
+                for section in sections:
+                    for child in section.children:
+                        Scraper.clean_attrs(child)
+                        if child.name:
+                            if child.name == "h2":
+                                child.name = "h4"
+                            description += str(child)
+
+        return description, is_enabled
 
     def get_location(self, description_url, title):
         location = None
