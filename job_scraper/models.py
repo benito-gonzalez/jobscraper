@@ -188,3 +188,20 @@ class ClickCounter(models.Model):
 
     def __str__(self):
         return "'" + self.job.title + "'\tDetail job clicks: %d" % self.details + "\tApply job clicks: %d" % self.apply
+
+
+class UserSearches(models.Model):
+    what_entry = models.CharField(max_length=500, blank=True, null=True)
+    where_entry = models.CharField(max_length=500, blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "UserSearches"
+        verbose_name_plural = "UserSearches"
+
+    @staticmethod
+    def add_entry(what_entry=None, where_entry=None):
+        entry = UserSearches()
+        entry.what_entry = what_entry
+        entry.where_entry = where_entry
+        entry.save()

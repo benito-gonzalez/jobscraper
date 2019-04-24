@@ -20,6 +20,7 @@ from itertools import chain
 from .forms import ContactForm
 from job_scraper.models import Job
 from job_scraper.models import Company
+from job_scraper.models import UserSearches
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
 
 
@@ -101,6 +102,7 @@ class IndexView(generic.ListView):
             list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & Q(is_active=True) &
                                        Q(location__icontains=location_query)).order_by('-jobtagmap__num_times')
             result_list = list(chain(list1, list2))
+            UserSearches.add_entry(what_entry=keyword_query, where_entry=location_query)
             return list(OrderedDict.fromkeys(result_list))
 
         if keyword_query:
@@ -116,9 +118,11 @@ class IndexView(generic.ListView):
             # select j.* from Jobs j inner join JobsTagsMap jt on j.id == jt.job_id inner join Tags t on jt.tag_id == t.id  where t.name like "keyword_query"
             list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & Q(is_active=True)).order_by('-jobtagmap__num_times')
             result_list = list(chain(list1, list2))
+            UserSearches.add_entry(what_entry=keyword_query)
             return list(OrderedDict.fromkeys(result_list))
 
         if location_query:
+            UserSearches.add_entry(where_entry=location_query)
             return Job.objects.filter(is_active=True, location__icontains=location_query).order_by('-updated_at')
         else:
             return Job.objects.filter(is_active=True).order_by('-updated_at')

@@ -5,6 +5,7 @@ from .models import Company
 from .models import Tag
 from .models import JobTagMap
 from .models import ClickCounter
+from .models import UserSearches
 
 
 admin.site.register(Tag)
@@ -35,7 +36,13 @@ class JobTagMapAdmin(admin.ModelAdmin):
     ordering = ('-id',)
 
 
+class UserSearchesAdmin(admin.ModelAdmin):
+    list_display = ('what_entry', 'where_entry', 'created_at')
+    ordering = ('-created_at',)
+
+
 admin.site.register(Job, JobAdmin)
 admin.site.register(ClickCounter, ClickCounterAdmin)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(JobTagMap, JobTagMapAdmin)
+admin.site.register(UserSearches, UserSearchesAdmin)
