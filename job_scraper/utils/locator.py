@@ -1,6 +1,7 @@
 import os
 import geotext
-
+from re import search
+from re import escape
 
 current_path = os.path.abspath(os.path.dirname(__file__))
 FILENAME = os.path.join(current_path, "cities.txt")
@@ -60,7 +61,8 @@ class CityLocator:
     def get_finnish_cities(self, text):
         cities = []
         for city in self.finnish_cities:
-            if city.lower() in text.lower():
+            if search(r"\b" + escape(city.lower()) + r"\b", text.lower()):
+            #if city.lower() in r'\b' + text.lower() + r'\b':
                 cities.append(city)
 
         # If it finds a city, we can remove "Finland"
