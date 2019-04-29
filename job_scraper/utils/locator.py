@@ -62,7 +62,6 @@ class CityLocator:
         cities = []
         for city in self.finnish_cities:
             if search(r"\b" + escape(city.lower()) + r"\b", text.lower()):
-            #if city.lower() in r'\b' + text.lower() + r'\b':
                 cities.append(city)
 
         # If it finds a city, we can remove "Finland"
