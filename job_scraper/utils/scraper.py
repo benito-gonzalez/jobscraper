@@ -5498,10 +5498,11 @@ class Qentinel(Scraper):
 
         if "end-date" in item["attributes"]:
             end_date_raw = item["attributes"]["end-date"]
-            try:
-                end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
-            except (ValueError, TypeError) as e:
-                log_support.set_error_message(self.client_name, "Invalid date string " + str(e))
+            if end_date_raw:
+                try:
+                    end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+                except (ValueError, TypeError) as e:
+                    log_support.set_error_message(self.client_name, "Invalid date string in job " + title + " " + str(e))
 
         if not end_date:
             log_support.set_invalid_dates(self.client_name, title)
