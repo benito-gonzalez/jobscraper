@@ -12,16 +12,16 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Autori Oy', 'autori_oy.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('720 Degrees Oy', '720_degrees_oy.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Autori Oy', 'autori.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('720 Degrees Oy', '720_degrees.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Umbra', 'umbra.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Lumoame Oy', 'lumoame_oy.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Screenful Oy', 'screenful_oy.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Teleste Corporation', 'teleste_corporation.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Lumoame Oy', 'lumoame.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Screenful Oy', 'screenful.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Teleste Corporation', 'teleste.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Sujuwa Group', 'sujuwa_group.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Vaana', 'vaana.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('IWA', 'iwa.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nico', 'nico.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nico', 'nice_business_consulting.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Bitwise', 'bitwise.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Solteq', 'solteq.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('University of Turku', 'university_of_turku.png');
