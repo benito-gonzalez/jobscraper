@@ -196,6 +196,46 @@ def generate_instance_from_client(client_name, url):
         return Supermetrics(client_name, url)
     if client_name == "Taiste":
         return Taiste(client_name, url)
+    if client_name == "Autori Oy":
+        return Autori(client_name, url)
+    if client_name == "720 Degrees Oy":
+        return Degrees(client_name, url)
+    if client_name == "Umbra":
+        return Umbra(client_name, url)
+    if client_name == "Lumoame Oy":
+        return Lumoame(client_name, url)
+    if client_name == "Screenful Oy":
+        return Screenful(client_name, url)
+    if client_name == "Sujuwa Group":
+        return Sujuwa(client_name, url)
+    if client_name == "Vaana":
+        return Vaana(client_name, url)
+    if client_name == "IWA":
+        return Iwa(client_name, url)
+    if client_name == "Nico":
+        return Nico(client_name, url)
+    if client_name == "Bitwise":
+        return Bitwise(client_name, url)
+    if client_name == "Solteq":
+        return Solteq(client_name, url)
+    if client_name == "Alphasense":
+        return Alphasense(client_name, url)
+    if client_name == "University of Turku":
+        return UniversityTurku(client_name, url)
+    if client_name == "University of Helsinki":
+        return UniversityHelsinki(client_name, url)
+    if client_name == "University of Jyväskylä":
+        return UniversityJyvaskyla(client_name, url)
+    if client_name == "Aalto University":
+        return UniversityAalto(client_name, url)
+    if client_name == "Tampere University":
+        return UniversityTampere(client_name, url)
+    if client_name == "University of Oulu":
+        return UniversityOulu(client_name, url)
+    if client_name == "Teleste Corporation":
+        return Teleste(client_name, url)
+    if client_name == "Visma":
+        return Visma(client_name, url)
     else:
         return None
 
@@ -7028,3 +7068,1328 @@ class Taiste(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class Autori(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('div', class_='open-position'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                # It has a unique office in Oulu
+                location = "Oulu"
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h3')
+        if title_tag:
+            title = title_tag.get_text().strip()
+            # Autori does not have a specific job description page but everything is in the root
+            description_url = self.url
+
+            description_parent = item.find('div', class_='open-position-details')
+            if description_parent:
+                for child in description_parent.children:
+                    Scraper.clean_attrs(child)
+                    description += str(child)
+
+        return title, description_url, description
+
+
+class Degrees(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='toggleBlueBox')
+        if container:
+            ul = container.find('ul')
+            if ul:
+                for item in ul.children:
+                    if isinstance(item, Tag) and item.name == 'li':
+                        title, description_url, description, is_enabled = self.get_mandatory_fields(item)
+                        if is_enabled and self.is_valid_job(title, description_url, description):
+                            job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, description_url)
+                            jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        is_enabled = True
+
+        title_tag = item.find('a')
+        if title_tag:
+            title = title_tag.get_text().strip()
+            # job called 'Business Developer (Finnish speaking)' does not have description_url. Instead of returning an error, we skip it
+            if title == "Business Developer (Finnish speaking)":
+                is_enabled = False
+            else:
+                description_block = item.find('div', class_='content')
+                if description_block:
+                    for child in description_block.children:
+                        if isinstance(child, Tag):
+                            apply = child.find('a', class_="btn")
+                            if apply:
+                                description_url = apply.get('href')
+                                break
+
+                            Scraper.clean_attrs(child)
+                            description += str(child)
+
+        return title, description_url, description, is_enabled
+
+
+class Umbra(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('div', class_='card-clickable'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find('a')
+        if url_tag:
+            title = url_tag.get_text().strip()
+
+            relative_url = url_tag.get('href')
+            description_url = self.url + relative_url
+
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='jobdesciption')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('span', class_='meta-job-location-city')
+        if location_tag:
+            location = location_tag.get_text().strip()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Lumoame(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        # Get the mandatory fields from description url
+        for item in soup.find_all('a', class_='sqs-block-button-element--small sqs-block-button-element'):
+            # skip email link
+            if "mailto" in item.get('href'):
+                continue
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                # A unique office located in Helsinki
+                location = "Helsinki"
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        relative_url = item.get('href')
+        if relative_url:
+            description_url = self.url.split(".me/")[0] + ".me" + relative_url
+
+            job_details_html = request_support.simple_get(description_url)
+            if job_details_html:
+                job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+                title_div = job_details_soup.find('div', class_='sqs-block-content')
+                if title_div:
+                    title = title_div.get_text()
+
+                    description = self.get_description(job_details_soup)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(job_details_soup):
+        description = ""
+
+        # There are several 'sqs-block html-block sqs-block-html' in the HTML. The first one that contains a p tag has the description
+        for section in job_details_soup.find_all('div', class_='sqs-block html-block sqs-block-html'):
+            first_p = section.find('p')
+            if first_p:
+                for sibling in first_p.next_siblings:
+                    if isinstance(sibling, Tag):
+                        # skip HTML comments
+                        if sibling.get_text() != "":
+                            Scraper.clean_attrs(sibling)
+                            description += str(sibling)
+                break
+
+        return description
+
+
+class Screenful(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('li'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                # It has a unique office in Helsinki
+                location = "Helsinki"
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find('a')
+        if url_tag:
+            title = url_tag.get_text().strip()
+            description_url = url_tag.get('href')
+
+            # some jobs have relative url
+            if "https" not in description_url:
+                description_url = self.url.split(".com/")[0] + ".com" + description_url
+
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='sqs-block-content')
+            if description_parent:
+                first_h1 = description_parent.find('h1')
+                if first_h1:
+                    for sibling in first_h1.next_siblings:
+                        if isinstance(sibling, Tag):
+                            if sibling.find('a', {'href': 'https://screenful.com/jobs/'}):
+                                break
+
+                            Scraper.clean_attrs(sibling)
+                            description += str(sibling)
+
+        return description
+
+
+class Sujuwa(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        ul = soup.find('ul', class_='jobs')
+        if ul:
+            for item in ul.find_all('li'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('span', class_='title')
+        if title_tag:
+            title = title_tag.get_text().strip()
+
+        url_tag = item.find('a')
+        if url_tag:
+            relative_url = url_tag.get('href')
+            if relative_url:
+                description_url = self.url.split(".fi/")[0] + ".fi" + relative_url
+                if description_url:
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='body')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        if child.has_attr('class') and "apply" in child['class']:
+                            break
+
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('span', class_='meta')
+        if location_tag:
+            location = location_tag.get_text().strip()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Vaana(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='elementor-text-editor elementor-clearfix')
+        if container:
+            for item in container.find_all('p'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    # it has a unique office located in Helsinki
+                    location = "Helsinki"
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find('a')
+        if url_tag:
+            title = url_tag.get_text().strip()
+            description_url = url_tag.get('href')
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='elementor-text-editor elementor-clearfix')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+
+class Iwa(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', {'id': 'x-section-3'})
+        if container:
+            job_blocks = container.find_all('div', class_='x-container max width')
+            if len(job_blocks) > 1:
+                for job_section in job_blocks[1].find_all('h5', class_='h-custom-headline'):
+                    # It has jobs in Finland, Vietnam and Thailand. This info appears in a header so we need to get first that header and then move to the next sibling
+                    if "FINLAND" in job_section.get_text():
+                        sibling = job_section.find_next_sibling('div')
+                        if sibling:
+                            for item in sibling.find_all('a'):
+                                title, description_url, description = self.get_mandatory_fields(item)
+                                if self.is_valid_job(title, description_url, description):
+                                    # it has a unique office located in Helsinki
+                                    location = "Helsinki"
+
+                                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        description = ""
+
+        title = item.get_text().strip()
+        description_url = item.get('href')
+
+        # some jobs have relative url
+        if "https" not in description_url:
+            description_url = self.url.split(".fi/")[0] + ".fi" + description_url
+
+        if description_url:
+            description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='x-text cs-ta-left mtn mbl')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+
+class Nico(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='feedzy-rss')
+        if container:
+            for item in container.find_all('li', class_='rss_item'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+                    end_date = self.get_end_date(description_url, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('span', class_='title')
+        if title_tag:
+            title = title_tag.get_text().strip().capitalize()
+            url_tag = title_tag.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+
+                if description_url:
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='job_description')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        # some jobs have a video at the end. If so, breaks
+                        if child.find('iframe'):
+                            break
+
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('div', class_='rss_content')
+        if location_tag:
+            location = location_tag.get_text().strip()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, url, title):
+        end_date = None
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            dates_block = job_details_soup.find('div', class_='job_start_end_times')
+            if dates_block:
+                dates_list = dates_block.find_all('span', class_='se_date')
+                if len(dates_list) == 2:
+                    end_date_raw = dates_list[1].get_text()
+                    try:
+                        end_date = parser.parse(end_date_raw, dayfirst=True).strftime('%Y-%m-%d')
+                    except (ValueError, TypeError) as e:
+                        log_support.set_error_message(self.client_name, "Invalid date string " + str(e))
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class Bitwise(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('div', class_='open-position'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h3')
+        if title_tag:
+            title = title_tag.get_text().strip()
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+
+                if description_url:
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='entry-content')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('p', class_='tagline')
+        if location_tag:
+            location = location_tag.get_text().strip()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Solteq(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+        ul = soup.find('ul', class_='jobs')
+        if ul:
+            for item in ul.find_all('li'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, description)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('span', class_='title')
+        if title_tag:
+            title = title_tag.get_text().strip()
+            url_tag = item.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    if description_url:
+                        description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='body')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    @staticmethod
+    def get_location(item, description):
+        """
+        It tries to get a Finnish city from the item, if it fails it tries  from job description
+        :param item: item
+        :param description: job description
+        :return: Finnish cities as a String
+        """
+        location_list = None
+        locator = CityLocator()
+
+        location_tag = item.find('span', 'meta')
+        if location_tag:
+            location_raw = location_tag.get_text()
+
+            if locator.has_finnish_cities(location_raw):
+                location_list = locator.get_finnish_cities(location_raw)
+
+        if location_list:
+            location = ", ".join(location_list)
+        else:
+            cities = locator.get_finnish_cities(description)
+            if cities:
+                location = ", ".join(cities)
+            else:
+                location = None
+
+        return location
+
+
+class Alphasense(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+        scripts = soup.find_all('script')
+        for script in scripts:
+            if script.get_text().startswith("var _state"):
+                value = script.get_text().split(" = ")
+                if len(value) > 1:
+                    json_str = value[1]
+                    json_dict = json.loads(json_str)
+
+                    if "jobs" in json_dict:
+                        for item in json_dict["jobs"]:
+                            title, description_url, description, is_finish = self.get_mandatory_fields(item)
+                            if is_finish and self.is_valid_job(title, description_url, description):
+                                # Location has already being checked in get_mandatory_fields
+                                location = "Helsinki"
+
+                                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        is_finish = False
+
+        if "title" in item:
+            title = item["title"]
+            if "url" in item:
+                description_url = item["url"]
+                if "office" in item and "title" in item["office"] and "Helsinki" in item["office"]["title"]:
+                    is_finish = True
+                    description = self.get_description(description_url)
+
+        return title, description_url, description, is_finish
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', {'id': 'content'})
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+
+class UniversityTurku(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        table = soup.find('table', class_='leipis')
+        if table:
+            for item in table.find_all("tr"):
+                # if it is the header, skip
+                if item.find('th'):
+                    continue
+
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Turku"
+                    end_date = self.get_end_date(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('a')
+        if title_tag:
+            title = title_tag.text.strip()
+
+            relative_url = title_tag.get('href')
+            if relative_url:
+                description_url = self.url.split("certiahome/")[0] + "certiahome/" + relative_url
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_div = soup.find('table', class_='leipis')
+            # it has two <tr>, first one is the title, second one is the description
+            tr_list = description_div.find_all('tr')
+            if tr_list and len(tr_list) > 1:
+                td = tr_list[1].find('td')
+                if td:
+                    for child in td.children:
+                        if isinstance(child, Tag):
+                            Scraper.clean_attrs(child)
+                            description += str(child)
+
+        return description
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        # end_date is in the last td
+        td_list = item.find_all('td')
+        last_td = None
+
+        for last_td in td_list:
+            pass
+
+        end_date_raw = last_td.get_text().strip()
+        try:
+            end_date = parser.parse(end_date_raw, dayfirst=True).strftime('%Y-%m-%d')
+        except (ValueError, TypeError):
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class UniversityHelsinki(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        # Define a max number of iterations
+        max_pg = 10
+        pg = 1
+        last_page = False
+        while not last_page and pg < max_pg:
+            container = soup.find('div', class_='panel')
+            if container:
+                for item in container.find_all('article', class_='box-story'):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = "Helsinki"
+                        end_date = self.get_end_date(item, title)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                        jobs.append(job)
+
+            else:
+                break
+
+            if container.find('li', class_='pager__next'):
+                new_url = self.url + "?page=" + str(pg)
+                html = request_support.simple_get(new_url)
+                if html:
+                    soup = BeautifulSoup(html, 'lxml')
+                pg += 1
+            else:
+                last_page = True
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h3', class_='box-story__title')
+        if title_tag:
+            title = title_tag.get_text().strip().title()
+            url_tag = title_tag.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+
+                if description_url:
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='textarea')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        end_date_div = item.find('div', class_='box-story__meta')
+        if end_date_div:
+            end_date_span = end_date_div.find('span')
+            if end_date_span:
+                end_date_raw = end_date_span.get_text()
+                try:
+                    end_date = parser.parse(end_date_raw, dayfirst=True).strftime('%Y-%m-%d')
+                except (ValueError, TypeError):
+                    log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class UniversityJyvaskyla(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        ul = soup.find("ul", class_='item-listing')
+        if ul:
+            for item in ul.find_all('li'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Jyväskylä"
+                    end_date = self.get_end_date(description_url)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find('a')
+        if url_tag:
+            title = url_tag.get_text().strip()
+            description_url = url_tag.get('href')
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_parent = soup.find('div', class_='normal')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    @staticmethod
+    def get_end_date(url):
+        end_date = None
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+
+            # Latest <p> contains the end_date
+            last_p = None
+            all_p = soup.find_all('p')
+            for p in all_p:
+                if p.get_text() != "\xa0":
+                    last_p = p
+
+            if last_p:
+                segments = last_p.get_text().split('\xa0')
+                for segment in segments:
+                    try:
+                        end_date = parser.parse(segment).strftime('%Y-%m-%d')
+                        break
+                    except (ValueError, TypeError):
+                        pass
+
+        return end_date
+
+
+class UniversityAalto(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        # Define a max number of iterations
+        max_pg = 10
+        pg = 1
+        last_page = False
+        while not last_page and pg < max_pg:
+            container = soup.find('div', class_='aalto-rows')
+            if container:
+                for item in container.find_all('div', class_='aalto-listing__section'):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = "Espoo"
+                        end_date = self.get_end_date(item, title)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                        jobs.append(job)
+
+            else:
+                break
+
+            if container.find('li', class_='aalto-pager__item--last'):
+                new_url = self.url + "?page=" + str(pg)
+                html = request_support.simple_get(new_url)
+                if html:
+                    soup = BeautifulSoup(html, 'lxml')
+                pg += 1
+            else:
+                last_page = True
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h2', class_='aalto-listing__item-title')
+        if title_tag:
+            title = title_tag.get_text().strip().title()
+            url_tag = title_tag.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".fi/")[0] + ".fi" + relative_url
+                    if description_url:
+                        description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            description_parent = job_details_soup.find('div', class_='aalto-user-generated-content')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        end_date_div = item.find('time')
+        if end_date_div:
+            end_date_raw = end_date_div.get_text()
+            try:
+                end_date = parser.parse(end_date_raw, dayfirst=True).strftime('%Y-%m-%d')
+            except (ValueError, TypeError):
+                log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class UniversityTampere(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        table = soup.find('table', class_='results')
+        if table:
+            for item in table.find_all("tr"):
+                # if it is the header, skip
+                if item.find('th'):
+                    continue
+
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Tampere"
+                    end_date = self.get_end_date(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('a')
+        if title_tag:
+            title = title_tag.text.strip()
+
+            relative_url = title_tag.get('href')
+            if relative_url:
+                description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_parent = soup.find('div', class_='job_description')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        td = item.find('td', class_='col_ApplyEndDate')
+        end_date_raw = td.get_text().strip()
+        try:
+            end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+        except (ValueError, TypeError):
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class UniversityOulu(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        for item in soup.find_all('div', class_='texts'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = "Oulu"
+                end_date = self.get_end_date(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find('a')
+        if url_tag:
+            title = url_tag.get_text().strip()
+            description_url = url_tag.get('href')
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_parent = soup.find('td', class_='normal')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        spans = item.find_all('span', class_='visible-inline-block')
+        for span in spans:
+            end_date_tag = span.find('div', class_='field-content')
+            if end_date_tag:
+                end_date_raw = end_date_tag.get_text().strip()
+                try:
+                    end_date = parser.parse(end_date_raw, dayfirst=True).strftime('%Y-%m-%d')
+                except (ValueError, TypeError):
+                    log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class Teleste(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        container = soup.find('div', class_='field-item even')
+        if container:
+            for item in container.find_all('a'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Turku"
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        description = ""
+
+        title = item.get_text().strip()
+        description_url = item.get('href')
+        if description_url:
+            description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_parent = soup.find('div', class_='field-item even')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+
+class Visma(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'xml')
+
+        return_val = soup.find("return_val")
+        if return_val:
+            for item in return_val.find_all('vacancy'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+                    end_date = self.get_end_date(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find("vacancy_name")
+        if title_tag:
+            title = title_tag.get_text().title()
+
+            description_tag = item.find('job_url')
+            if description_tag:
+                description_url = description_tag.get_text()
+                description = self.get_description(item)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(item):
+        description = ""
+
+        vacancy_text = item.find('vacancy_text')
+        if vacancy_text:
+            description_soup = BeautifulSoup(vacancy_text.get_text(), 'html.parser')
+            for child in description_soup.children:
+                if isinstance(child, Tag):
+                    if child.name == "img" or child.find('img'):
+                        continue
+                    if child.text == "":
+                        continue
+
+                    Scraper.clean_attrs(child)
+                    description += str(child)
+                else:
+                    p_tag = description_soup.new_tag('p')
+                    p_tag.string = child
+                    description += str(p_tag)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('vacancy_area')
+        if location_tag:
+            location_raw = location_tag.find('vacancy_area_name')
+            if location_raw:
+                location = location_raw.get_text().strip()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        end_date_tag = item.find('vsble_dt')
+        if end_date_tag:
+            end_date_raw = end_date_tag.get_text().strip()
+            try:
+                end_date = parser.parse(end_date_raw, dayfirst=True).strftime('%Y-%m-%d')
+            except (ValueError, TypeError):
+                log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
