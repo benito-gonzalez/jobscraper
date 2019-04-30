@@ -7,6 +7,7 @@ import time
 class Company(models.Model):
     name = models.CharField(max_length=200)
     logo = models.ImageField()
+    logo100 = models.ImageField(blank=True, null=True)
     description = models.CharField(max_length=5000, blank=True, null=True)
 
     def __str__(self):

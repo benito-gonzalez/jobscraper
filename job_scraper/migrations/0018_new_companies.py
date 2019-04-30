@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Aalto University', 'aalto_university.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Tampere University', 'tampere_university.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('University of Oulu', 'university_of_oulu.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Alphasense', 'alphasense.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Alphasense', 'alpha_sense.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Visma', 'visma.png');
             """
         )
