@@ -131,6 +131,20 @@ class Job(models.Model):
         offset = 60 * 60 * 24 * days
         return current_epoch + offset
 
+    @property
+    def get_keywords(self):
+        max_size = 5
+        tags_list = []
+        job_tags_map = self.tags.through.objects.filter(job_id=self).order_by('-num_times')
+        for i, item in enumerate(job_tags_map):
+            if i == max_size:
+                break
+            else:
+                i += 1
+                tags_list.append(item.tag.name)
+
+        return tags_list
+
     def update_details_counter(self):
         try:
             click_counter_instance = ClickCounter.objects.get(job=self)

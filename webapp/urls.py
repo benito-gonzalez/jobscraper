@@ -31,7 +31,7 @@ urlpatterns = [
     path('about/contact-us', views.ContactFormView.as_view()),
     re_path(r'jobs-in-\w+', views.IndexView.as_view(), name='index'),
     re_path(r'jobs-at-\w+', views.IndexView.as_view(), name='index'),
-    re_path(r'\w+-jobs', views.IndexView.as_view(), name='index'),
+    re_path(r'(.*?)-jobs', views.IndexView.as_view(), name='index'),
 
     path('', include('job_scraper.urls')),
     # path('api/jobs/', views.JobListApiView.as_view()),
