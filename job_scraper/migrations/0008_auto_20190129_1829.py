@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Enfo Oyj', 'enfo.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Sofigate', 'sofigate.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('MPY', 'mpy.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Blue Meteorite', 'blue_meteorite.png');
+            INSERT INTO 'Companies'('name', 'logo') VALUES ('Blue Meteorite', 'sininen_meteoriitti.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Sulava', 'sulava.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Nitor', 'nitor.png');
             INSERT INTO 'Companies'('name', 'logo') VALUES ('Softability', 'softability.png');

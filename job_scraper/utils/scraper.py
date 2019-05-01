@@ -521,14 +521,13 @@ class Siili(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
-        jobs_block = soup.find('div', attrs={'class': 'listing--job-ads'})
+        jobs_block = soup.find('div', class_='career-list')
 
         if jobs_block:
-            items = jobs_block.find_all("article")
-            for item in items:
-                title, description_url, description = self.get_mandatory_fields(item)
-                if self.is_valid_job(title, description_url, description):
-                    location_tag = item.find("div", attrs={'class': 'job-ad__office--listing'})
+            for item in jobs_block.find_all("li", class_="item clearfix"):
+                title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+                if is_finnish and self.is_valid_job(title, description_url, description):
+                    location_tag = item.find('div', class_='city')
                     if location_tag:
                         location = location_tag.text.strip()
                     else:
@@ -543,19 +542,25 @@ class Siili(Scraper):
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
+        is_finnish = False
+        locator = CityLocator()
 
-        title_tag = item.find("h3")
-        if title_tag:
-            title = title_tag.text.strip()
+        url_tag = item.find("a")
+        if url_tag:
+            title = url_tag.get_text().strip()
 
-            relative_url_a = item.find("a")
-            if relative_url_a:
-                relative_url = relative_url_a.get('href')
-                if relative_url:
-                    description_url = self.url.split("com/")[0] + "com" + relative_url
-                    description = self.get_description(description_url)
+            relative_url = url_tag.get('href')
+            if relative_url:
+                description_url = self.url.split("com/")[0] + "com" + relative_url
 
-        return title, description_url, description
+                city_tag = item.find('div', class_='city')
+                if city_tag:
+                    city = city_tag.get_text()
+                    if locator.has_finnish_cities(city):
+                        is_finnish = True
+                        description = self.get_description(description_url)
+
+        return title, description_url, description, is_finnish
 
     @staticmethod
     def get_description(full_url):
@@ -564,14 +569,13 @@ class Siili(Scraper):
 
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            job_description_div = soup.find('div', attrs={'class': 'job-ad__description'})
-            if job_description_div:
-                job_description_tags = job_description_div.find_all(["p", "h3"])
-                for tag in job_description_tags:
-                    if tag.name == "h3" and "interested?" in tag.text.lower():
-                        break
-                    if tag != "\n" and tag.text != "":
-                        description += str(tag)
+            for description_parent in soup.find_all('div', class_='content'):
+                if description_parent.has_attr('class') and len(description_parent['class']) == 1:
+                    for child in description_parent.children:
+                        if isinstance(child, Tag):
+                            Scraper.clean_attrs(child)
+                            description += str(child)
+                    break
 
         return description
 
@@ -6463,12 +6467,11 @@ class ZenRobotics(Scraper):
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
             parent_div = job_details_soup.find('div', class_='body')
-
-            for child in parent_div.children:
-                if isinstance(child, Tag):
-
-                    Scraper.clean_attrs(child)
-                    description += str(child).strip()
+            if parent_div:
+                for child in parent_div.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child).strip()
 
         return description
 
@@ -7771,8 +7774,8 @@ class Alphasense(Scraper):
 
                     if "jobs" in json_dict:
                         for item in json_dict["jobs"]:
-                            title, description_url, description, is_finish = self.get_mandatory_fields(item)
-                            if is_finish and self.is_valid_job(title, description_url, description):
+                            title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+                            if is_finnish and self.is_valid_job(title, description_url, description):
                                 # Location has already being checked in get_mandatory_fields
                                 location = "Helsinki"
 
@@ -7784,17 +7787,17 @@ class Alphasense(Scraper):
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
-        is_finish = False
+        is_finnish = False
 
         if "title" in item:
             title = item["title"]
             if "url" in item:
                 description_url = item["url"]
                 if "office" in item and "title" in item["office"] and "Helsinki" in item["office"]["title"]:
-                    is_finish = True
+                    is_finnish = True
                     description = self.get_description(description_url)
 
-        return title, description_url, description, is_finish
+        return title, description_url, description, is_finnish
 
     @staticmethod
     def get_description(url):

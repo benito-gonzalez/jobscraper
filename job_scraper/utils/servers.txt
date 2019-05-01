@@ -3,9 +3,6 @@ DNA - https://corporate.dna.fi/tyopaikat
 Elisa - https://corporate.elisa.com/rest/corporate.elisa.fi/laurafeed/jobitems/all/en
 Vala Group Oy - https://www.valagroup.com/career/
 Siili Solutions Oyj - https://www.siili.com/careers
-Siili Solutions Oyj - https://www.siili.com/careers?office=6#open-positions
-Siili Solutions Oyj - https://www.siili.com/careers?office=603#open-positions
-Siili Solutions Oyj - https://www.siili.com/careers?office=847#open-positions
 Innofactor Oyj - https://ura.innofactor.fi/jobs
 Smarp Oyj - https://smarp.teamtailor.com/jobs?location_id=35113
 Silo.AI Oy - https://silo.ai/careers/
