@@ -9,6 +9,7 @@ from django.contrib import messages
 from re import escape
 from re import search
 from urllib.parse import unquote
+from datetime import datetime
 
 from operator import and_
 from operator import or_
@@ -61,6 +62,18 @@ class IndexView(generic.ListView):
         ctx['company'] = self.company
         return ctx
 
+    @staticmethod
+    def filter_by_location(location_query):
+        # Gets those active jobs for a specific location when the end_date is either greater than today or end_date is None
+        today = datetime.today()
+        return Q(is_active=True, end_date__gte=today, location__icontains=location_query) | Q(is_active=True, end_date=None, location__icontains=location_query)
+
+    @staticmethod
+    def filter_by_active():
+        # Gets those active jobs when the end_date is either greater than today or end_date is None
+        today = datetime.today()
+        return Q(is_active=True, end_date__gte=today) | Q(is_active=True, end_date=None)
+
     def get_queryset(self):
         keyword_query = self.request.GET.get('keyword', None)
         location_query = self.request.GET.get('location', None)
@@ -92,15 +105,19 @@ class IndexView(generic.ListView):
                 pass
 
         if keyword_query and location_query:
+            # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
             if search("[^a-zA-Z0-9]+", keyword_query):
-                # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q)) | Q(company__name__iregex=r"\b" + escape(q)) for q in keyword_words])
-                                           & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
+                # It returns all jobs which title contains all words typed by the user. In any order
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q)) | Q(company__name__iregex=r"\b" + escape(q)) for q in keyword_words]) &
+                                           self.filter_by_location(location_query)).order_by('-updated_at')
+
             else:
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words])
-                                           & Q(is_active=True) & Q(location__icontains=location_query)).order_by('-updated_at')
-            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & Q(is_active=True) &
-                                       Q(location__icontains=location_query)).order_by('-jobtagmap__num_times')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) &
+                                           self.filter_by_location(location_query)).order_by('-updated_at')
+
+            # Get those active jobs by their keywords
+            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-jobtagmap__num_times')
+
             result_list = list(chain(list1, list2))
             UserSearches.add_entry(what_entry=keyword_query, where_entry=location_query)
             return list(OrderedDict.fromkeys(result_list))
@@ -108,24 +125,24 @@ class IndexView(generic.ListView):
         if keyword_query:
             # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
             if search("[^a-zA-Z0-9]+", keyword_query):
-                list1 = Job.objects.filter(
-                    functools.reduce(and_, [Q(title__iregex=escape(q)) | Q(company__name__iregex=escape(q)) for q in keyword_words]) & Q(is_active=True)).order_by('-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=escape(q)) | Q(company__name__iregex=escape(q)) for q in keyword_words]) &
+                                           self.filter_by_active()).order_by('-updated_at')
             else:
-                list1 = Job.objects.filter(
-                    functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) & Q(is_active=True)).order_by(
-                    '-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) &
+                                           self.filter_by_active()).order_by('-updated_at')
 
             # select j.* from Jobs j inner join JobsTagsMap jt on j.id == jt.job_id inner join Tags t on jt.tag_id == t.id  where t.name like "keyword_query"
-            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & Q(is_active=True)).order_by('-jobtagmap__num_times')
+            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_active()).order_by('-jobtagmap__num_times')
+
             result_list = list(chain(list1, list2))
             UserSearches.add_entry(what_entry=keyword_query)
             return list(OrderedDict.fromkeys(result_list))
 
         if location_query:
             UserSearches.add_entry(where_entry=location_query)
-            return Job.objects.filter(is_active=True, location__icontains=location_query).order_by('-updated_at')
+            return Job.objects.filter(self.filter_by_location(location_query)).order_by('-updated_at')
         else:
-            return Job.objects.filter(is_active=True).order_by('-updated_at')
+            return Job.objects.filter(self.filter_by_active()).order_by('-updated_at')
 
 
 class DetailView(generic.DetailView):
