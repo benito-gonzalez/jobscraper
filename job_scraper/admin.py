@@ -8,7 +8,9 @@ from .models import ClickCounter
 from .models import UserSearches
 
 
-admin.site.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    search_fields = (['name'])
+    list_display = ('name',)
 
 
 class CompanyAdmin(admin.ModelAdmin):
@@ -42,6 +44,7 @@ class UserSearchesAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
+admin.site.register(Tag, TagAdmin)
 admin.site.register(Job, JobAdmin)
 admin.site.register(ClickCounter, ClickCounterAdmin)
 admin.site.register(Company, CompanyAdmin)
