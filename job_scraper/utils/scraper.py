@@ -2169,17 +2169,18 @@ class Danske(Scraper):
         soup = BeautifulSoup(html, 'html.parser')
 
         table = soup.find('table', {'class': 'datagrid'})
-        for row in table.find_all("tr"):
-            if self.is_header(row):
-                continue
-            title, description_url, description, is_finnish = self.get_mandatory_fields(row)
-            if is_finnish and self.is_valid_job(title, description_url, description):
-                # location has already being checked in get_mandatory_fields()
-                location = row.find("span").text
-                end_date = self.get_end_date(row, title)
+        if table:
+            for row in table.find_all("tr"):
+                if self.is_header(row):
+                    continue
+                title, description_url, description, is_finnish = self.get_mandatory_fields(row)
+                if is_finnish and self.is_valid_job(title, description_url, description):
+                    # location has already being checked in get_mandatory_fields()
+                    location = row.find("span").text
+                    end_date = self.get_end_date(row, title)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
-                jobs.append(job)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
 
         return jobs
 
