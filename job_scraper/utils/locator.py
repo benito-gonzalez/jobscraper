@@ -23,7 +23,7 @@ class CityLocator:
 
         if text:
             for city in self.finnish_cities:
-                if city.lower() in text.lower():
+                if search(r"\b" + escape(city.lower()) + r"\b", text.lower()):
                     result = True
                     break
 

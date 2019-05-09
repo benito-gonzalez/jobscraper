@@ -2467,13 +2467,15 @@ class Nightingale(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
-        items = soup.find_all("div", attrs={'class': 'box'})
-        for item in items:
-            title, description_url, description = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
-                # All current jobs are located in Helsinki but this information can not be scraped so it is hard-coded
-                job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
-                jobs.append(job)
+
+        block = soup.find("div", class_='sc-bdVaJa sc-bwzfXH jatWSF')
+        if block:
+            for item in block.find_all('a'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    # All current jobs are located in Helsinki but this information can not be scraped so it is hard-coded
+                    job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
 
         return jobs
 
@@ -2482,17 +2484,15 @@ class Nightingale(Scraper):
         description = ""
 
         # Check title
-        title_tag = item.find('h3')
+        title_tag = item.find('div', class_='sc-bdVaJa sc-htpNat kMcVRu')
         if title_tag:
-            title = title_tag.text
+            title = title_tag.get_text()
 
             # Check description_url
-            url_tag = item.find('a')
-            if url_tag:
-                relative_url = url_tag.get('href')
-                if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
-                    description = self.get_full_description(description_url)
+            relative_url = item.get('href')
+            if relative_url:
+                description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                description = self.get_full_description(description_url)
 
         return title, description_url, description
 
@@ -2502,16 +2502,17 @@ class Nightingale(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            title_line = job_details_soup.find('h2')
-            if title_line:
-                # next div to title_line contains all HTML tags description
-                description_block = title_line.next_sibling
-                for tag in description_block.children:
-                    if tag.name and tag.text.strip() != "":
-                        # Last description block called "Next steps" includes information to apply
-                        if tag.text.strip() == "Next steps":
-                            break
-                        description += str(tag)
+
+            description_block = job_details_soup.find("div", class_=lambda value: value and "Content__Body-" in value)
+            if description_block:
+                parent = description_block.find('div')
+                for child in parent.children:
+                    Scraper.clean_attrs(child)
+                    # Last description block called "Next steps" includes information to apply
+                    if child.text.strip() == "Next steps":
+                        break
+
+                    description += str(child)
 
         return description
 
@@ -3152,13 +3153,19 @@ class Kone(Scraper):
         if job_details_html:
             json_dict = json.loads(job_details_html)
             try:
-                description = json_dict["body"]["children"][1]["children"][0]["children"][2]["text"]
+                children = json_dict["body"]["children"][1]["children"][0]["children"]
+                for child in children:
+                    if "text" in child:
+                        description_raw = child["text"]
+                        description_soup = BeautifulSoup(description_raw, "html.parser")
+                        for tag in description_soup.children:
+                            Scraper.clean_attrs(tag)
+                            if tag.text != "\xa0":
+                                description += str(tag)
+
+                        break
             except (ValueError, KeyError, IndexError, AttributeError):
-                try:
-                    # Some jobs has the description in the children #3
-                    description = json_dict["body"]["children"][1]["children"][0]["children"][3]["text"]
-                except (ValueError, KeyError, IndexError, AttributeError):
-                    description = ""
+                description = ""
 
         return description
 
@@ -3561,22 +3568,23 @@ class Sulava(Scraper):
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
             details_block = job_details_soup.find('div', attrs={'class': 'full_section_inner'})
             if details_block:
-                title = details_block.find('h1')
-                for sibling in title.next_siblings:
-                    if sibling.name:
-                        if sibling.name == "h3" and sibling.text.strip() == "Lisätietoja antaa":
-                            break
-                        if sibling.name == "blockquote":
-                            continue
+                title = details_block.find(['h1', 'h2'])
+                if title:
+                    for sibling in title.next_siblings:
+                        if sibling.name:
+                            if sibling.name == "h3" and sibling.text.strip() == "Lisätietoja antaa":
+                                break
+                            if sibling.name == "blockquote":
+                                continue
 
-                        # Reduce size from paragraphs
-                        if sibling.name == "h2":
-                            sibling.name = "h4"
-                        if sibling.name == "h3":
-                            sibling.name = "h5"
+                            # Reduce size from paragraphs
+                            if sibling.name == "h2":
+                                sibling.name = "h4"
+                            if sibling.name == "h3":
+                                sibling.name = "h5"
 
-                        if sibling.text != "\xa0":
-                            description += str(sibling)
+                            if sibling.text != "\xa0":
+                                description += str(sibling)
 
         return description
 
@@ -5072,8 +5080,9 @@ class Lightneer(Scraper):
                 url_tag = item.find('a')
                 if url_tag:
                     description_url = url_tag.get('href')
-                    if description_url:
-                        description = self.get_full_description(description_url)
+                    if "https://" not in description_url:
+                        description_url = self.url.split(".com/")[0] + ".com" + description_url
+                    description = self.get_full_description(description_url)
         else:
             expected = False
 
@@ -5135,26 +5144,18 @@ class Lightneer(Scraper):
 class UnityTechnologies(Scraper):
 
     def extract_info(self, html):
+        # From API
         log_support.log_extract_info(self.client_name)
         jobs = []
-        soup = BeautifulSoup(html, 'html.parser')
-        script = soup.find("script", {"type": "application/json"})
-        if script:
-            try:
-                json_resp = json.loads(script.text)
-                if "jobData" in json_resp and "jobs" in json_resp["jobData"]:
-                    jobs_list = json_resp["jobData"]["jobs"]
-
-                    for item in jobs_list:
-                        if self.is_finnish(item):
-                            title, description_url, description = self.get_mandatory_fields(item)
-                            if self.is_valid_job(title, description_url, description):
-                                # All its jobs are located in Helsinki, besides this has already being checked in "is_finnish()"
-                                job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
-                                jobs.append(job)
-
-            except json.decoder.JSONDecodeError:
-                log_support.set_error_message(self.client_name, "Invalid JSON message from HTML response")
+        json_dict = json.loads(html)
+        if "jobs" in json_dict:
+            for item in json_dict["jobs"]:
+                if self.is_finnish(item):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        # All its jobs are located in Helsinki, besides this has already being checked in "is_finnish()"
+                        job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
 
         return jobs
 
@@ -5266,11 +5267,12 @@ class RedhillGames(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
         block = soup.find('div', {"id": "comp-joer0a86"})
-        for item in block.find_all('li'):
-            title, description_url, description = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
-                job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, description_url)
-                jobs.append(job)
+        if block:
+            for item in block.find_all('li'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
 
         return jobs
 

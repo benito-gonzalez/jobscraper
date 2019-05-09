@@ -61,8 +61,8 @@ Holvi - https://about.holvi.com/careers/
 Finitec - http://finitec.fi/vacancies
 Ferratum - https://jobs.lever.co/ferratum?location=Helsinki
 Bon Games - http://bongames.fi/#jobs
-Lightneer Inc - https://lightneer.com/team/#jobs
-Unity Technologies - https://careers.unity.com/location/helsinki
+Lightneer Inc - https://lightneer.com/jobs/
+Unity Technologies - https://api.greenhouse.io/v1/boards/unity3d/embed/jobs?content=true
 FuturePlay - http://www.futureplaygames.com/join-us/
 Redhill Games - https://www.redhillgames.com/jobs
 Seriously Digital Entertainment - https://app.recruiterbox.com/widget/65241/openings/
