@@ -30,7 +30,6 @@ Transact-SQL
 ABAP
 Lisp
 Prolog
-Scheme
 Rust
 Ada
 LabVIEW
@@ -111,7 +110,6 @@ Revel
 Riot.js
 Yesod
 Compojure
-Ring
 Sailor
 CherryPy
 Mojolicious
@@ -273,3 +271,17 @@ Elixir
 Robot Framework
 CI
 Keras
+GraphQL
+Datadog
+DynamoDB
+AWS
+Sagemaker
+Batch
+Hadoop
+Spark
+NoSQL
+Xamarin
+SLAM
+Bootstrap
+Selenium
+Jasmine
