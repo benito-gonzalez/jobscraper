@@ -5272,7 +5272,9 @@ class RedhillGames(Scraper):
             for item in block.find_all('li'):
                 title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
-                    job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, description_url)
+                    # only one office located in Helsinki
+                    location = "Helsinki"
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                     jobs.append(job)
 
         return jobs
