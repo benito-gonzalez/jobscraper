@@ -220,6 +220,30 @@ Jobs
     height: auto;
 }
 
+.tag-label-link:hover, .tag-label-link:visited, .tag-label-link:link, .tag-label-link:active {
+    text-decoration: none;
+}
+
+.tag-label {
+    margin-top: -10px;
+    font-size: small;
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer;
+    color: #212529;
+    text-decoration: none;
+    background-color: #e6e6e6;
+    border: #2aa847 solid 1px ;
+    border-radius: .2rem;
+}
+
+.tag-label:hover {
+    background-color: #8fd19e;
+    border: #2aa847 solid 1px ;
+    border-radius: .2rem;
+    text-decoration: none;
+}
+
 /*
 Paginator
  */
