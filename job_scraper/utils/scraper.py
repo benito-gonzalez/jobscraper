@@ -2,6 +2,7 @@ from bs4 import Tag, BeautifulSoup
 import re
 import dateutil.parser as parser
 from dateutil import tz
+from html import unescape
 import json
 import time
 
@@ -236,6 +237,8 @@ def generate_instance_from_client(client_name, url):
         return Teleste(client_name, url)
     if client_name == "Visma":
         return Visma(client_name, url)
+    if client_name == "Forenom":
+        return Forenom(client_name, url)
     else:
         return None
 
@@ -8412,3 +8415,97 @@ class Visma(Scraper):
                 log_support.set_invalid_dates(self.client_name, title)
 
         return end_date
+
+
+class Forenom(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        containers = soup.find_all('div', class_='siteorigin-widget-tinymce textwidget')
+        for container in containers:
+            if container.find('a'):
+                for item in container.find_all('a'):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location, end_date = self.get_job_info(description_url, title)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                        jobs.append(job)
+                break
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        description = ""
+        locator = CityLocator()
+
+        title = item.get_text().strip()
+
+        # If title contains a Finnish city (Helsinki), we remove it
+        title_split = title.split("(")
+        if len(title_split) > 1 and locator.has_finnish_cities(title_split[1]):
+            title = title_split[0].strip()
+
+        description_url = item.get('href')
+        if description_url:
+            description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def generate_json_description_url(url):
+        description_url = None
+
+        # We need to generate a new URL for the JSON call.
+        item = re.search(r'\d+', url)
+        if item:
+            id = item.group(0)
+            description_url = url.split("tpt")[0] + "tpt-api/tyopaikat/" + id + "?kieli=fi"
+
+        return description_url
+
+    def get_description(self, url):
+        description = ""
+
+        description_url = self.generate_json_description_url(url)
+        if description_url:
+            job_details_html = request_support.simple_get(description_url)
+            if job_details_html:
+                json_dict = json.loads(job_details_html)
+                if "response" in json_dict and "docs" in json_dict["response"] and len(json_dict["response"]["docs"]) > 0 and "kuvaustekstiHTML" in json_dict["response"]["docs"][0]:
+                    description_raw = json_dict["response"]["docs"][0]["kuvaustekstiHTML"]
+                    description = unescape(description_raw)
+                    description = "<p>" + description + "</p>"
+
+        return description
+
+    def get_job_info(self, url, title):
+        location = end_date = None
+
+        description_url = self.generate_json_description_url(url)
+        if description_url:
+            job_details_html = request_support.simple_get(description_url)
+            if job_details_html:
+                json_dict = json.loads(job_details_html)
+
+                if "response" in json_dict and "docs" in json_dict["response"] and len(json_dict["response"]["docs"]) > 0:
+                    if "kunta" in json_dict["response"]["docs"][0]:
+                        location = json_dict["response"]["docs"][0]["kunta"]
+                    if "viimeinenHakupaivamaara" in json_dict["response"]["docs"][0]:
+                        end_date_raw = json_dict["response"]["docs"][0]["viimeinenHakupaivamaara"]
+                        try:
+                            end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+                        except (ValueError, TypeError):
+                            # Exception error is logged later on
+                            pass
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return location, end_date
