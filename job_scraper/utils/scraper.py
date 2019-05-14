@@ -245,6 +245,8 @@ def generate_instance_from_client(client_name, url):
         return VarianMedicalSystems(client_name, url)
     if client_name == "Valmet":
         return Valmet(client_name, url)
+    if client_name == "Metso":
+        return Metso(client_name, url)
     else:
         return None
 
@@ -8751,21 +8753,30 @@ class Valmet(Scraper):
 
     @staticmethod
     def get_description(description_url):
-        description = ""
+        description = description_raw = ""
         job_details_html = request_support.simple_get(description_url, accept_json=True)
         if job_details_html:
             json_dict = json.loads(job_details_html)
             try:
                 for child in json_dict["body"]["children"][1]["children"][0]["children"]:
                     if "text" in child:
-                        description = child["text"]
+                        description_raw = child["text"]
             except (ValueError, KeyError, IndexError, AttributeError):
                 # Error message will be handled by "is_valid_job()" method
                 pass
 
-        description_soup = BeautifulSoup(description, "html.parser")
-        Scraper.clean_attrs(description_soup)
-        description = str(description_soup)
+        if description_raw != "":
+            description_soup = BeautifulSoup(description_raw, "html.parser")
+            Scraper.clean_attrs(description_soup)
+            for child in description_soup.children:
+                if isinstance(child, Tag):
+                    if child.name == "h1":
+                        child.name = "h3"
+                    elif child.name == "h2":
+                        child.name = "h4"
+                    elif child.name == "h3":
+                        child.name = "h5"
+                    description += str(child)
 
         return description
 
@@ -8801,3 +8812,97 @@ class Valmet(Scraper):
 
         return new_page, new_offset
 
+
+class Metso(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        container = soup.find('div', class_='career-search')
+        if container and container.has_attr('ng-init'):
+            text_raw = container["ng-init"]
+            try:
+                text_formatted = text_raw.split("(", 1)[1]
+                json_text = text_formatted.split("name")[0].rsplit(',', 1)[0]
+                json_dict = json.loads(json_text)
+
+                for item in json_dict:
+                    title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+                    if is_finnish and self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, title)
+                        end_date = self.get_end_date(item, title)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                        jobs.append(job)
+
+            except IndexError as e:
+                log_support.set_error_message(self.client_name, "Error genereting jobs json " + str(e))
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        locator = CityLocator()
+        finnish = False
+
+        if "Title" in item:
+            title = item["Title"]
+            if "Url" in item:
+                description_url = item["Url"]
+
+                # check if it is finnish to avoid not-needed calls
+                if "Locations" in item and len(item["Locations"]) > 0:
+                    location = ", ".join(item["Locations"])
+                    finnish = locator.has_finnish_cities(location)
+
+                if finnish:
+                    description = self.get_description(description_url)
+
+        return title, description_url, description, finnish
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html5lib')
+            description_block = job_details_soup.find('div', class_='joqReqDescription')
+            if description_block:
+                for child in description_block.children:
+                    if isinstance(child, Tag):
+                        if child.find('img') or child.text == "\xa0" or child.text.strip() == ".":
+                            continue
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        if "Locations" in item and len(item["Locations"]) > 0:
+            location = ", ".join(item["Locations"])
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        if "PostingEndDate" in item:
+            end_date_raw = item["PostingEndDate"]
+            try:
+                end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+            except (ValueError, TypeError):
+                # Exception error is logged later on
+                pass
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date

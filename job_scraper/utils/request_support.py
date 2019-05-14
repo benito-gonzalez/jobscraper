@@ -21,7 +21,7 @@ def simple_get(url, accept_json=False):
     else:
         headers_req = {'User-Agent': 'Mozilla/5.0'}
 
-    with closing(get(url, stream=True, headers=headers_req, verify=False,  timeout=60)) as resp:
+    with closing(get(url, stream=True, headers=headers_req, verify=False, timeout=60)) as resp:
         if not settings.DEBUG:
             time.sleep(0.5)
 
