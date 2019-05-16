@@ -253,6 +253,10 @@ def generate_instance_from_client(client_name, url):
         return MeyerTurku(client_name, url)
     if client_name == "Elomatic":
         return Elomatic(client_name, url)
+    if client_name == "Almaco":
+        return Almaco(client_name, url)
+    if client_name == "Vapo":
+        return Vapo(client_name, url)
     else:
         return None
 
@@ -294,7 +298,8 @@ class Scraper(object):
                                   "your title here",
                                   "avoin työharjoitteluhakemus",
                                   "women who code",
-                                  "harjoittelu / opinnäytetyö"]
+                                  "harjoittelu / opinnäytetyö",
+                                  "harjoittelu- ja opinnäytetyöt sekä tet-harjoittelu"]
         valid = False
 
         if not title:
@@ -9143,6 +9148,163 @@ class Elomatic(Scraper):
                         end_date = parser.parse(end_date_str, dayfirst=True).strftime('%Y-%m-%d')
                     except ValueError:
                         log_support.set_invalid_dates(self.client_name, title)
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class Almaco(Scraper):
+
+    soup = None
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        Almaco.soup = BeautifulSoup(html, 'lxml')
+
+        ul = Almaco.soup.find('ul', {'id': 'tab-nav'})
+        if ul:
+            for item in ul.find_all('a'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        description_url = None
+        description = ""
+
+        # Check title
+        title_raw = item.get_text().strip()
+        title = title_raw.rsplit("|", 1)[0]
+
+        if item.has_attr('data-target'):
+            item_id = item["data-target"]
+            if item_id:
+                description_parent = Almaco.soup.find('div', {'id': item_id})
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        if child.name == "h2" or child.name == "img" or child.find("img"):
+                            continue
+                        if child.name == "div" and child.has_attr('class') and child["class"] == "contact-details":
+                            break
+
+                        Scraper.clean_attrs(child)
+                        if child.text != "":
+                            description += str(child)
+
+                        # it does not have a specific page for the job descriptions.
+                description_url = self.url
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_parent = job_details_soup.find('div', class_="main-desc")
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return description
+
+    @staticmethod
+    def get_location(item):
+
+        full_title = item.get_text().strip()
+        title_split = full_title.rsplit("|", 1)
+        location = title_split[-1]
+
+        return location
+
+
+class Vapo(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        for item in soup.find_all('tr'):
+            if item.find('th'):
+                continue
+
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+                end_date = self.get_end_date(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find('a')
+        if url_tag:
+            title = url_tag.get_text()
+            relative_url = url_tag.get('href')
+            if relative_url:
+                description_url = self.url.split('smarthome/')[0] + "smarthome/" + relative_url
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+            first_p = job_details_soup.find('p')
+            if first_p:
+                for sibling in first_p.next_siblings:
+                    if isinstance(sibling, Tag):
+                        Scraper.clean_attrs(sibling)
+                        description += str(sibling)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        first_td = item.find('td')
+        if first_td:
+            location_tag = first_td.find_next_sibling('td')
+            if location_tag:
+                location = location_tag.get_text()
+            else:
+                location = None
+                log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        all_td = item.find_all('td')
+        end_date_tag = all_td[-1]
+
+        if end_date_tag:
+            end_date_raw = end_date_tag.get_text()
+            try:
+                end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+            except ValueError:
+                log_support.set_invalid_dates(self.client_name, title)
 
         if not end_date:
             log_support.set_invalid_dates(self.client_name, title)
