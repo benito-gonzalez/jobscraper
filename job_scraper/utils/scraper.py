@@ -257,6 +257,10 @@ def generate_instance_from_client(client_name, url):
         return Almaco(client_name, url)
     if client_name == "Vapo":
         return Vapo(client_name, url)
+    if client_name == "Alma Media":
+        return AlmaMedia(client_name, url)
+    if client_name == "Pöyry":
+        return Poyry(client_name, url)
     else:
         return None
 
@@ -9305,6 +9309,182 @@ class Vapo(Scraper):
                 end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
             except ValueError:
                 log_support.set_invalid_dates(self.client_name, title)
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class AlmaMedia(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        scripts = soup.find_all('script')
+        for script in scripts:
+            if "dataSource" in script.get_text():
+                jobs_text = self.get_jobs_text(script)
+                if jobs_text != "":
+                    try:
+                        jobs_json = json.loads(jobs_text)
+
+                        for item in jobs_json:
+                            title, description_url, description = self.get_mandatory_fields(item)
+                            if self.is_valid_job(title, description_url, description):
+                                location = self.get_location(item, title)
+                                end_date = self.get_end_date(item, title)
+
+                                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                                jobs.append(job)
+
+                    except json.JSONDecodeError:
+                        log_support.set_invalid_json(self.client_name)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "Title" in item:
+            title = item["Title"]
+            if "ItemUrl" in item:
+                description_url = self.url + "/vacancy/" + item["ItemUrl"]
+
+                # Checks if decription url works
+                description_info = request_support.simple_get(description_url)
+
+                if description_info and "Description" in item:
+                    description_raw = item["Description"]
+                    description_soup = BeautifulSoup(description_raw, 'html.parser')
+                    for child in description_soup.children:
+                        if isinstance(child, Tag):
+                            Scraper.clean_attrs(child)
+                            description += str(child)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_jobs_text(script):
+        try:
+            jobs_txt = "[" + script.text.split("[", 1)[1].split("]")[0] + "]"
+        except (ValueError, TypeError):
+            jobs_txt = ""
+
+        return jobs_txt
+
+    def get_location(self, item, title):
+        location = None
+
+        if "Location" in item:
+            location = item["Location"]
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        if "ApplicationDeadline" in item:
+            end_date_raw = item["ApplicationDeadline"]
+            try:
+                end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+            except (ValueError, TypeError):
+                pass
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class Poyry(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        for item in soup.find_all('tr'):
+            title, description_url, description, end_date = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = end_date = None
+        description = ""
+
+        url_tag = item.find('a')
+        if url_tag:
+            title_raw = url_tag.get_text()
+            title = title_raw.rsplit("-", 1)[0].strip()
+
+            relative_url = url_tag.get('href')
+            if relative_url:
+                description_url = self.url.split('.fi/')[0] + ".fi" + relative_url
+                description, end_date = self.get_description(description_url, title)
+
+        return title, description_url, description, end_date
+
+    def get_description(self, url, title):
+        description = ""
+        end_date = None
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+            article = job_details_soup.find('article', class_='article-main__content')
+            if article:
+                for child in article.children:
+                    if isinstance(child, Tag):
+                        if child.has_attr("class") and "complementary-header" in child["class"]:
+                            continue
+                        if child.has_attr("class") and "sub-section share-buttons" in child["class"]:
+                            continue
+                        if child.name == "h1":
+                            continue
+
+                        if child.name == "div" and child.has_attr("class") and "apply" in child["class"]:
+                            # Gets here the end_date to save a next request
+                            end_date = self.get_end_date(child, title)
+
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description, end_date
+
+    @staticmethod
+    def get_location(item):
+        location = None
+
+        url_tag = item.find('a')
+        if url_tag:
+            title_raw = url_tag.get_text()
+            title_split = title_raw.rsplit("-", 1)
+            location = title_split[-1].strip()
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        end_date_raw = item.get_text()
+        try:
+            end_date_split = end_date_raw.split(":")[-1]
+            end_date = parser.parse(end_date_split, dayfirst=True).strftime('%Y-%m-%d')
+        except ValueError:
+            log_support.set_invalid_dates(self.client_name, title)
 
         if not end_date:
             log_support.set_invalid_dates(self.client_name, title)
