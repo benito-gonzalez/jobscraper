@@ -261,6 +261,12 @@ def generate_instance_from_client(client_name, url):
         return AlmaMedia(client_name, url)
     if client_name == "Pöyry":
         return Poyry(client_name, url)
+    if client_name == "UPM":
+        return UPM(client_name, url)
+    if client_name == "Mirum":
+        return Mirum(client_name, url)
+    if client_name == "Krogerus":
+        return Krogerus(client_name, url)
     else:
         return None
 
@@ -9488,5 +9494,232 @@ class Poyry(Scraper):
 
         if not end_date:
             log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class UPM(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        locator = CityLocator()
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        if "vacancies" in json_dict:
+            for item in json_dict["vacancies"]:
+                if "location" not in item:
+                    log_support.set_error_message(self.client_name, "ERROR getting locations from JSON. Skipping job")
+                    continue
+
+                if locator.has_finnish_cities(item["location"]):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = item["location"]
+
+                        try:
+                            end_date_datetime = parser.parse(item["endDate"])
+                            end_date = end_date_datetime.strftime('%Y-%m-%d')
+                        except (ValueError, KeyError):
+                            log_support.set_invalid_dates(self.client_name, title)
+                            end_date = None
+
+                        if "jobDomain" in item:
+                            job_type = item["jobDomain"]
+                        else:
+                            job_type = None
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, job_type, description_url)
+                        jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "title" in item:
+            title = item["title"]
+            if "link" in item:
+                description_url = item["link"]
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(description_url):
+        description = ""
+        job_details_html = request_support.simple_get(description_url, accept_json=True)
+        if job_details_html:
+            json_dict = json.loads(job_details_html)
+            try:
+                children = json_dict["body"]["children"][1]["children"][0]["children"]
+                for child in children:
+                    if "text" in child:
+                        description_raw = child["text"]
+                        description_soup = BeautifulSoup(description_raw, "html.parser")
+                        for tag in description_soup.children:
+                            Scraper.clean_attrs(tag)
+                            if tag.text != "\xa0":
+                                description += str(tag)
+
+                        break
+            except (ValueError, KeyError, IndexError, AttributeError):
+                description = ""
+
+        return description
+
+
+class Mirum(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        for item in json_dict:
+            if "fields" in item and "country" in item["fields"] and item["fields"]["country"] == "Finland":
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        base_url = "https://prod-api.mirum.agency/rest/page/job_posting/"
+
+        if "title" in item["fields"]:
+            title = item["fields"]["title"]
+            if "alias" in item["fields"]:
+                description_url = base_url + item["fields"]["alias"]
+                description, description_url = self.get_description(description_url)
+
+        return title, description_url, description
+
+    def get_description(self, description_url):
+        """
+        description_url contains the JSON response, we need to overwrite that URL with the job description in HTML
+        :param description_url:
+        :return:
+        """
+        description_url_txt = None
+        description = ""
+        job_details_html = request_support.simple_get(description_url)
+        if job_details_html:
+            json_dict = json.loads(job_details_html)
+
+            if len(json_dict) == 1:
+                if "fields" in json_dict[0] and "cta" in json_dict[0]["fields"] and "url" in json_dict[0]["fields"]["cta"]:
+                    description_url_txt = json_dict[0]["fields"]["cta"]["url"]
+
+                if description_url_txt and "fields" in json_dict[0] and "description" in json_dict[0]["fields"]:
+                    description_raw = json_dict[0]["fields"]["description"]
+                    description_soup = BeautifulSoup(description_raw, "html.parser")
+                    for tag in description_soup.children:
+                        if isinstance(tag, Tag):
+                            Scraper.clean_attrs(tag)
+                            if tag.text != "\xa0":
+                                description += str(tag)
+            else:
+                log_support.set_error_message(self.client_name, "ERROR. JSON from job description URL did not return a unique job.")
+
+        return description, description_url_txt
+
+    def get_location(self, item, title):
+        location = None
+
+        if "fields" in item and "city" in item["fields"]:
+            location = item["fields"]["city"]
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Krogerus(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='jobylon-job-list')
+        if container:
+            for item in container.find_all('div', class_='jobylon-job'):
+                title, description_url, description, location = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    end_date = self.get_end_date(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = location = None
+        description = ""
+
+        title_tag = item.find('div', class_='jobylon-job-title')
+        # remove "- Open Application
+        if title_tag:
+            title_raw = title_tag.get_text()
+            title = re.split("Open Application", title_raw, flags=re.IGNORECASE)[0].strip()
+            if title.endswith("-") or title.endswith("–"):
+                title = title[0:-1].strip()
+
+            url_tag = item.find('a', class_='jobylon-apply-btn')
+            if url_tag:
+                description_url = url_tag.get('href')
+                if description_url:
+                    description, location = self.get_description(description_url)
+
+        return title, description_url, description, location
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        location = None
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_parents = soup.find_all('div', class_=['canvas-job-description', 'canvas-skills'])
+            for parent in description_parents:
+                for row in parent.find_all('div', class_='row'):
+                    for child in row.children:
+                        if isinstance(child, Tag):
+                            if child.find('a', class_='btn'):
+                                continue
+
+                            Scraper.clean_attrs(child)
+                            description += str(child)
+
+            # Gets location here to save a request later
+            location_tag = soup.find('li', {'data-toggle': 'tooltip'})
+            if location_tag:
+                location = location_tag.get_text().strip()
+
+        return description, location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        end_date_tag = item.find('li', class_='jobylon-application-date')
+        if end_date_tag:
+            try:
+                end_date_split = end_date_tag.get_text().split(":")[-1]
+                end_date = parser.parse(end_date_split).strftime('%Y-%m-%d')
+            except ValueError:
+                log_support.set_invalid_dates(self.client_name, title)
+
+        # Many jobs do not have any date, we don't raise an error for that
 
         return end_date
