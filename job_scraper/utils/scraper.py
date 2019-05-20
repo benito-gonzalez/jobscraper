@@ -267,6 +267,8 @@ def generate_instance_from_client(client_name, url):
         return Mirum(client_name, url)
     if client_name == "Krogerus":
         return Krogerus(client_name, url)
+    if client_name == "Siemens":
+        return Siemens(client_name, url)
     else:
         return None
 
@@ -9723,3 +9725,78 @@ class Krogerus(Scraper):
         # Many jobs do not have any date, we don't raise an error for that
 
         return end_date
+
+
+class Siemens(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        json_dict = json.loads(html)
+        if "jobs" in json_dict:
+            for item in json_dict["jobs"]:
+                if self.is_finnish(item):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, title)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
+
+        return jobs
+
+    @staticmethod
+    def is_finnish(item):
+        finnish = False
+        if "data" in item:
+            if "country" in item["data"] and "Finland" == item["data"]["country"]:
+                    finnish = True
+            else:
+                if "additional_locations" in item["data"]:
+                    for office in item["data"]["additional_locations"]:
+                        if "country" in office:
+                            if office["country"] == "Finland":
+                                finnish = True
+                                break
+
+        return finnish
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "data" in item:
+            if "title" in item["data"]:
+                title = item["data"]["title"]
+
+            if "meta_data" in item["data"] and "canonical_url" in item["data"]["meta_data"]:
+                description_url = item["data"]["meta_data"]["canonical_url"]
+                if "description" in item["data"]:
+                    description_raw = item["data"]["description"]
+                    soup = BeautifulSoup(description_raw, 'html.parser')
+                    for child in soup.children:
+                        Scraper.clean_attrs(child)
+                        description += str(child)
+
+        return title, description_url, description
+
+    def get_location(self, item, title):
+        location = None
+        locations = []
+        if "data" in item:
+            if "city" in item["data"]:
+                locations.append(item["data"]["city"])
+
+            if "additional_locations" in item["data"]:
+                for office in item["data"]["additional_locations"]:
+                    if "country" in office:
+                        if office["country"] == "Finland":
+                            locations.append(office["country"])
+
+        if locations:
+            location = ", ".join(locations)
+
+        if not locations:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
