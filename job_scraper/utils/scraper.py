@@ -8283,8 +8283,8 @@ class Teleste(Scraper):
         container = soup.find('div', class_='field-item even')
         if container:
             for item in container.find_all('a'):
-                title, description_url, description = self.get_mandatory_fields(item)
-                if self.is_valid_job(title, description_url, description):
+                title, description_url, description, email_link = self.get_mandatory_fields(item)
+                if not email_link and self.is_valid_job(title, description_url, description):
                     location = "Turku"
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
@@ -8293,14 +8293,23 @@ class Teleste(Scraper):
         return jobs
 
     def get_mandatory_fields(self, item):
+        title = None
         description = ""
+        email_link = False
 
-        title = item.get_text().strip()
         description_url = item.get('href')
-        if description_url:
-            description = self.get_description(description_url)
+        if "mailto:" in description_url:
+            email_link = True
+        else:
+            title = item.get_text().strip()
+            if title.startswith("-"):
+                # removes "-" at the beginning
+                title = title.split("-", 1)[1].strip()
 
-        return title, description_url, description
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description, email_link
 
     @staticmethod
     def get_description(url):
