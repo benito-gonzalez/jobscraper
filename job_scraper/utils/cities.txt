@@ -605,3 +605,7 @@ Useita paikkakuntia
 Pääkaupunkiseutu
 Capital area
 Remote
+Tervajoki
+Klaukkala
+Koivu
+Lievestuore

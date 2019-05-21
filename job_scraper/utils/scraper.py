@@ -269,6 +269,8 @@ def generate_instance_from_client(client_name, url):
         return Krogerus(client_name, url)
     if client_name == "Siemens":
         return Siemens(client_name, url)
+    if client_name == "Posti":
+        return Posti(client_name, url)
     else:
         return None
 
@@ -9797,6 +9799,105 @@ class Siemens(Scraper):
             location = ", ".join(locations)
 
         if not locations:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Posti(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        current_pos = 0
+        offset = 25
+        next_url = self.url
+        last_page = False
+        i = 0
+        max_iteration = 5
+        while not last_page and i < max_iteration:
+            i += 1
+
+            all_jobs = soup.find_all('li', class_='job-result-card')
+            if not all_jobs:
+                break
+
+            for item in all_jobs:
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+            if not last_page or soup.find('button', class_='see-more-jobs'):
+                current_pos += offset
+                next_url = next_url.rsplit("=", 1)[0] + "=" + str(current_pos)
+                html = request_support.simple_get(next_url)
+                if html:
+                    soup = BeautifulSoup(html, 'lxml')
+                    continue
+
+            # reaching this point would mean some kind of error
+            last_page = True
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h3', class_='result-card__title')
+
+        if title_tag:
+            title = title_tag.get_text()
+            url_tag = item.find('a', class_='result-card__full-card-link')
+
+            if url_tag:
+                description_url = url_tag.get('href')
+                if description_url:
+                    description, description_url = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description_url = None
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
+
+            # description_url must be updated
+            url_tag = job_details_soup.find('a', class_='apply-button--link')
+            if url_tag:
+                description_url = url_tag.get('href')
+
+                if description_url:
+                    parent = job_details_soup.find('div', class_='description__text')
+                    if parent:
+                        for child in parent.children:
+                            Scraper.clean_attrs(child)
+                            if child.name and child.text.strip() == "":
+                                continue
+                            # remove "_________________....._" from description
+                            if child.name and child.text.strip().count("_") == len(child.text.strip()):
+                                continue
+
+                            description += str(child)
+
+        return description, description_url
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('span', class_='job-result-card__location')
+        if location_tag:
+            location = location_tag.get_text()
+        else:
             log_support.set_invalid_location(self.client_name, title)
 
         return location
