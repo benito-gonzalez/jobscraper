@@ -864,9 +864,10 @@ class Qvik(Scraper):
         if url_a:
             title = url_a.get_text().strip()
 
-            relative_url = url_a.get('href')
-            if relative_url:
-                description_url = self.url.split(".com/")[0] + ".com" + relative_url
+            description_url = url_a.get('href')
+            if description_url:
+                if "http" not in description_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + description_url
 
                 if description_url:
                     description = self.get_description(description_url)
