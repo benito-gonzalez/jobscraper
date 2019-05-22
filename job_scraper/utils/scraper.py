@@ -271,6 +271,8 @@ def generate_instance_from_client(client_name, url):
         return Siemens(client_name, url)
     if client_name == "Posti":
         return Posti(client_name, url)
+    if client_name == "Attendo":
+        return Attendo(client_name, url)
     else:
         return None
 
@@ -9899,5 +9901,128 @@ class Posti(Scraper):
             location = location_tag.get_text()
         else:
             log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Attendo(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+        current_pg = 1
+
+        last_page = False
+        while not last_page:
+            tbody = soup.find('tbody')
+            if not tbody:
+                break
+
+            for job in tbody.find_all('tr'):
+                title, description_url, description = self.get_mandatory_fields(job)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(job, title)
+                    end_date = self.get_end_date(description)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+            if self.is_last_page(soup):
+                last_page = True
+            else:
+                current_pg += 1
+                next_page_url = self.url.rsplit("#", 1)[0] + "#" + str(current_pg)
+                job_details_html = request_support.simple_get(next_page_url)
+
+                if job_details_html:
+                    soup = BeautifulSoup(job_details_html, 'html.parser')
+                else:
+                    # in case of error, break
+                    last_page = True
+
+        return jobs
+
+    @staticmethod
+    def is_last_page(soup):
+        last_page = True
+
+        ul_pagination = soup.find('ul', class_='pager')
+        if ul_pagination:
+            if ul_pagination.find('li', class_='pager-next'):
+                last_page = False
+
+        return last_page
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        # Check title
+        title_tag = item.find('p', class_='title')
+        if title_tag:
+            title = title_tag.get_text()
+
+            url_tag = item.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".fi/")[0] + ".fi" + relative_url
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            first_p = soup.find('p', class_='title-meta')
+            if first_p:
+                for sibling in first_p.next_siblings:
+                    if isinstance(sibling, Tag):
+                        Scraper.clean_attrs(sibling)
+                        description += str(sibling)
+
+        return description
+
+    @staticmethod
+    def get_end_date(description):
+        """
+        Gets end_date from description
+        :param description:
+        :return:
+        """
+        end_date = None
+        min_end_date = None
+
+        pattern = "[0-9]{1,2}.[0-9]{1,2}.[0-9]{4}"
+        matches = re.findall(pattern, description)
+
+        for match in matches:
+            try:
+                end_date = parser.parse(match, dayfirst=True)
+                if not min_end_date or end_date < min_end_date:
+                    min_end_date = end_date
+            except ValueError:
+                # Since we use a regex, we don't log the errors
+                pass
+
+        if end_date:
+            end_date = end_date.strftime('%Y-%m-%d')
+
+        return end_date
+
+    def get_location(self, item, title):
+        location = None
+
+        first_td = item.find('td')
+        if first_td:
+            location_tag = first_td.find_next_sibling('td')
+            if location_tag:
+                location = location_tag.get_text().strip()
+            else:
+                log_support.set_invalid_location(self.client_name, title)
 
         return location
