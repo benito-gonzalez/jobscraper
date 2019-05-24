@@ -279,6 +279,10 @@ def generate_instance_from_client(client_name, url):
         return Canter(client_name, url)
     if client_name == "Gapps":
         return Gapps(client_name, url)
+    if client_name == "Profit Software":
+        return ProfitSoftware(client_name, url)
+    if client_name == "Innokas medical":
+        return InnokasMedical(client_name, url)
     else:
         return None
 
@@ -549,9 +553,9 @@ class Vala(Scraper):
 
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'lxml')
-            details_bock = soup.find('div', attrs={'class': 'column_attr clearfix'})
-            if details_bock:
-                for tag in details_bock.find("h1").next_siblings:
+            details_block = soup.find('div', attrs={'class': 'column_attr clearfix'})
+            if details_block:
+                for tag in details_block.find("h1").next_siblings:
                     if tag.name == "h4" and tag.text.strip() == "Interested?":
                         break
                     if tag != "\n":
@@ -2902,9 +2906,9 @@ class DreamBroker(Scraper):
 
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            details_bock = soup.find('article', {'class': 'db_career'})
-            if details_bock:
-                for tag in details_bock.children:
+            details_block = soup.find('article', {'class': 'db_career'})
+            if details_block:
+                for tag in details_block.children:
                     if tag.name and tag.find("script"):
                         continue
                     if tag != "\n":
@@ -10157,9 +10161,9 @@ class Canter(Scraper):
 
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'lxml')
-            details_bock = soup.find('section', class_='av_textblock_section')
-            if details_bock:
-                job_title = details_bock.find(["h1", "h2"])
+            details_block = soup.find('section', class_='av_textblock_section')
+            if details_block:
+                job_title = details_block.find(["h1", "h2"])
                 if job_title:
                     for sibling in job_title.next_siblings:
                         if sibling.name == "h2":
@@ -10210,11 +10214,136 @@ class Gapps(Scraper):
 
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'lxml')
-            details_bock = soup.find('div', class_='public-job-description')
-            if details_bock:
-                for child in details_bock.children:
+            details_block = soup.find('div', class_='public-job-description')
+            if details_block:
+                for child in details_block.children:
                     Scraper.clean_attrs(child)
                     if isinstance(child, Tag) and child.get_text().strip() != "":
                         description += str(child)
 
         return description
+
+
+class ProfitSoftware(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
+
+        for item in soup.find_all('article', class_='et_pb_post'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+
+                job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find("h2", class_='entry-title')
+        if title_tag:
+            title = title_tag.get_text()
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            details_block = soup.find('div', class_='entry-content')
+            if details_block:
+                for child in details_block.children:
+                    if isinstance(child, Tag):
+                        if child.name == "img":
+                            continue
+                        if child.find('img'):
+                            child.find('img').decompose()
+
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+
+class InnokasMedical(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('div', class_='vc_column_container'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(description)
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find("h2")
+        if title_tag:
+            title = title_tag.get_text()
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            # There are two different job descriptions
+            details_block = soup.find('span', {'id': 'hs_cos_wrapper_post_body'})
+            if not details_block:
+                details_block = soup.find('div', class_='theme-content')
+
+            if details_block:
+                for child in details_block.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.name == "h2" and child.get_text() == "Read more about Innokas!":
+                            break
+
+                        if child.name == "h2":
+                            child.name = "h4"
+                        if child.name == "h3":
+                            child.name = "h5"
+
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+    @staticmethod
+    def get_location(description):
+        locator = CityLocator()
+
+        cities = locator.get_finnish_cities(description)
+        if cities:
+            location = ", ".join(cities)
+        else:
+            location = None
+
+        return location
