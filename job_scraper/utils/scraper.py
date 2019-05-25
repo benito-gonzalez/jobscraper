@@ -7501,7 +7501,7 @@ class Iwa(Scraper):
         description_url = item.get('href')
 
         # some jobs have relative url
-        if "https" not in description_url:
+        if "http" not in description_url:
             description_url = self.url.split(".fi/")[0] + ".fi" + description_url
 
         if description_url:
