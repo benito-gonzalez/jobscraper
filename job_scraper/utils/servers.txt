@@ -111,3 +111,29 @@ Tampere University - https://tuni.rekrytointi.com/paikat/?o=A_LOJ&list=3&key=
 University of Oulu - https://www.oulu.fi/university/jobs
 Alphasense - https://www.alpha-sense.com/careers#positions
 Visma - https://rekry.saima.fi/vismahome/xml_open_jobs.html?did=6600&lang=fi&jc=5
+Forenom - https://www.forenom.com/fi/meista/avoimet-tyopaikat/avoimet-tyopaikat-suomessa/
+Bitville - http://www.bitville.fi/careers/
+Varian Medical Systems - https://sjobs.brassring.com/TGnewUI/Search/Home/Home?partnerid=25044&siteid=5224#Location-Country=Finland&keyWordSearch=
+Valmet - https://valmet.wd3.myworkdayjobs.com/External/0/searchPagination/318c8bb6f553100021d223d9780d30be/0?clientRequestID=ea9865ce522c457f8e38b7122dfc0e54
+Metso - https://www.metso.com/company/careers/open-jobs/#!/Finland/All/All
+Nokian Tyres - https://www.nokiantyres.com/company/vacancies/
+Elomatic - https://www.elomatic.com/fi/ura/avoimet-tyopaikat/
+Meyer Turku - https://rekry.meyerturku.fi/avoimet-tehtavat/tyopaikat/
+Almaco - https://www.almaco.cc/careers/
+Vapo - https://rekry.saima.fi/smarthome/open_jobs_view_new.html?did=21015&lang=en&jc=55
+Alma Media - https://www.almamedia.fi/en/careers/vacancies
+Pöyry - https://www.poyry.fi/career/search?words=&country=fi&category=Kaikki+toimialat
+UPM - https://www.upm.com/api/openvacancies?blockId=246402&language=en
+Mirum - https://prod-api.mirum.agency/rest/module/job_posting
+Krogerus - https://cdn.jobylon.com/jobs/companies/899/embed/v1/?target=jobylon-jobs-widget&page_size=50
+Siemens - https://jobs.siemens-info.com/api/jobs?stretch=0&stretchUnit=MILES&location=Finland&page=1&internal=false&limit=100
+Posti - https://fi.linkedin.com/jobs-guest/jobs/api/jobPostings/jobs?location=Finland&geo=100456013&f_C=163815&currentJobId=1250698864&pageNum=0&locationId=OTHERS.worldwide&position=1&trk=jobs_jserp_pagination_1&start=0
+Attendo - https://www.attendo.fi/recruiting/search#1
+Caverion - https://www.caverion.fi/tietoa-caverionista/toihin-caverionille/avoimet-tyopaikat/GetJobs
+Canter - https://www.canter.fi/en/careers/
+Gapps - https://gapps.fi/en/jobs/
+Profit Software - https://profitsoftware.com/company/working-at-profit-software/
+Innokas medical - https://www.innokasmedical.fi/careers/
+Tikkurila - https://tikkurilagroup.com/fi/tyopaikat/avoimet-tyopaikat
+Frogmind - http://frogmind.com/jobs/
+Zynga - https://www.zynga.com/international-location/helsinki-finland/
