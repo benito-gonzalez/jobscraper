@@ -283,6 +283,10 @@ def generate_instance_from_client(client_name, url):
         return ProfitSoftware(client_name, url)
     if client_name == "Innokas medical":
         return InnokasMedical(client_name, url)
+    if client_name == "Tikkurila":
+        return Tikkurila(client_name, url)
+    if client_name == "Frogmind":
+        return Frogmind(client_name, url)
     else:
         return None
 
@@ -346,6 +350,32 @@ class Scraper(object):
             tag.attrs = {}
             for child in tag.find_all(True):
                 child.attrs = {}
+
+    @staticmethod
+    def get_end_date_by_regex(pattern, description):
+        """
+        Gets end_date from description which matches with a specific pattern
+        :param description:
+        :return:
+        """
+        end_date = None
+        min_end_date = None
+
+        matches = re.findall(pattern, description)
+
+        for match in matches:
+            try:
+                end_date = parser.parse(match, dayfirst=True)
+                if not min_end_date or end_date < min_end_date:
+                    min_end_date = end_date
+            except ValueError:
+                # Since we use a regex, we don't log the errors
+                pass
+
+        if end_date:
+            end_date = end_date.strftime('%Y-%m-%d')
+
+        return end_date
 
 
 class Dna(Scraper):
@@ -9996,32 +10026,9 @@ class Attendo(Scraper):
 
         return description
 
-    @staticmethod
-    def get_end_date(description):
-        """
-        Gets end_date from description
-        :param description:
-        :return:
-        """
-        end_date = None
-        min_end_date = None
-
+    def get_end_date(self, description):
         pattern = "[0-9]{1,2}.[0-9]{1,2}.[0-9]{4}"
-        matches = re.findall(pattern, description)
-
-        for match in matches:
-            try:
-                end_date = parser.parse(match, dayfirst=True)
-                if not min_end_date or end_date < min_end_date:
-                    min_end_date = end_date
-            except ValueError:
-                # Since we use a regex, we don't log the errors
-                pass
-
-        if end_date:
-            end_date = end_date.strftime('%Y-%m-%d')
-
-        return end_date
+        return self.get_end_date_by_regex(pattern, description)
 
     def get_location(self, item, title):
         location = None
@@ -10347,3 +10354,133 @@ class InnokasMedical(Scraper):
             location = None
 
         return location
+
+
+class Tikkurila(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='view-open-positions')
+        if container:
+            for item in container.find_all('div', class_='views-field'):
+                title, description_url, description, end_date, is_enabled = self.get_mandatory_fields(item)
+
+                if is_enabled and self.is_valid_job(title, description_url, description):
+                    job = ScrapedJob(title, description, "Vantaa", self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = end_date = None
+        description = ""
+        is_enabled = True
+
+        url_tag = item.find("a")
+        if url_tag:
+            title = url_tag.get_text()
+            description_url = url_tag.get('href')
+            if description_url:
+                description, end_date, is_enabled = self.get_description(description_url, title)
+
+        return title, description_url, description, end_date, is_enabled
+
+    def get_description(self, url, title):
+        description = ""
+        end_date = None
+        enabled = True
+
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+
+            # some links are pointing to invalid job descriptions
+            if soup.find('span', class_='error'):
+                enabled = False
+            else:
+                details_block = soup.find('div', class_='job_description')
+                if details_block:
+                    for child in details_block.children:
+                        if isinstance(child, Tag):
+                            if child.name == "img" or child.find('img'):
+                                continue
+
+                            Scraper.clean_attrs(child)
+                            if child.get_text().strip() != "":
+                                description += str(child)
+
+                # we return the end_date from get_description to save a request later
+                dates = soup.find_all('span', class_='se_date')
+                if len(dates) == 2:
+                    end_date_raw = dates[1].get_text()
+                    try:
+                        end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+                    except ValueError:
+                        log_support.set_invalid_dates(self.client_name, title)
+
+        return description, end_date, enabled
+
+
+class Frogmind(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('div', class_='job-excerpt'):
+            # skip initial block
+            if item.find('article'):
+                continue
+
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                job = ScrapedJob(title, description, "Helsinki", self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find("a")
+        if url_tag:
+            description_url = url_tag.get('href')
+
+            title_tag = item.find('h3')
+            if title_tag:
+                a = title_tag.find('a')
+                if a:
+                    a.decompose()
+                title = title_tag.get_text()
+
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            details_block = soup.find('div', class_='entry-content')
+            if details_block:
+                for child in details_block.children:
+                    if isinstance(child, Tag):
+                        if child.name == "img" or child.find('img'):
+                            continue
+
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
