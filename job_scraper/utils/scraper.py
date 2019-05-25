@@ -287,6 +287,8 @@ def generate_instance_from_client(client_name, url):
         return Tikkurila(client_name, url)
     if client_name == "Frogmind":
         return Frogmind(client_name, url)
+    if client_name == "Zynga":
+        return Zynga(client_name, url)
     else:
         return None
 
@@ -355,6 +357,7 @@ class Scraper(object):
     def get_end_date_by_regex(pattern, description):
         """
         Gets end_date from description which matches with a specific pattern
+        :param pattern:
         :param description:
         :return:
         """
@@ -10484,3 +10487,68 @@ class Frogmind(Scraper):
                             description += str(child)
 
         return description
+
+
+class Zynga(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('div', class_='listing'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        url_tag = item.find("a")
+        if url_tag:
+            description_url = url_tag.get('href')
+            title = url_tag.get_text().strip()
+            if description_url:
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', class_='section section2')
+            if container:
+                apply_btn = container.find('div', class_='center-align')
+                if apply_btn:
+                    for sibling in apply_btn.next_siblings:
+                        if isinstance(sibling, Tag):
+                            if sibling.find('a', class_='btn'):
+                                continue
+
+                            Scraper.clean_attrs(sibling)
+                            if sibling.get_text().strip() != "":
+                                description += str(sibling)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('div', class_='location')
+        if location_tag:
+            location = location_tag.get_text().strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
