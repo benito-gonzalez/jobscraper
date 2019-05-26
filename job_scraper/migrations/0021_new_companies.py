@@ -12,32 +12,32 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Forenom', 'forenom.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Bitville', 'bitville.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Varian Medical Systems', 'varian_medical_systems.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Valmet', 'valmet.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Metso', 'metso.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nokian Tyres', 'nokian_tyres.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Elomatic', 'elomatic.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Meyer Turku', 'meyer_turku.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Almaco', 'almaco.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Vapo', 'vapo.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Alma Media', 'alma.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Pöyry', 'poyry.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('UPM', 'upm.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Mirum', 'mirum.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Krogerus', 'krogerus.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Siemens', 'siemens.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Posti', 'posti.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Attendo', 'attendo.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Caverion', 'caverion.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Canter', 'canter.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Gapps', 'gapps.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Profit Software', 'profit_software.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Innokas medical', 'innokas_medical.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Tikkurila', 'tikkurila.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Frogmind', 'frogmind.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Zynga', 'zynga.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Forenom', 'forenom.png', 'forenom_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Bitville', 'bitville.png', 'bitville_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Varian Medical Systems', 'varian_medical_systems.png', 'varian_medical_systems_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Valmet', 'valmet.png', 'valmet_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Metso', 'metso.png', 'metso_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Nokian Tyres', 'nokian_tyres.png', 'nokian_tyres_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Elomatic', 'elomatic.png', 'elomatic_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Meyer Turku', 'meyer_turku.png', 'meyer_turku_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Almaco', 'almaco.png', 'almaco_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Vapo', 'vapo.png', 'vapo_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Alma Media', 'alma.png', 'alma_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Pöyry', 'poyry.png', 'poyry_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('UPM', 'upm.png', 'upm_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Mirum', 'mirum.png', 'mirum_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Krogerus', 'krogerus.png', 'krogerus_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Siemens', 'siemens.png', 'siemens_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Posti', 'posti.png', 'posti_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Attendo', 'attendo.png', 'attendo_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Caverion', 'caverion.png', 'caverion_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Canter', 'canter.png', 'canter_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Gapps', 'gapps.png', 'gapps_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Profit Software', 'profit_software.png', 'profit_software_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Innokas medical', 'innokas_medical.png', 'innokas_medical_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Tikkurila', 'tikkurila.png', 'tikkurila_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Frogmind', 'frogmind.png', 'frogmind_100.png');
+            INSERT INTO 'Companies'('name', 'logo', 'logo100') VALUES ('Zynga', 'zynga.png', 'zynga_100.png');
             """
         )
     ]
