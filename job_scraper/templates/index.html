@@ -8,7 +8,7 @@
     {% if company and company.description %}
         <div class="row mt-3 align-items-center pr-lg-5">
             <div class="col-lg-2 d-none d-lg-block text-lg-right job-logo">
-                <img src="{{ company.logo.url }}" width="80px" height="auto" alt="{{ company.name }}">
+                <img src="{{ company.logo.url }}" class="logos" alt="{{ company.name }}">
             </div>
             <div class="col-12 col-lg-10">
                 <div class="row">
@@ -48,7 +48,7 @@
                 {% endif %}
                 -->
                 <div class="col-lg-2 d-none d-lg-block text-lg-right job-logo">
-                    <a href="/jobs-at-{{ job.company.name }}"><img src="{{ job.company.logo.url }}" width="80px" height="auto" alt="{{ job.company.name }}"></a>
+                    <a href="/jobs-at-{{ job.company.name }}"><img src="{{ job.company.logo.url }}" class="logos" alt="{{ job.company.name }}"></a>
                 </div>
 
                 <div class="col-12 col-lg-10">
