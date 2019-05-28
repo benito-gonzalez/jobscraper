@@ -2,6 +2,7 @@ from bs4 import Tag, BeautifulSoup
 import re
 import dateutil.parser as parser
 from dateutil import tz
+from datetime import datetime
 from html import unescape
 import json
 import time
@@ -331,7 +332,8 @@ class Scraper(object):
                                   "avoin työharjoitteluhakemus",
                                   "women who code",
                                   "harjoittelu / opinnäytetyö",
-                                  "harjoittelu- ja opinnäytetyöt sekä tet-harjoittelu"]
+                                  "harjoittelu- ja opinnäytetyöt sekä tet-harjoittelu",
+                                  "avoimia työpaikkoja kouvolassa"]
         valid = False
 
         if not title:
@@ -354,29 +356,33 @@ class Scraper(object):
                 child.attrs = {}
 
     @staticmethod
-    def get_end_date_by_regex(pattern, description):
+    def get_end_date_by_regex(pattern, description, day_first=True):
         """
         Gets end_date from description which matches with a specific pattern
         :param pattern:
         :param description:
+        :param day_first:
         :return:
         """
         end_date = None
         min_end_date = None
 
-        matches = re.findall(pattern, description)
+        matches = re.finditer(pattern, description)
 
         for match in matches:
             try:
-                end_date = parser.parse(match, dayfirst=True)
-                if not min_end_date or end_date < min_end_date:
-                    min_end_date = end_date
+                end_date_aux = parser.parse(match.group(), dayfirst=day_first)
+                # if dates is from the past, we skip it
+                if end_date_aux < datetime.now():
+                    continue
+                if not min_end_date or end_date_aux < min_end_date:
+                    min_end_date = end_date_aux
             except ValueError:
                 # Since we use a regex, we don't log the errors
                 pass
 
-        if end_date:
-            end_date = end_date.strftime('%Y-%m-%d')
+        if min_end_date:
+            end_date = min_end_date.strftime('%Y-%m-%d')
 
         return end_date
 
@@ -673,7 +679,8 @@ class Innofactor(Scraper):
             for li in ul.find_all('li'):
                 title, description_url, description = self.get_mandatory_fields(li)
                 if self.is_valid_job(title, description_url, description):
-                    job = ScrapedJob(title, description, None, self.client_name, None, None, None, None, description_url)
+                    end_date = self.get_end_date(description)
+                    job = ScrapedJob(title, description, None, self.client_name, None, None, end_date, None, description_url)
                     jobs.append(job)
 
         return jobs
@@ -709,6 +716,10 @@ class Innofactor(Scraper):
 
         return description
 
+    def get_end_date(self, description):
+        pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        return self.get_end_date_by_regex(pattern, description)
+
 
 class Smarp(Scraper):
 
@@ -721,11 +732,10 @@ class Smarp(Scraper):
             for li in ul.find_all('li'):
                 title, description_url, description = self.get_mandatory_fields(li)
                 if self.is_valid_job(title, description_url, description):
-                    job_details_html = request_support.simple_get(description_url)
-                    soup = BeautifulSoup(job_details_html, 'html.parser')
-                    location = self.get_location(soup, title)
+                    location = self.get_location(li, title)
+                    end_date = self.get_end_date(description)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                     jobs.append(job)
 
         return jobs
@@ -761,12 +771,12 @@ class Smarp(Scraper):
 
         return description
 
-    def get_location(self, soup, job_title):
+    def get_location(self, item, job_title):
         location = None
-        location_tag = soup.find('h2', attrs={'class': 'byline'})
+        location_tag = item.find('span', class_='meta')
         if location_tag:
-            location_text = location_tag.text
-            location_splited = location_text.split("–")
+            location_text = location_tag.get_text()
+            location_splited = location_text.split("-")
             if len(location_splited) == 2:
                 location = location_splited[1].strip()
 
@@ -774,6 +784,19 @@ class Smarp(Scraper):
             log_support.set_invalid_location(self.client_name, job_title)
 
         return location
+
+    def get_end_date(self, description):
+        end_date = None
+        pattern1 = r"(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\s+\d{1,2}((st)|(nd)|(rd)|(th)),?\s+\d{4}"
+        pattern2 = r"\d{1,2}((st)|(nd)|(rd)|(th))\s+(of)\s+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)"
+        patterns = [pattern1, pattern2]
+
+        for pattern in patterns:
+            end_date = self.get_end_date_by_regex(pattern, description, day_first=False)
+            if end_date:
+                break
+
+        return end_date
 
 
 class Silo(Scraper):
@@ -1029,7 +1052,7 @@ class Blueprint(Scraper):
         location_block = li.find('span', attrs={'class': 'meta'})
         if location_block:
             location_text = location_block.text
-            location_splited = location_text.split("–")
+            location_splited = location_text.split("-")
             if len(location_splited) == 2:
                 location = location_splited[1].strip()
 
@@ -1127,8 +1150,9 @@ class Ericsson(Scraper):
                     location = None
 
                 pub_date = self.get_pub_date(item["data"], title)
+                end_date = self.get_end_date(description)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, pub_date, None, None, description_url)
+                job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, None, description_url)
                 jobs.append(job)
 
         return jobs
@@ -1153,6 +1177,7 @@ class Ericsson(Scraper):
         soup = BeautifulSoup(description_str, 'html.parser')
         description_p = soup.find('p')
         if description_p:
+            description_p.attrs = {}
             description += str(description_p)
             for description_p in description_p.next_siblings:
                 description_p.attrs = {}
@@ -1173,6 +1198,10 @@ class Ericsson(Scraper):
                 log_support.set_invalid_dates(self.client_name, title)
 
         return pub_date
+
+    def get_end_date(self, description):
+        pattern = r"\d{1,2}((st)|(nd)|(rd)|(th))(\s+of)?\s+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)"
+        return self.get_end_date_by_regex(pattern, description)
 
 
 class Varjo(Scraper):
@@ -2800,8 +2829,9 @@ class Op(Scraper):
                 title, description_url, description = self.get_mandatory_fields(job)
                 if self.is_valid_job(title, description_url, description):
                     location = self.get_location(job, title)
+                    end_date = self.get_end_date(description)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                     jobs.append(job)
 
             if self.is_last_page(soup):
@@ -2897,6 +2927,10 @@ class Op(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+    def get_end_date(self, description):
+        pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        return self.get_end_date_by_regex(pattern, description)
 
 
 class DreamBroker(Scraper):
@@ -4333,7 +4367,8 @@ class If(Scraper):
                     if is_finnish and self.is_valid_job(title, description_url, description):
                         # location has already being checked in get_mandatory_fields()
                         location = item["subtitles"][0]["instances"][0]["text"]
-                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        end_date = self.get_end_date(description)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                         jobs.append(job)
 
                 current_page, current_offset = self.get_next_page(current_page, If.page_offset)
@@ -4431,6 +4466,10 @@ class If(Scraper):
             log_support.set_error_message(self.client_name, "Can not get next page: " + str(e))
 
         return new_page, new_offset
+
+    def get_end_date(self, description):
+        pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        return self.get_end_date_by_regex(pattern, description)
 
 
 class EpicGames(Scraper):
@@ -9872,8 +9911,9 @@ class Posti(Scraper):
                 title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
                     location = self.get_location(item, title)
+                    end_date = self.get_end_date(description)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                     jobs.append(job)
 
             if not last_page or soup.find('button', class_='see-more-jobs'):
@@ -9945,6 +9985,19 @@ class Posti(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+    def get_end_date(self, description):
+        end_date = None
+        pattern1 = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        pattern2 = r"\d{1,2}(\s+of)?\s+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(\s[0-9]{4})?"
+        patterns = [pattern1, pattern2]
+
+        for pattern in patterns:
+            end_date = self.get_end_date_by_regex(pattern, description, day_first=False)
+            if end_date:
+                break
+
+        return end_date
 
 
 class Attendo(Scraper):
@@ -10030,7 +10083,7 @@ class Attendo(Scraper):
         return description
 
     def get_end_date(self, description):
-        pattern = "[0-9]{1,2}.[0-9]{1,2}.[0-9]{4}"
+        pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
         return self.get_end_date_by_regex(pattern, description)
 
     def get_location(self, item, title):
