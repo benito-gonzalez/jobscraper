@@ -2443,8 +2443,9 @@ class Nebula(Scraper):
                 title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
                     location = self.get_location(item, title)
+                    end_date = self.get_end_date(description)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                     jobs.append(job)
 
             return jobs
@@ -2498,6 +2499,10 @@ class Nebula(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+    def get_end_date(self, description):
+        pattern = r"[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{4})?"
+        return self.get_end_date_by_regex(pattern, description)
 
 
 class Digital(Scraper):
