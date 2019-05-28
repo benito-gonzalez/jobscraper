@@ -127,7 +127,7 @@ UPM - https://www.upm.com/api/openvacancies?blockId=246402&language=en
 Mirum - https://prod-api.mirum.agency/rest/module/job_posting
 Krogerus - https://cdn.jobylon.com/jobs/companies/899/embed/v1/?target=jobylon-jobs-widget&page_size=50
 Siemens - https://jobs.siemens-info.com/api/jobs?stretch=0&stretchUnit=MILES&location=Finland&page=1&internal=false&limit=100
-#Posti - https://fi.linkedin.com/jobs-guest/jobs/api/jobPostings/jobs?location=Finland&geo=100456013&f_C=163815&currentJobId=1250698864&pageNum=0&locationId=OTHERS.worldwide&position=1&trk=jobs_jserp_pagination_1&start=0
+Posti - https://fi.linkedin.com/jobs-guest/jobs/api/jobPostings/jobs?location=Finland&geo=100456013&f_C=163815&currentJobId=1250698864&pageNum=0&locationId=OTHERS.worldwide&position=1&trk=jobs_jserp_pagination_1&start=0
 Attendo - https://www.attendo.fi/recruiting/search#1
 Caverion - https://www.caverion.fi/tietoa-caverionista/toihin-caverionille/avoimet-tyopaikat/GetJobs
 Canter - https://www.canter.fi/en/careers/
