@@ -9994,6 +9994,7 @@ class Posti(Scraper):
 
             for item in all_jobs:
                 title, description_url, description = self.get_mandatory_fields(item)
+                title = self.update_title(title)
                 if self.is_valid_job(title, description_url, description):
                     location = self.get_location(item, title)
                     end_date = self.get_end_date(description)
@@ -10059,6 +10060,27 @@ class Posti(Scraper):
                             description += str(child)
 
         return description, description_url
+
+    @staticmethod
+    def update_title(original_title):
+        locator = CityLocator()
+
+        title = original_title.split(", Posti")[0]
+        title = title.split(" - ")[0]
+        title_comma = title.split(', ')
+        if len(title_comma) > 1:
+            is_city = False
+            for idx, segment in enumerate(title_comma):
+                words = segment.split()
+                for word in words:
+                    if locator.has_finnish_cities(word):
+                        is_city = True
+                        break
+                if is_city:
+                    title = " ".join(title_comma[0:idx])
+                    break
+
+        return title
 
     def get_location(self, item, title):
         location = None
