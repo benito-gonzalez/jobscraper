@@ -138,6 +138,8 @@ def update_end_date(scraped_job, job_db):
 
     if scraped_job.end_date != end_date_db:
         job_db.end_date = scraped_job.end_date
+        # end date information can come from the description so this could be out-of-date. It needs to be updated
+        job_db.description = scraped_job.description
         job_db.save()
         log_support.updated_end_date(job_db, scraped_job.end_date)
 

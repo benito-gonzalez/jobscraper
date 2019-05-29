@@ -3007,18 +3007,29 @@ class Relex(Scraper):
 
         if "objects" in json_dict:
             for item in json_dict["objects"]:
-                title, description_url, description = self.get_mandatory_fields(item)
-                if self.is_valid_job(title, description_url, description):
-                    if "location" in item and "city" in item["location"]:
-                        location = item["location"]["city"]
-                    else:
-                        location = None
-                        log_support.set_invalid_location(self.client_name, title)
+                finnish = self.is_finnish(item)
+                if finnish:
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        if "location" in item and "city" in item["location"]:
+                            location = item["location"]["city"]
+                        else:
+                            location = None
+                            log_support.set_invalid_location(self.client_name, title)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                    jobs.append(job)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
 
         return jobs
+
+    @staticmethod
+    def is_finnish(item):
+        finnish = True
+
+        if "location" in item and "country" in item["location"] and "city" in item["location"]:
+            finnish = "Finland" == item["location"]["country"] or "Finland" in item["location"]["city"]
+
+        return finnish
 
     def get_mandatory_fields(self, item):
         title = description_url = None
@@ -3029,7 +3040,19 @@ class Relex(Scraper):
             if "hosted_url" in item:
                 description_url = item["hosted_url"]
                 if "description" in item:
-                    description = item["description"]
+                    description_raw = item["description"]
+                    description_soup = BeautifulSoup(description_raw, "html.parser")
+                    for tag in description_soup.children:
+                        if isinstance(tag, Tag):
+                            Scraper.clean_attrs(tag)
+                            if tag.name == "h1":
+                                continue
+                            if tag.name == "h3":
+                                tag.name = "h4"
+                            if tag.name == "h2":
+                                tag.name = "h3"
+                            if tag.get_text().strip() != "":
+                                description += str(tag)
 
         return title, description_url, description
 
@@ -3210,7 +3233,9 @@ class Kone(Scraper):
                     if is_finnish and self.is_valid_job(title, description_url, description):
                         # location has already being checked in get_mandatory_fields()
                         location = item["subtitles"][0]["instances"][0]["text"]
-                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        end_date = self.get_end_date(description)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                         jobs.append(job)
 
                 current_page, current_offset = self.get_next_page(current_page, Kone.page_offset)
@@ -3280,9 +3305,10 @@ class Kone(Scraper):
                         description_raw = child["text"]
                         description_soup = BeautifulSoup(description_raw, "html.parser")
                         for tag in description_soup.children:
-                            Scraper.clean_attrs(tag)
-                            if tag.text != "\xa0":
-                                description += str(tag)
+                            if isinstance(tag, Tag):
+                                Scraper.clean_attrs(tag)
+                                if tag.text != "\xa0" and tag.text.strip() != "":
+                                    description += str(tag)
 
                         break
             except (ValueError, KeyError, IndexError, AttributeError):
@@ -3303,6 +3329,20 @@ class Kone(Scraper):
             log_support.set_error_message(self.client_name, "Can not get next page: " + str(e))
 
         return new_page, new_offset
+
+    def get_end_date(self, description):
+        end_date = None
+        pattern1 = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        pattern2 = r"(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\s+\d{1,2}((st)|(nd)|(rd)|(th)),?\s+\d{4}"
+        pattern3 = r"\d{1,2}((st)|(nd)|(rd)|(th))\s+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\s+\d{4}"
+        patterns = [pattern1, pattern2, pattern3]
+
+        for pattern in patterns:
+            end_date = self.get_end_date_by_regex(pattern, description)
+            if end_date:
+                break
+
+        return end_date
 
 
 class Smartly(Scraper):
@@ -3350,7 +3390,7 @@ class Smartly(Scraper):
                 for div in description_block.find_all('div'):
                     if div.attrs and 'last-section-apply' in div.attrs.get('class'):
                         break
-                    div.attrs = {}
+                    Scraper.clean_attrs(div)
                     description += str(div)
 
         return description
@@ -3368,8 +3408,9 @@ class Cybercom(Scraper):
                 title, description_url, description = self.get_mandatory_fields(li)
                 if self.is_valid_job(title, description_url, description):
                     location = self.get_location(li, title)
+                    end_date = self.get_end_date(description)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                     jobs.append(job)
 
         return jobs
@@ -3401,16 +3442,19 @@ class Cybercom(Scraper):
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
             details_block = job_details_soup.find('div', attrs={'class': 'body'})
             if details_block:
-                p = details_block.find("p")
-                if p:
-                    p.attrs = {}
-                    description += str(p)
-                    for p in p.next_siblings:
-                        p.attrs = {}
-                        if p.find('img'):
+                first_p = details_block.find("p")
+                if first_p:
+                    Scraper.clean_attrs(first_p)
+                    description += str(first_p)
+                    for sibling in first_p.next_siblings:
+                        Scraper.clean_attrs(sibling)
+                        if sibling.find('img'):
                             continue
-                        if p.name:
-                            description += str(p)
+                        if sibling.name == "h3" and sibling.find('a'):
+                            continue
+
+                        if sibling.name:
+                            description += str(sibling)
 
         return description
 
@@ -3426,6 +3470,10 @@ class Cybercom(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+    def get_end_date(self, description):
+        pattern = r"\d{1,2}\.\d{1,2}\.\d{4}"
+        return self.get_end_date_by_regex(pattern, description)
 
 
 class Enfo(Scraper):
