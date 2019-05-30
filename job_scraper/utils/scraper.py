@@ -9308,7 +9308,7 @@ class Elomatic(Scraper):
                     try:
                         end_date = parser.parse(end_date_str, dayfirst=True).strftime('%Y-%m-%d')
                     except ValueError:
-                        log_support.set_invalid_dates(self.client_name, title)
+                        pass
 
         if not end_date:
             log_support.set_invalid_dates(self.client_name, title)
