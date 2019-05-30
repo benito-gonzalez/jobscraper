@@ -1358,7 +1358,7 @@ class Wartsila(Scraper):
                             log_support.set_invalid_location(self.client_name, title)
 
                         pub_date = self.get_pub_date(item.find('span', {'class': 'jobDate'}), title)
-                        end_date = self.get_end_date(title, description)
+                        end_date = self.get_end_date(description)
 
                         job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, None, description_url)
                         jobs.append(job)
@@ -1385,16 +1385,16 @@ class Wartsila(Scraper):
         description = ""
         job_details_html = request_support.simple_get(url)
         if job_details_html:
-            soup = BeautifulSoup(job_details_html, 'html.parser')
-            description_div = soup.find('span', {'itemprop': 'description'})
+            soup = BeautifulSoup(job_details_html, 'html5lib')
+            description_div = soup.find('span', class_='jobdescription')
             if description_div:
-                for p in description_div.children:
-                    # remove tag attributes
-                    Scraper.clean_attrs(p)
-                    if p != "\n" and p.text.strip() != "":
-                        for match in p.find_all('span'):
-                            match.unwrap()
-                        description += str(p)
+                for child in description_div.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child != "\n" and child.text.strip() != "":
+                            for match in child.find_all('span'):
+                                match.unwrap()
+                            description += str(child)
 
         return description
 
@@ -1410,32 +1410,17 @@ class Wartsila(Scraper):
 
         return pub_date
 
-    def get_end_date(self, title, description):
+    def get_end_date(self, description):
         end_date = None
+        pattern1 = r"\d{1,2}((st)|(nd)|(rd)|(th))(\s+of)?\s+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?),?\s+\d{4}"
+        pattern2 = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        pattern3 = r"[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}"
+        patterns = [pattern1, pattern2, pattern3]
 
-        soup = BeautifulSoup(description, "lxml")
-        end_date_tag1 = soup.find(lambda tag: tag.name == "p" and "Last application date:" in tag.text)
-        end_date_tag2 = soup.find(lambda tag: tag.name == "p" and "Please apply by " in tag.text)
-        if end_date_tag1:
-            tag_splitted = end_date_tag1.text.split("Last application date:")
-            if len(tag_splitted) > 1:
-                date_raw = tag_splitted[1]
-                try:
-                    end_date = parser.parse(date_raw, dayfirst=True).strftime('%Y-%m-%d')
-                except ValueError:
-                    log_support.set_invalid_dates(self.client_name, title)
-
-        elif end_date_tag2:
-            tag_splitted = end_date_tag2.text.split("Please apply by ")
-            if len(tag_splitted) > 1:
-                date_raw = tag_splitted[1]
-                try:
-                    end_date = parser.parse(date_raw, dayfirst=True).strftime('%Y-%m-%d')
-                except ValueError:
-                    log_support.set_invalid_dates(self.client_name, title)
-
-        if not end_date:
-            log_support.set_invalid_dates(self.client_name, title)
+        for pattern in patterns:
+            end_date = self.get_end_date_by_regex(pattern, description)
+            if end_date:
+                break
 
         return end_date
 
