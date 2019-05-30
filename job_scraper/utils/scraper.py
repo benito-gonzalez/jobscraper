@@ -6846,9 +6846,8 @@ class Aiven(Scraper):
         jobs_div = soup.find('div', class_='open-positions')
         if jobs_div:
             for item in jobs_div.find_all('div', class_='career'):
-                title, description_url, description, is_valid = self.get_mandatory_fields(item)
-                if is_valid and self.is_valid_job(title, description_url, description):
-
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
                     location = self.get_location(item, title)
 
                     # Some jobs are remote and they define it as European Union
@@ -6864,21 +6863,15 @@ class Aiven(Scraper):
         title = description_url = None
         description = ""
 
-        # Aiven has one job called "Backend Developer Intern" which points to an invalid URL (HTTP 404). In this case, we must invalidate it
-        is_valid = True
-
         # Check title
         url_tag = item.find('a')
         if url_tag:
             title = url_tag.get_text().strip()
-            if title == "Backend Developer Intern":
-                is_valid = False
-            else:
-                description_url = url_tag.get('href')
-                if description_url:
-                    description = self.get_description(description_url)
+            description_url = url_tag.get('href')
+            if description_url:
+                description = self.get_description(description_url)
 
-        return title, description_url, description, is_valid
+        return title, description_url, description
 
     @staticmethod
     def get_description(url):
@@ -10100,7 +10093,7 @@ class Posti(Scraper):
         patterns = [pattern1, pattern2]
 
         for pattern in patterns:
-            end_date = self.get_end_date_by_regex(pattern, description, day_first=False)
+            end_date = self.get_end_date_by_regex(pattern, description, day_first=True)
             if end_date:
                 break
 
