@@ -165,6 +165,17 @@ class Job(models.Model):
         click_counter_instance.updated_at = timezone.now()
         click_counter_instance.save()
 
+    @property
+    def get_meta_keywords(self):
+        meta_keywords = self.title
+
+        if self.location:
+            meta_keywords += ", Jobs in {0}, Avoimet työpaikat {1}, ".format(self.location, self.location)
+        else:
+            meta_keywords += ", Jobs in Finland, Avoimet työpaikat, "
+
+        return meta_keywords
+
     class Meta:
         db_table = "Jobs"
 

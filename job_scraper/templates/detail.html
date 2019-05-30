@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block keywords %}{{ job.get_meta_keywords }}{% endblock %}
 {% block title %}{{ job.title }} • Jobs Portal {% endblock %}
 
 
