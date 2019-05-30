@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css" integrity="sha384-PDle/QlgIONtM1aqA2Qemk5gPOE7wFq8+Em+G/hmo5Iq0CCmYZLv3fVRDJ4MMwEA"
           crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css"/>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="{% static 'custom.css' %}">
 
     <title>
@@ -65,13 +66,11 @@
                     </div>
 
                     <div class="col-12 col-lg-3">
-                        <div class="search-input">
-                            {% if request.GET.keyword %}
-                                <input type="search" class="form-control" id="keyword" name="keyword" value="{{ request.GET.keyword }}" placeholder="Keywords, company..."/>
-                            {% else %}
-                                <input type="search" class="form-control" id="keyword" name="keyword" placeholder="Keywords, company..."/>
-                            {% endif %}
-                        </div>
+                        {% if request.GET.keyword %}
+                            <input type="search" class="form-control" id="keyword" name="keyword" value="{{ request.GET.keyword }}" placeholder="Keywords, company..."/>
+                        {% else %}
+                            <input type="search" class="form-control" id="keyword" name="keyword" placeholder="Keywords, company..."/>
+                        {% endif %}
                     </div>
                     <div class="d-none d-lg-block col-md mt-lg-2">
                         <div class="search-tag">
@@ -80,14 +79,14 @@
                     </div>
 
                     <div class="col-12 col-lg-3 mt-2 mt-lg-0">
-                        <div class="location-input">
+                        <div class="ui-widget">
                             {% if request.GET.location %}
-                                <input type="search" class="form-control" id="location" name="location" value="{{ request.GET.location }}" placeholder="Location"/>
+                                <input type="search" id="locations-list" class="form-control" id="location" name="location" value="{{ request.GET.location }}" placeholder="Location"/>
                             {% else %}
-                                <input type="search" class="form-control" id="location" name="location" placeholder="Location"/>
+                                <input type="search" id="locations-list" class="form-control" id="location" name="location" placeholder="Location"/>
                             {% endif %}
-
                         </div>
+
                     </div>
                     <div class="col-12 col-lg-2 d-flex justify-content-center justify-content-lg-start mt-4 mt-md-2 mt-lg-0 pl-lg-4">
                         <button id="search_button" type="submit">Search</button>
@@ -119,7 +118,7 @@
 <footer>
     <div class="footer text-center">
         <div class="row mt-4 row justify-content-around align-items-center">
-            <div class="col-12 col-md-4 col-xl-3 text-center ml-xl-5" >
+            <div class="col-12 col-md-4 col-xl-3 text-center ml-xl-5">
                 <fieldset class="footer-jobs-location ml-5 mr-5 ml-md-3 mr-md-3 ml-xl-5 mr-xl-5">
                     <legend class="footer-legend">Jobs by location</legend>
 
@@ -240,6 +239,7 @@
 <!-- content -->
 <script src='https://www.google.com/recaptcha/api.js'></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
         crossorigin="anonymous"></script>
 <script src="{% static 'js/custom.js' %}"></script>
