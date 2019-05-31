@@ -131,9 +131,8 @@ class Job(models.Model):
         offset = 60 * 60 * 24 * days
         return current_epoch + offset
 
-    @property
-    def get_keywords(self):
-        max_size = 5
+    def __get_keywords(self, size):
+        max_size = size
         tags_list = []
         job_tags_map = self.tags.through.objects.filter(job_id=self).order_by('-num_times')
         for i, item in enumerate(job_tags_map):
@@ -144,6 +143,14 @@ class Job(models.Model):
                 tags_list.append(item.tag.name)
 
         return tags_list
+
+    @property
+    def get_keywords(self):
+        return self.__get_keywords(5)
+
+    @property
+    def get_keywords_mobile(self):
+        return self.__get_keywords(4)
 
     def update_details_counter(self):
         try:
