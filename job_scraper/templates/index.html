@@ -116,6 +116,24 @@
 
                     <div class="frm-outer-container">
                         <div class="frm-container" style="display: none;">
+                            {% if job.get_keywords %}
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="row justify-content-start ml-1">
+                                            {% for item in job.get_keywords_mobile %}
+                                                <div class="col-auto text-center pl-1 pr-0">
+                                                    <a href="/{{ item }}-jobs" class="tag-label-link">
+                                                        <div class="tag-label">
+                                                            {{ item }}
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
                             <div class="row">
                                 <div class="col mt-3">
                                     <p>{{ job.get_initial_description |slice:":250" }}...</p>
@@ -134,7 +152,7 @@
                                 <a href="{% url 'job_scraper:apply' job.id job.get_title_slug %}" class="btn btn-block btn-apply btn-sm btn-apply-mbl" rel="nofollow">Apply!</a>
                             </div>
 
-                            <div class="col-9 col-10-md d-none d-lg-block">
+                            <div class="col-9 d-none d-lg-block">
                                 {% if job.get_keywords %}
                                     <div class="row justify-content-start ml-1">
                                         {% for item in job.get_keywords %}
@@ -150,7 +168,7 @@
                                 {% endif %}
                             </div>
 
-                            <div class="col-3 col-2-md d-none d-lg-block">
+                            <div class="col-3 d-none d-lg-block">
                                 <a href="{% url 'job_scraper:detail' job.id job.get_title_slug %}" class="btn btn-show-more btn-outline-success btn-sm ">Show more</a>
                             </div>
                         </div>
