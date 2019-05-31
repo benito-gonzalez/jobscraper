@@ -2,7 +2,7 @@ from bs4 import Tag, BeautifulSoup
 import re
 import dateutil.parser as parser
 from dateutil import tz
-from datetime import datetime
+from datetime import datetime, timedelta
 from html import unescape
 import json
 import time
@@ -366,6 +366,7 @@ class Scraper(object):
         """
         end_date = None
         min_end_date = None
+        yesterday = datetime.today() - timedelta(days=1)
 
         matches = re.finditer(pattern, description)
 
@@ -373,7 +374,7 @@ class Scraper(object):
             try:
                 end_date_aux = parser.parse(match.group(), dayfirst=day_first)
                 # if dates is from the past, we skip it
-                if end_date_aux < datetime.now():
+                if end_date_aux < yesterday:
                     continue
                 if not min_end_date or end_date_aux < min_end_date:
                     min_end_date = end_date_aux
@@ -8866,7 +8867,9 @@ class Valmet(Scraper):
                     if is_finnish and self.is_valid_job(title, description_url, description):
                         # location has already being checked in get_mandatory_fields()
                         location = self.get_location(description_url, title)
-                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        end_date = self.get_end_date(description)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                         jobs.append(job)
 
                 current_page, current_offset = self.get_next_page(current_page, Valmet.page_offset)
@@ -8984,6 +8987,20 @@ class Valmet(Scraper):
             log_support.set_error_message(self.client_name, "Can not get next page: " + str(e))
 
         return new_page, new_offset
+
+    def get_end_date(self, description):
+        end_date = None
+        pattern1 = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        pattern2 = r"(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\s+\d{1,2}((st)|(nd)|(rd)|(th))?,?(\s+\d{4})?"
+        pattern3 = r"\d{1,2}((st)|(nd)|(rd)|(th))\s+(of\s+)?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\s+\d{4}"
+        patterns = [pattern1, pattern2, pattern3]
+
+        for pattern in patterns:
+            end_date = self.get_end_date_by_regex(pattern, description)
+            if end_date:
+                break
+
+        return end_date
 
 
 class Metso(Scraper):
