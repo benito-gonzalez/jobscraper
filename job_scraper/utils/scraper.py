@@ -8256,9 +8256,9 @@ class UniversityAalto(Scraper):
                     title, description_url, description = self.get_mandatory_fields(item)
                     if self.is_valid_job(title, description_url, description):
                         location = "Espoo"
-                        end_date = self.get_end_date(item, title)
+                        pub_date = self.get_pub_date(item, title)
 
-                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                        job = ScrapedJob(title, description, location, self.client_name, None, pub_date, None, None, description_url)
                         jobs.append(job)
 
             else:
@@ -8309,7 +8309,7 @@ class UniversityAalto(Scraper):
 
         return description
 
-    def get_end_date(self, item, title):
+    def get_pub_date(self, item, title):
         end_date = None
 
         end_date_div = item.find('time')
