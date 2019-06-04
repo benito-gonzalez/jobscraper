@@ -290,6 +290,14 @@ def generate_instance_from_client(client_name, url):
         return Frogmind(client_name, url)
     if client_name == "Zynga":
         return Zynga(client_name, url)
+    if client_name == "Thermofisher":
+        return Thermofisher(client_name, url)
+    if client_name == "SAP":
+        return Sap(client_name, url)
+    if client_name == "Here":
+        return Here(client_name, url)
+    if client_name == "AGCO":
+        return Agco(client_name, url)
     else:
         return None
 
@@ -10695,3 +10703,293 @@ class Zynga(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class Thermofisher(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        table = soup.find('table', class_='JobListTable')
+        if table:
+            for item in table.find_all("tr"):
+                if item.find('th') or item.find('td', class_='job-filter'):
+                    continue
+
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+                    end_date = self.get_end_date(description)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('td', class_='coloriginaljobtitle')
+        if title_tag:
+            title = title_tag.text.strip()
+            url_tag = title_tag.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', class_='jobdescription-row description')
+            if container:
+                description_parent = container.find('div', class_='jobdescription-value')
+                if description_parent:
+                    for child in description_parent.children:
+                        Scraper.clean_attrs(child)
+                        if child.name and child.get_text().strip() == "":
+                            continue
+                        description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('td', class_='collongtextfield1')
+        if location_tag:
+            location = location_tag.get_text().strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, description):
+        end_date = None
+        pattern1 = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        pattern2 = r"\d{1,2}((st)|(nd)|(rd)|(th))(\s+of)?\s+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(\s[0-9]{4})?"
+        patterns = [pattern1, pattern2]
+
+        for pattern in patterns:
+            end_date = self.get_end_date_by_regex(pattern, description)
+            if end_date:
+                break
+
+        return end_date
+
+
+class Sap(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        table = soup.find('table', {'id': 'searchresults'})
+        if table:
+            for item in table.find_all("tr", class_='data-row'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('span', class_='jobTitle')
+        if title_tag:
+            title = title_tag.text.strip()
+            url_tag = title_tag.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            description_parent = soup.find('span', class_='jobdescription')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('span', class_='jobLocation')
+        if location_tag:
+            location = location_tag.get_text().strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Here(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('li', class_='row'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = "Tampere"
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('div', class_='title')
+        if title_tag:
+            title_spans = title_tag.find_all('span')
+            if len(title_spans) == 2:
+                title = title_spans[1].get_text().strip()
+                title = title.split(" - HERE")[0]
+                url_tag = title_tag.find('a')
+                if url_tag:
+                    description_url = url_tag.get('href')
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        video_found = False
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            description_parent = soup.find('div', class_='iCIMS_JobContent')
+            if description_parent:
+                job_summary = description_parent.find('div', class_='iCIMS_JobsTable')
+                if job_summary:
+                    for sibling in job_summary.next_siblings:
+                        if isinstance(sibling, Tag):
+                            Scraper.clean_attrs(sibling)
+
+                            if video_found:
+                                break
+
+                            if sibling.find('iframe'):
+                                sibling.find('iframe').decompose()
+                                video_found = True
+
+                            if sibling.name == "h3":
+                                sibling.name = "h4"
+                            if sibling.name == "h2":
+                                sibling.name = "h3"
+
+                            if sibling.get_text().strip() != "":
+                                description += str(sibling)
+
+        return description
+
+
+class Agco(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        table = soup.find('table', {'id': 'searchresults'})
+        if table:
+            for item in table.find_all("tr", class_='data-row'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+                    end_date = self.get_end_date(description)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('span', class_='jobTitle')
+        if title_tag:
+            title = title_tag.text.strip()
+            url_tag = title_tag.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            description_parent = soup.find('span', class_='jobdescription')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('span', class_='jobLocation')
+        if location_tag:
+            location = location_tag.get_text().strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, description):
+        end_date = None
+        pattern1 = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        pattern2 = r"\d{1,2}((st)|(nd)|(rd)|(th))(\s+of)?\s+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(\s[0-9]{4})?"
+        patterns = [pattern1, pattern2]
+
+        for pattern in patterns:
+            end_date = self.get_end_date_by_regex(pattern, description)
+            if end_date:
+                break
+
+        return end_date
