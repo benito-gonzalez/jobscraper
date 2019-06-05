@@ -8631,51 +8631,38 @@ class Forenom(Scraper):
         return title, description_url, description
 
     @staticmethod
-    def generate_json_description_url(url):
-        description_url = None
-
-        # We need to generate a new URL for the JSON call.
-        item = re.search(r'\d+', url)
-        if item:
-            job_id = item.group(0)
-            description_url = url.split("tpt")[0] + "tpt-api/tyopaikat/" + job_id + "?kieli=fi"
-
-        return description_url
-
-    def get_description(self, url):
+    def get_description(url):
         description = ""
 
-        description_url = self.generate_json_description_url(url)
-        if description_url:
-            job_details_html = request_support.simple_get(description_url)
-            if job_details_html:
-                json_dict = json.loads(job_details_html)
-                if "response" in json_dict and "docs" in json_dict["response"] and len(json_dict["response"]["docs"]) > 0 and "kuvaustekstiHTML" in json_dict["response"]["docs"][0]:
-                    description_raw = json_dict["response"]["docs"][0]["kuvaustekstiHTML"]
-                    description = unescape(description_raw)
-                    description = "<p>" + description + "</p>"
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+            section = job_details_soup.find('section', class_='job-content')
+            if section:
+                description_parent = section.find('div', class_='main-text')
+                if description_parent:
+                    for child in description_parent.children:
+                        if isinstance(child, Tag):
+                            Scraper.clean_attrs(child)
+                            description += str(child)
 
         return description
 
     def get_job_info(self, url, title):
         location = end_date = None
 
-        description_url = self.generate_json_description_url(url)
-        if description_url:
-            job_details_html = request_support.simple_get(description_url)
-            if job_details_html:
-                json_dict = json.loads(job_details_html)
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
 
-                if "response" in json_dict and "docs" in json_dict["response"] and len(json_dict["response"]["docs"]) > 0:
-                    if "kunta" in json_dict["response"]["docs"][0]:
-                        location = json_dict["response"]["docs"][0]["kunta"]
-                    if "viimeinenHakupaivamaara" in json_dict["response"]["docs"][0]:
-                        end_date_raw = json_dict["response"]["docs"][0]["viimeinenHakupaivamaara"]
-                        try:
-                            end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
-                        except (ValueError, TypeError):
-                            # Exception error is logged later on
-                            pass
+            end_date_tag = job_details_soup.find('p', class_='application-ends')
+            if end_date_tag:
+                pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+                end_date = self.get_end_date_by_regex(pattern, end_date_tag.get_text())
+
+            location_tag = job_details_soup.find('span', class_='city')
+            if location_tag:
+                location = location_tag.get_text()
 
         if not location:
             log_support.set_invalid_location(self.client_name, title)
