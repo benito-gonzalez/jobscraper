@@ -1072,13 +1072,14 @@ class Eficode(Scraper):
 
         ul_jobs = soup.find('ul', {'class': 'jobs'})
         if ul_jobs:
-            for li in ul_jobs.find_all('li'):
-                title, description_url, description = self.get_mandatory_fields(li)
-                if self.is_valid_job(title, description_url, description):
-                    location = self.get_location(li, title)
+            for item in ul_jobs.children:
+                if isinstance(item, Tag):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, title)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                    jobs.append(job)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
 
         return jobs
 
@@ -1125,7 +1126,7 @@ class Eficode(Scraper):
         if first_span:
             second_span = first_span.find_next_sibling('span')
             if second_span:
-                location = second_span.get_text()
+                location = second_span.get_text().strip()
 
         if not location:
             log_support.set_invalid_location(self.client_name, job_title)
