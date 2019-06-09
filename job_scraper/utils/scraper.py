@@ -327,6 +327,12 @@ def generate_instance_from_client(client_name, url):
         return SuoraTyo(client_name, url)
     if client_name == "Tomorrow Tech":
         return TomorrowTech(client_name, url)
+    if client_name == "Vauraus":
+        return Vauraus(client_name, url)
+    if client_name == "Nixu":
+        return Nixu(client_name, url)
+    if client_name == "Terveystalo":
+        return Terveystalo(client_name, url)
     else:
         return None
 
@@ -12049,3 +12055,233 @@ class TomorrowTech(Scraper):
                             description += str(child)
 
         return description
+
+
+class Vauraus(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all("div", class_="career-item"):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(description, title)
+                end_date = self.get_end_date(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('div', class_='career-title')
+        if title_tag:
+            title = title_tag.get_text().strip()
+
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            description_parent = soup.find('div', class_='application-description')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+    def get_location(self, description, title):
+        location = ""
+
+        if "Helsingin" in description or "Helsinki" in description or "Helsingissä" in description:
+            location += ", Helsinki"
+        if "Tampereelle" in description or "Tampere" in description:
+            location += ", Tampere"
+        if "Joensuuhun" in description or "Joensuu" in description:
+            location += ", Joensuu"
+        if "Pohjanmaalle" in description or "Pohjanmaa" in description:
+            location += ", Pohjanmaa"
+        if "Kuopioon" in description or "Kuopio" in description:
+            location += ", Kuopio"
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, item, title):
+        end_date = None
+
+        end_date_tag = item.find('div', class_='career-date')
+        if end_date_tag:
+            pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+            end_date = self.get_end_date_by_regex(pattern, end_date_tag.get_text())
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+
+class Nixu(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        table = soup.find('table', class_='table')
+        if table:
+            for item in table.find_all("tr"):
+                # if it is the header, skip
+                if item.find('th'):
+                    continue
+
+                title, description_url, description, is_finnish = self.get_mandatory_fields(item)
+                if is_finnish and self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+        finnish = True
+
+        all_td = item.find_all('td')
+        if len(all_td) == 4:
+            finnish = "Finland" in all_td[1].get_text()
+
+        if finnish:
+            title_tag = item.find('a')
+            if title_tag:
+                title = title_tag.get_text().strip()
+                relative_url = title_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description = self.get_description(description_url)
+
+        return title, description_url, description, finnish
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            description_blocks = soup.find_all('div', {'id': ['ctl00_cphContent_divJobDesc', 'ctl00_cphContent_divReqProfile', 'ctl00_cphContent_divAboutCompany', 'ctl00_cphContent_divApplicationInstructions']})
+            for block in description_blocks:
+                for child in block.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        all_td = item.find_all('td')
+        if len(all_td) == 4:
+            location = all_td[2].get_text()
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Terveystalo(Scraper):
+
+    def extract_info(self, html):
+        # From API
+        jobs = []
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+
+        if "Rows" in json_dict:
+            for item in json_dict["Rows"]:
+                title, description_url, description, end_date = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = end_date = None
+        description = ""
+
+        if "Tehtava" in item:
+            title = item["Tehtava"].strip().capitalize()
+            if "Link" in item:
+                description_url = item["Link"]
+                description, end_date = self.get_description(description_url, title)
+
+        return title, description_url, description, end_date
+
+    def get_description(self, url, title):
+        description = ""
+        end_date = None
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+
+            parent = soup.find('div', class_='multiline-text')
+            for child in parent.children:
+                Scraper.clean_attrs(child)
+                description += str(child)
+
+            end_date = self.get_end_date(soup, title)
+
+        return description, end_date
+
+    def get_location(self, item, title):
+        location = None
+
+        if "RekPaikkakunnat" in item and len(item["RekPaikkakunnat"]) > 0 and "PaikkakunnanNimi" in item["RekPaikkakunnat"][0]:
+            location = item["RekPaikkakunnat"][0]["PaikkakunnanNimi"]
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+    def get_end_date(self, soup, title):
+        text = ""
+
+        #  we don't have the end_date information in the description, we have to get it
+        tags = soup.find_all('div', class_='row')
+        for tag in tags:
+            text += tag.get_text()
+
+        pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+        end_date = self.get_end_date_by_regex(pattern, text)
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
