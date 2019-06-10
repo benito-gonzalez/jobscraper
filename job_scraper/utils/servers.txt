@@ -137,3 +137,25 @@ Innokas medical - https://www.innokasmedical.fi/careers/
 Tikkurila - https://tikkurilagroup.com/fi/tyopaikat/avoimet-tyopaikat
 Frogmind - http://frogmind.com/jobs/
 Zynga - https://www.zynga.com/international-location/helsinki-finland/
+Thermofisher - https://jobs.thermofisher.com/ListJobs/All/Search/TMO-Posting-Locations/Finland
+SAP - https://jobs.sap.com/search/?q=&locationsearch=Finland&locale=en_US
+Here - https://careers-here.icims.com/jobs/search?ss=1&searchLocation=13073--Tampere&in_iframe=1
+AGCO - https://careers.agcocorp.com/search/?createNewAlert=false&q=&locationsearch=Finland&optionsFacetsDD_lang=&optionsFacetsDD_country=
+Open text - https://opentextats.avature.net/careers/SearchJobs/?3_164_3=1006705
+Danfoss - https://krb-xjobs.brassring.com/TGnewUI/Search/Home/Home?partnerid=30033&siteid=5635#keyWordSearch=&locationSearch=Finland
+Accountor - https://accountor.emply.net/overview/accountor.aspx?mediaId=1a221815-87e7-45b1-938e-82cc7f7092a2&languageKey=en-GB
+Iceye - https://iceye.workable.com/?__hstc=&__hssc=&hsCtaTracking=2c570fad-f315-418b-b983-3eaf3c39a649%7C80117642-c428-4006-9bbb-944771f9ea6e
+Digia - https://digia.rekrytointi.com/paikat/index.php?o=A_LOJ&list=1&fid=8&lang=en&rspvt=bktsy014ulck0gsgk40owws080c8848&ASESSION=j9k9q15jtumlt1n712lqmmv90lrb70p8
+BDS-Bynfo - https://www.bds-bynfo.com/working-at-bds-bynfo
+BookIT - https://www.bookit.net/careers
+Enfuce - https://enfuce.com/careers
+Giosg - https://careers.giosg.com/jobs?location_id=43890
+Inderes - https://ura.inderes.fi/
+LVS Brokers - https://lvsbrokers.teamtailor.com/
+OpusCapita Solutions - https://www.opuscapita.com/careers/open-positions
+Poolia - https://www.poolia.fi/api/jobs?language=fi-fi
+SuoraTyö - https://www.suoratyo.fi/suoratyo/toihin-suoratyolle
+Tomorrow Tech - https://tomorrow.fi/jobs.html
+Vauraus - https://vauraus.fi/careers/
+Terveystalo - https://www.terveystalo.com/Handlers/MepcoJobs.ashx?Category=3
+Nixu - https://nixu.verismohr.com/jobs#
