@@ -138,7 +138,7 @@ Tikkurila - https://tikkurilagroup.com/fi/tyopaikat/avoimet-tyopaikat
 Frogmind - http://frogmind.com/jobs/
 Zynga - https://www.zynga.com/international-location/helsinki-finland/
 Thermofisher - https://jobs.thermofisher.com/ListJobs/All/Search/TMO-Posting-Locations/Finland
-SAP - https://jobs.sap.com/search/?q=&locationsearch=Finland&locale=en_US
+SAP SE - https://jobs.sap.com/search/?q=&locationsearch=Finland&locale=en_US
 Here - https://careers-here.icims.com/jobs/search?ss=1&searchLocation=13073--Tampere&in_iframe=1
 AGCO - https://careers.agcocorp.com/search/?createNewAlert=false&q=&locationsearch=Finland&optionsFacetsDD_lang=&optionsFacetsDD_country=
 Open text - https://opentextats.avature.net/careers/SearchJobs/?3_164_3=1006705

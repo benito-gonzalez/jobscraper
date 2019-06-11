@@ -291,7 +291,7 @@ def generate_instance_from_client(client_name, url):
         return Zynga(client_name, url)
     if client_name == "Thermofisher":
         return Thermofisher(client_name, url)
-    if client_name == "SAP":
+    if client_name == "SAP SE":
         return Sap(client_name, url)
     if client_name == "Here":
         return Here(client_name, url)

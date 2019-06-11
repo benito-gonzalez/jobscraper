@@ -106,7 +106,7 @@ class IndexView(generic.ListView):
 
         if keyword_query and location_query:
             # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
-            if search("[^a-zA-Z0-9]+", keyword_query):
+            if search("[^a-zA-Z0-9 ]+", keyword_query):
                 # It returns all jobs which title contains all words typed by the user. In any order
                 list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q)) | Q(company__name__iregex=r"\b" + escape(q)) for q in keyword_words]) &
                                            self.filter_by_location(location_query)).order_by('-updated_at')
@@ -115,33 +115,40 @@ class IndexView(generic.ListView):
                 list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) &
                                            self.filter_by_location(location_query)).order_by('-updated_at')
 
-            # Gets jobs which full query matches with a keyword
-            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_location(location_query)).order_by('-jobtagmap__num_times')
+            if self.company:
+                result_list = list(list1)
+            else:
+                # Gets jobs which full query matches with a keyword
+                list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_location(location_query)).order_by('-jobtagmap__num_times')
 
-            # Gets jobs which any word from user query matches with a keyword
-            list3 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-jobtagmap__num_times')
+                # Gets jobs which any word from user query matches with a keyword
+                list3 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-jobtagmap__num_times')
 
-            result_list = list(chain(list1, list2, list3))
+                result_list = list(chain(list1, list2, list3))
+
             UserSearches.add_entry(what_entry=keyword_query, where_entry=location_query)
             return list(OrderedDict.fromkeys(result_list))
 
         if keyword_query:
             # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
-            if search("[^a-zA-Z0-9]+", keyword_query):
+            if search("[^a-zA-Z0-9 ]+", keyword_query):
                 list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=escape(q)) | Q(company__name__iregex=escape(q)) for q in keyword_words]) &
                                            self.filter_by_active()).order_by('-updated_at')
             else:
                 list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) &
                                            self.filter_by_active()).order_by('-updated_at')
+            if self.company:
+                result_list = list(list1)
+            else:
+                # Gets jobs which full query matches with a keyword
+                # select j.* from Jobs j inner join JobsTagsMap jt on j.id == jt.job_id inner join Tags t on jt.tag_id == t.id  where t.name like "keyword_query"
+                list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_active()).order_by('-jobtagmap__num_times')
 
-            # Gets jobs which full query matches with a keyword
-            # select j.* from Jobs j inner join JobsTagsMap jt on j.id == jt.job_id inner join Tags t on jt.tag_id == t.id  where t.name like "keyword_query"
-            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_active()).order_by('-jobtagmap__num_times')
+                # Gets jobs which any word from user query matches with a keyword
+                list3 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_active()).order_by('-jobtagmap__num_times')
 
-            # Gets jobs which any word from user query matches with a keyword
-            list3 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_active()).order_by('-jobtagmap__num_times')
+                result_list = list(chain(list1, list2, list3))
 
-            result_list = list(chain(list1, list2, list3))
             UserSearches.add_entry(what_entry=keyword_query)
             return list(OrderedDict.fromkeys(result_list))
 
