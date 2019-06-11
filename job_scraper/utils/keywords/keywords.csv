@@ -15,7 +15,7 @@ Perl
 Ruby
 Groovy
 Swift
-Go
+GoLang
 Delphi
 Pascal
 SAS
@@ -36,7 +36,6 @@ LabVIEW
 Kotlin
 Bash
 Hack
-Haskell
 PowerShell
 Awk
 ML
@@ -52,7 +51,6 @@ Lapis
 Yesod
 Factor
 Oracle
-Go
 Clojure
 Ruby on Rails
 Ruby
@@ -265,7 +263,7 @@ TypeScript
 RxJS
 Cycle.js
 Purescript
-Kafka
+Kafka 
 Haskell
 Elixir
 Robot Framework
@@ -285,3 +283,9 @@ SLAM
 Bootstrap
 Selenium
 Jasmine
+LaTeX
+CSS
+Appium
+Scrum
+Agile
+Kanban
