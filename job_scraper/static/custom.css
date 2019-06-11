@@ -335,7 +335,7 @@ Bottom up
     display: none; /* Hidden by default */
     position: fixed; /* Fixed/sticky position */
     bottom: 30px; /* Place the button at the bottom of the page */
-    right: 30px; /* Place the button 30px from the right */
+    right: 20px; /* Place the button 20px from the right */
     z-index: 99; /* Make sure it does not overlap */
     border: none; /* Remove borders */
     outline: none; /* Remove outline */
@@ -344,8 +344,8 @@ Bottom up
     cursor: pointer; /* Add a mouse pointer on hover */
     padding: 1px; /* Some padding */
     border-radius: 10px; /* Rounded corners */
-    width: 50px;
-    height: 50px;
+    width: 35px;
+    height: 35px;
 }
 
 #myBtn:hover {
@@ -479,9 +479,13 @@ Phones
     html, body {
         background-color: white;
         overflow-x: hidden;
-        padding-bottom: 65em;
-
+        padding-bottom: 47em;
     }
+
+    .paginator {
+        margin-top: 20px;
+    }
+
 
     .success-message {
         color: #28a745;
@@ -534,11 +538,11 @@ Phones
     }
 
     #myBtn {
-        bottom: 100px; /* Place the button at the bottom of the page */
+        bottom: 30px; /* Place the button at the bottom of the page */
         right: 5px; /* Place the button 30px from the right */
         z-index: 99; /* Make sure it does not overlap */
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
     }
 
 }
@@ -944,7 +948,7 @@ check_mark {
 
 }
 
-.ui-menu-item-wrapper{
+.ui-menu-item-wrapper {
     border-top: #e6e6e6 1px solid;
 }
 

@@ -270,7 +270,7 @@ function scrollFunction() {
     const height = Math.max(document.body.scrollHeight, document.body.offsetHeight,
         document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
 
-    if ((height - document.body.scrollTop) < 1300 || (height - document.documentElement.scrollTop) < 1300) {
+    if ((height - document.body.scrollTop) < 1600 || (height - document.documentElement.scrollTop) < 1600) {
         if (document.getElementById("myBtn") !== null) {
             document.getElementById("myBtn").style.display = "block";
         }
