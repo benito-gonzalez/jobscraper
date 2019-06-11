@@ -5088,8 +5088,8 @@ class Finitec(Scraper):
         section = soup.find('div', {'id': 'vacancies'})
         if section:
             for row in section.find_all("li"):
-                title, description_url, description = self.get_mandatory_fields(row)
-                if self.is_valid_job(title, description_url, description):
+                title, description_url, description, is_enabled = self.get_mandatory_fields(row)
+                if is_enabled and self.is_valid_job(title, description_url, description):
                     location = self.get_location(description_url, title)
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
@@ -5100,6 +5100,7 @@ class Finitec(Scraper):
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
+        enabled = True
 
         url_tag = item.find("a")
         if url_tag:
@@ -5113,9 +5114,13 @@ class Finitec(Scraper):
 
             description_url = url_tag.get('href')
             if description_url:
-                description = self.get_full_description(description_url)
+                # job 'DATA SCIENTIST' no longer exists but its link still appears in the website. Must be skipped in order to avoid a knonwn error
+                if "vacancies/4715" in description_url:
+                    enabled = False
+                else:
+                    description = self.get_full_description(description_url)
 
-        return title, description_url, description
+        return title, description_url, description, enabled
 
     @staticmethod
     def get_full_description(url):
@@ -11554,14 +11559,12 @@ class Enfuce(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
 
-        container = soup.find('div', class_='container-fluid')
+        container = soup.find('ul', class_='jobs')
         if container:
-            for item in container.find_all("h5"):
-                # h5 is the job title, we need to pass the parent tag
-                parent = item.parent
-                title, description_url, description = self.get_mandatory_fields(parent)
+            for item in container.find_all("li"):
+                title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
-                    location = self.get_location(parent, title)
+                    location = self.get_location(item, title)
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                     jobs.append(job)
@@ -11572,13 +11575,15 @@ class Enfuce(Scraper):
         title = description_url = None
         description = ""
 
-        title_tag = item.find('h5')
+        title_tag = item.find('span', class_='title')
         if title_tag:
             title = title_tag.get_text().strip()
             url_tag = item.find('a')
             if url_tag:
-                description_url = url_tag.get('href')
-                description = self.get_description(description_url)
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -11601,7 +11606,7 @@ class Enfuce(Scraper):
     def get_location(self, item, title):
         location = None
 
-        location_tag = item.find('p')
+        location_tag = item.find('span', class_='meta')
         if location_tag:
             location = location_tag.get_text().strip()
 
