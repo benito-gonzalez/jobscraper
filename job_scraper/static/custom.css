@@ -17,7 +17,7 @@ body {
     background-color: #e6e6e6;
     position: relative;
     margin: 0;
-    padding-bottom: 32em;
+    padding-bottom: 34em;
     min-height: 100%;
     font-family: "Helvetica Neue", Arial, sans-serif;
 }
@@ -479,7 +479,7 @@ Phones
     html, body {
         background-color: white;
         overflow-x: hidden;
-        padding-bottom: 47em;
+        padding-bottom: 42em;
     }
 
     .paginator {

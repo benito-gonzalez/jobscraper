@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+    <div class="row justify-content-center">
+
+        <div class="col-12">
+            <div class="row mt-5">
+                <div class="col text-center">
+                    <h3><strong>Show your appreciation</strong></h3>
+                </div>
+            </div>
+            <div class="row mt-3 justify-content-center ">
+                <div class="col-11 col-10-md ">
+                    <p>
+                        I guess you are wondering... "What's with this page?" - isn't the website free anymore?
+                    </p>
+                    <p>
+                        Do not worry, the website is still free.
+                    </p>
+                    <p>
+                        The funny thing is that we didn't consider to have such a page, but this is the result of people's request.
+                    </p>
+                    <p>
+                        It seems that there are people who found jobs using our website and they would like to show their appreciation by buying us a coffee for instance (some would prefer even beer).
+                    </p>
+                    <p>Unfortunately, is close to impossible to meet everyone and have a coffee, so that's why this page was born.</p>
+                    <p>
+                        Long story short, nobody needs to donate (company or individual) but if you feel like, just go ahead, now you have a way to do it.</p>
+                    <p>
+                        Thank you for your support and appreciation!
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-5">
+        <div class="col-6 col-md-4 col-lg-2 mb-md-5">
+            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <input type="hidden" name="cmd" value="_s-xclick"/>
+                <input type="hidden" name="hosted_button_id" value="VV9M6SHFLAQPY"/>
+                <input type="image" src="https://www.paypalobjects.com/en_US/ES/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button"/>
+                <img alt="" border="0" src="https://www.paypal.com/en_ES/i/scr/pixel.gif" width="1" height="1"/>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

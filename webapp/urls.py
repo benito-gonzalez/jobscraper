@@ -29,10 +29,10 @@ urlpatterns = [
     path('about/cookiepolicy', TemplateView.as_view(template_name='cookiepolicy.html')),
     path('about/about-us', TemplateView.as_view(template_name='about.html')),
     path('about/contact-us', views.ContactFormView.as_view()),
+    path('donations', TemplateView.as_view(template_name='payment_process.html')),
     re_path(r'jobs-in-\w+', views.IndexView.as_view(), name='index'),
     re_path(r'jobs-at-\w+', views.IndexView.as_view(), name='index'),
     re_path(r'(.*?)-jobs', views.IndexView.as_view(), name='index'),
-
     path('', include('job_scraper.urls')),
     # path('api/jobs/', views.JobListApiView.as_view()),
     # path('api/jobs/<int:pk>/', views.JobDetailApiView.as_view()),
