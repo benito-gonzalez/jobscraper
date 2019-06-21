@@ -1709,7 +1709,7 @@ class Rightware(Scraper):
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
-        valid = True
+        is_enabled = True
 
         title_tag = item.find('a')
         if title_tag:
@@ -1720,30 +1720,32 @@ class Rightware(Scraper):
                 if "https://" not in description_url:
                     description_url = self.url.split("com/")[0] + "com" + description_url
 
-                # The job "Software Engineer – Student or Recent Graduate" points to "https://rightware.teamtailor.com/connect" which is a form, not a job description
-                if "/connect" in description_url:
-                    valid = False
-                else:
-                    description = self.get_description(description_url)
+                description, is_enabled = self.get_description(description_url)
 
-        return title, description_url, description, valid
+        return title, description_url, description, is_enabled
 
     def get_description(self, url):
         description = ""
+        is_enabled = True
+
         job_details_html = request_support.simple_get(url)
 
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
 
-            # For jobs which have sequential information
-            description_div = soup.find('div', {'class': 'body'})
-            if description_div:
-                for child in description_div.children:
-                    if child.name:
-                        self.clean_attrs(child)
-                        description += str(child)
+            # If it has an apply button, job is enabled
+            if soup.find('div', class_='apply'):
+                # For jobs which have sequential information
+                description_div = soup.find('div', {'class': 'body'})
+                if description_div:
+                    for child in description_div.children:
+                        if child.name:
+                            self.clean_attrs(child)
+                            description += str(child)
+            else:
+                is_enabled = False
 
-        return description
+        return description, is_enabled
 
     def is_apply_block(self, tag):
         return tag.name in self.h_tags and "apply" in tag.text.lower()
@@ -2279,7 +2281,7 @@ class Nets(Scraper):
     @staticmethod
     def get_jobs_text(script):
         try:
-            jobs_txt = "[" + script.text.split("[", 1)[1].split("]")[0] + "]"
+            jobs_txt = "[" + script.text.split("[", 1)[1].split("];")[0] + "]"
         except (ValueError, TypeError):
             jobs_txt = ""
 
@@ -4172,11 +4174,11 @@ class Remedy(Scraper):
         description = ""
         description_url = location = None
 
-        # Remedy has a job called "Animation Tracking Artist" which points to an invalid description URL (HTTP 404). It must be skipped
+        # Remedy has a job called "Software Developer for DevOps" which points to an invalid description URL (HTTP 404). It must be skipped
         is_valid = True
 
         title = item.text.strip()
-        if title == "Animation Tracking Artist":
+        if title == "Software Developer for DevOps":
             is_valid = False
         else:
             description_url = item.get('href')
@@ -7917,13 +7919,14 @@ class Solteq(Scraper):
         soup = BeautifulSoup(html, 'lxml')
         ul = soup.find('ul', class_='jobs')
         if ul:
-            for item in ul.find_all('li'):
-                title, description_url, description = self.get_mandatory_fields(item)
-                if self.is_valid_job(title, description_url, description):
-                    location = self.get_location(item, description)
+            for item in ul.children:
+                if isinstance(item, Tag):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, description)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                    jobs.append(job)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
 
         return jobs
 
