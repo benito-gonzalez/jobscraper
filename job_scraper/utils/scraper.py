@@ -11379,7 +11379,7 @@ class Digia(Scraper):
     def extract_info(self, html):
         log_support.log_extract_info(self.client_name)
         jobs = []
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html.decode('utf-8'), 'html.parser')
 
         table = soup.find('table', {'id': 'auto_list_table_open_jobs'})
         if table:
