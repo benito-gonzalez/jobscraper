@@ -3099,7 +3099,7 @@ class FSecure(Scraper):
 
         for item in json_dict:
             title, description_url, description = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
+            if self.is_finnish(item) and self.is_valid_job(title, description_url, description):
                 location = self.get_location(item, title)
                 end_date = self.get_end_date(item, title)
                 if "employment_type" in item:
@@ -3111,6 +3111,18 @@ class FSecure(Scraper):
                 jobs.append(job)
 
         return jobs
+
+    @staticmethod
+    def is_finnish(item):
+        finnish = False
+
+        if "locations" in item:
+            for location in item["locations"]:
+                if "location" in location and "country" in location["location"] and "Finland" in location["location"]["country"]:
+                    finnish = True
+                    break
+
+        return finnish
 
     def get_mandatory_fields(self, item):
         title = description_url = None
