@@ -353,6 +353,8 @@ def generate_instance_from_client(client_name, url):
         return Nortal(client_name, url)
     if client_name == "UL":
         return Ul(client_name, url)
+    if client_name == "Fira":
+        return Fira(client_name, url)
     else:
         return None
 
@@ -13079,3 +13081,83 @@ class Ul(Scraper):
                             description += str(sibling)
 
         return description, location
+
+
+class Fira(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all('div', class_='c-career'):
+            title, description_url, description, end_date = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = end_date = None
+        description = ""
+
+        title_tag = item.find('h4')
+        if title_tag:
+            title = title_tag.get_text()
+
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                description, end_date = self.get_description(description_url, title)
+
+        return title, description_url, description, end_date
+
+    def get_description(self, url, title):
+        description = ""
+        end_date = None
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', {'id': 'job-description'})
+            if container:
+                block = container.find('div')
+                for child in block.children:
+                    if isinstance(child, Tag):º
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+            end_date = self.get_end_date(soup, title)
+
+        return description, end_date
+
+    def get_end_date(self, soup, title):
+        end_date = None
+
+        end_date_tag = soup.find('div', {'id': 'apply-attributes'})
+        if end_date_tag and end_date_tag['data-duedate']:
+            end_date_raw = end_date_tag['data-duedate']
+            try:
+                end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+            except (ValueError, TypeError):
+                pass
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('h5', class_="c-career__location")
+        if location_tag:
+            location = location_tag.get_text().strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
