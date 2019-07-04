@@ -1,6 +1,7 @@
 from bs4 import Tag, BeautifulSoup
 import re
 import dateutil.parser as parser
+import urllib.parse
 from dateutil import tz
 from datetime import datetime, timedelta
 import json
@@ -361,6 +362,8 @@ def generate_instance_from_client(client_name, url):
         return IQVIA(client_name, url)
     if client_name == "Intel":
         return Intel(client_name, url)
+    if client_name == "Oracle":
+        return Oracle(client_name, url)
     else:
         return None
 
@@ -6024,7 +6027,7 @@ class Accenture(Scraper):
             "userId": ""
         }
 
-        html = request_support.simple_post(post_url, body)
+        html = request_support.simple_post(post_url, body=body)
         if html:
             json_dict = json.loads(html)
             if "documents" in json_dict:
@@ -8886,7 +8889,7 @@ class VarianMedicalSystems(Scraper):
                                                              {"VerityZone": "LastUpdated", "Type": "date", "Value": None}]},
                 "encryptedsessionvalue": "^DhsnDFWj5cD_slp_rhc_RDUy6mN1QQbQMHgB_slp_rhc_kY_slp_rhc_yIC0W/b_slp_rhc_9O5lqe4nV9X1RiO/R_slp_rhc_QbQeSgW0AvJXgsm9XFEifaEoadsQq/zJzdOGGCE7OrofGWFlA="}
 
-        html = request_support.simple_post(post_url, body)
+        html = request_support.simple_post(post_url, body=body)
         if html:
             json_dict = json.loads(html)
             if "Jobs" in json_dict and "Job" in json_dict["Jobs"]:
@@ -11186,7 +11189,7 @@ class Danfoss(Scraper):
             "powersearchoptions": {"PowerSearchOption": [{"VerityZone": "FORMTEXT2", "Type": "multi-select", "OptionCodes": ["Finland"]}]}
             }
 
-        html = request_support.simple_post(post_url, body)
+        html = request_support.simple_post(post_url, body=body)
         if html:
             json_dict = json.loads(html)
             if "Jobs" in json_dict and "Job" in json_dict["Jobs"]:
@@ -13219,7 +13222,7 @@ class GE(Scraper):
                 "s": "1"
             }
 
-        html = request_support.simple_post(post_url, body)
+        html = request_support.simple_post(post_url, body=body)
         if html:
             json_dict = json.loads(html)
             if "eagerLoadRefineSearch" in json_dict and "data" in json_dict["eagerLoadRefineSearch"] and "jobs" in json_dict["eagerLoadRefineSearch"]["data"]:
@@ -13482,6 +13485,112 @@ class Intel(Scraper):
         if location_tag:
             location = location_tag.get_text().strip()
         else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
+
+
+class Oracle(Scraper):
+
+    # POST request to https://oracle.taleo.net/careersection/rest/jobboard/searchjobs?portal=101430233
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+
+        post_url = "https://oracle.taleo.net/careersection/rest/jobboard/searchjobs?portal=101430233"
+        header = {'tz': 'GMT+02:00'}
+        body = {
+            "multilineEnabled": True,
+            "sortingSelection": {
+                "sortBySelectionParam": "3",
+                "ascendingSortingOrder": "false"
+            },
+            "fieldData": {
+                "fields": {
+                    "KEYWORD": "",
+                    "LOCATION": ""
+                },
+                "valid": True
+            },
+            "filterSelectionParam": {
+                "searchFilterSelections": [
+                    {
+                        "id": "LOCATION",
+                        "selectedValues": [
+                            "355040031553"
+                        ]
+                    }
+                ],
+                "activeFilterId": "LOCATION"
+            },
+            "pageNo": 1
+        }
+
+        html = request_support.simple_post(post_url, body=body, header=header)
+        if html:
+            json_dict = json.loads(html)
+            if "requisitionList" in json_dict:
+                for item in json_dict["requisitionList"]:
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, title)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        if "column" in item and len(item["column"]) > 0:
+            title = item["column"][0]
+
+            if "contestNo" in item:
+                job_id = item["contestNo"]
+
+                description_url = self.url.split('jobsearch.ftl')[0] + "jobdetail.ftl?job=" + job_id
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container_raw = soup.find('input', {'id': 'initialHistory'})
+            if container_raw:
+                container_array = container_raw["value"].split("!*!")
+                if len(container_array) > 2:
+                    description_raw = container_array[1]
+                    description_html = urllib.parse.unquote(description_raw)
+                    description_soup = BeautifulSoup(description_html, "html.parser")
+
+                    for child in description_soup.children:
+                        if isinstance(child, Tag):
+                            Scraper.clean_attrs(child)
+                            if child.name == "h2":
+                                child.name = "h3"
+                            elif child.name == "h3":
+                                child.name = "h4"
+
+                            if child.get_text().strip() != "":
+                                description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        if "column" in item and len(item["column"]) > 3:
+            location = item["column"][3]
+
+        if not location:
             log_support.set_invalid_location(self.client_name, title)
 
         return location
