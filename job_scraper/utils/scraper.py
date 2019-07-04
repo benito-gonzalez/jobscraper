@@ -8667,9 +8667,9 @@ class Forenom(Scraper):
         for container in containers:
             if container.find('a'):
                 for item in container.find_all('a'):
-                    title, description_url, description = self.get_mandatory_fields(item)
-                    if self.is_valid_job(title, description_url, description):
-                        location, end_date = self.get_job_info(description_url, title)
+                    title, description_url, description, end_date, is_valid = self.get_mandatory_fields(item)
+                    if is_valid and self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, title)
 
                         job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                         jobs.append(job)
@@ -8679,6 +8679,8 @@ class Forenom(Scraper):
 
     def get_mandatory_fields(self, item):
         description = ""
+        end_date = None
+        valid = True
         locator = CityLocator()
 
         title = item.get_text().strip()
@@ -8690,29 +8692,65 @@ class Forenom(Scraper):
 
         description_url = item.get('href')
         if description_url:
-            description = self.get_description(description_url)
+            match = re.search(r"/(\d)+\?", description_url)
+            if match:
+                job_id = match.group(0)
+                job_id = job_id[1:-1]
+                json_url = "https://paikat.te-palvelut.fi/tpt-api/tyopaikat/" + job_id + "?kieli=fi"
+                description, end_date = self.get_description(json_url, title)
+            else:
+                valid = False
 
-        return title, description_url, description
+        return title, description_url, description, end_date, valid
 
-    @staticmethod
-    def get_description(url):
+    def get_description(self, url, title):
         description = ""
+        end_date = None
 
         job_details_html = request_support.simple_get(url)
         if job_details_html:
-            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            section = job_details_soup.find('section', class_='job-content')
-            if section:
-                description_parent = section.find('div', class_='main-text')
-                if description_parent:
-                    for child in description_parent.children:
+            json_dict = json.loads(job_details_html)
+
+            if "response" in json_dict and "docs" in json_dict["response"] and len(json_dict["response"]["docs"]) == 1:
+                if "kuvaustekstiHTML" in json_dict["response"]["docs"][0]:
+                    description_raw = json_dict["response"]["docs"][0]["kuvaustekstiHTML"]
+                    job_details_soup = BeautifulSoup(description_raw, 'html.parser')
+                    for child in job_details_soup.children:
                         if isinstance(child, Tag):
                             Scraper.clean_attrs(child)
-                            description += str(child)
+                            if child.get_text().strip() != "":
+                                description += str(child)
+                        else:
+                            new_tag = job_details_soup.new_tag('p')
+                            new_tag.string = child
+                            description += str(new_tag)
 
-        return description
+                if "viimeinenHakupaivamaara" in json_dict["response"]["docs"][0]:
+                    end_date_raw = json_dict["response"]["docs"][0]["viimeinenHakupaivamaara"]
+                    try:
+                        end_date = parser.parse(end_date_raw).strftime('%Y-%m-%d')
+                    except (ValueError, TypeError):
+                        log_support.set_invalid_location(self.client_name, title)
+
+        return description, end_date
+
+    def get_location(self, item, title):
+        location = None
+        locator = CityLocator()
+
+        title = item.get_text().strip()
+
+        locations = locator.get_finnish_cities(title)
+        if locations:
+            location = ", ".join(locations)
+
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
 
     def get_job_info(self, url, title):
+        # This method is no longer called by any function. It could be removed if all jobs are pointing to paikat.te-palvelut.fi
         location = end_date = None
 
         job_details_html = request_support.simple_get(url)
