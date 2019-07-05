@@ -920,13 +920,7 @@ class Abb(Scraper):
                     log_support.set_invalid_location(self.client_name, title)
                     location = None
 
-                if "ValidThrough" in item and item["ValidThrough"] and item["ValidThrough"] != "":
-                    end_date = self.get_end_date(item["ValidThrough"])
-                    if not end_date:
-                        log_support.set_invalid_dates(self.client_name, title)
-                else:
-                    log_support.set_invalid_dates(self.client_name, title)
-                    end_date = None
+                end_date = self.get_end_date(description, title)
 
                 if "FunctionalArea" in item and "Name" in item["FunctionalArea"] and item["FunctionalArea"]["Name"] and item["FunctionalArea"]["Name"] != "":
                     job_type = item["FunctionalArea"]["Name"]
@@ -958,34 +952,29 @@ class Abb(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            task_item = soup.find("h3", string='Tasks:')
-            if task_item:
-                for tag in task_item.next_siblings:
-                    # remove tag attributes
-                    tag.attrs = {}
-                    if tag.name and tag.name != "p" and tag.name != "h3":
-                        break
-                    if tag != "\n":
-                        # remove <span> from paragraphs
-                        for match in tag.find_all('span'):
-                            match.unwrap()
-                        description += str(tag)
+            containers = soup.find_all('div', class_='oneabb-external-careers-Typography')
+            for container in containers:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.name == "h2":
+                            child.name = "h3"
+
+                        if child.get_text().strip() != "":
+                            child.string = child.get_text().replace("\n", " ").strip()
+                            description += str(child)
 
         return description
 
-    @staticmethod
-    def get_end_date(date_field):
-        # Formatted as "/Date(1544313600000)/"
-        date_string = None
-        epoch_splited = date_field.split("(")
-        if len(epoch_splited) == 2:
-            epoch_splited_2 = epoch_splited[1].split(")")
-            if len(epoch_splited_2) == 2:
-                epoch = epoch_splited_2[0]
-                seconds = int(epoch[:-3])
-                date_string = time.strftime('%Y-%m-%d', time.gmtime(seconds))
+    def get_end_date(self, description, title):
+        pattern = r"(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\s+\d{1,2},?\s+\d{4}"
 
-        return date_string
+        end_date = self.get_end_date_by_regex(pattern, description)
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
 
 
 class Qvik(Scraper):
