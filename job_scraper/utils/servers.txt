@@ -20,7 +20,7 @@ Rightware - https://www.rightware.com/careers/
 Rovio - https://www.rovio.com/careers?field_location_channel_tid=722
 Futurice - https://www.futurice.com/careers/
 Supercell - https://supercell.com/en/careers/open-positions/
-Nokia - https://careers.nokia.com/jobs/search/15343452
+Nokia - https://careers.nokia.com/jobs/search/18860074
 Verto Analytics - https://www.vertoanalytics.com/careers/
 Efecte Oyj - https://careers.efecte.com/api/v2/jobs/?filters[company_id]=49719&filters[statuses][]=active&filters[hidden]=0&filters[ignore_auth]=1
 Nets - https://www.nets.eu/careers/Pages/Job-openings.aspx
@@ -159,3 +159,20 @@ Tomorrow Tech - https://tomorrow.fi/jobs.html
 Vauraus - https://vauraus.fi/careers/
 Terveystalo - https://www.terveystalo.com/Handlers/MepcoJobs.ashx?Category=3
 Nixu - https://nixu.verismohr.com/jobs#
+Zervant - https://www.recright.com/api/v1/careers/zervant
+Helvar - http://ext.workbuster.se/index.php?site=Helvar&lng=2&lngForIndex=2&domainUrl=http://www.helvar.com&topurl=http://www.helvar.com/en/company/helvar-careers/
+VTT - https://jobs.vtt.fi/vacancies
+Metsa - https://metsagroup.wd3.myworkdayjobs.com/MetsaGroup_Careers/?clientRequestID=c518910d849b4418b286cec48a242e36
+M-Files - https://www.m-files.com/en/open-positions-recruiting
+U-Blox - https://openpositions.u-blox.com/summary.html
+Ubisecure - https://www.ubisecure.com/about/careers/
+Fluent - https://www.fluentprogress.fi/en/careers/vacancies
+Nortal - https://api.lever.co/v0/postings/nortal?mode=json
+UL - https://benchmarks.ul.com/careers
+Fira - https://www.fira.fi/en/join-us/
+GE - https://jobs.gecareers.com/global/en/ge-healthcare-jobs
+IQVIA - https://jobs.iqvia.com/en-US/search?keywords=&location=Finland
+Intel - https://jobs.intel.com/ListJobs/All/Search/country/fi/
+Oracle - https://oracle.taleo.net/careersection/2/jobsearch.ftl?lang=en
+Documill - https://www.documill.com/jobs/
+Elektrobit - https://jobs.elektrobit.com/job-offers.html?start=0
