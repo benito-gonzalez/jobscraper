@@ -8693,7 +8693,7 @@ class Forenom(Scraper):
                 for item in container.find_all('a'):
                     title, description_url, description, end_date, is_valid = self.get_mandatory_fields(item)
                     if is_valid and self.is_valid_job(title, description_url, description):
-                        location = self.get_location(item, title)
+                        location = self.get_location(item)
 
                         job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                         jobs.append(job)
