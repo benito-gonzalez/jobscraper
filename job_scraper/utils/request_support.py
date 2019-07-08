@@ -31,14 +31,17 @@ def simple_get(url, accept_json=False):
             raise HTTPError("Invalid response from " + url + " HTTP %d" % resp.status_code)
 
 
-def simple_post(url, body=None):
+def simple_post(url, body=None, header=None):
     """
     Attempts to get the content at `url` by making an HTTP GET request.
     If the content-type of response is some kind of HTML/XML, return the
     text content, otherwise return None.
     """
     log_support.request_url(url)
-    headers_req = {'User-Agent': 'Mozilla/5.0'}
+    if header:
+        headers_req = header
+    else:
+        headers_req = {'User-Agent': 'Mozilla/5.0'}
 
     with closing(post(url, headers=headers_req, json=body, verify=False,  timeout=60)) as resp:
         if not settings.DEBUG:
