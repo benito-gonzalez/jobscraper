@@ -20,7 +20,7 @@ Rightware - https://www.rightware.com/careers/
 Rovio - https://www.rovio.com/careers?field_location_channel_tid=722
 Futurice - https://www.futurice.com/careers/
 Supercell - https://supercell.com/en/careers/open-positions/
-Nokia - https://careers.nokia.com/jobs/search/15343452
+Nokia - https://careers.nokia.com/jobs/search/18860074
 Verto Analytics - https://www.vertoanalytics.com/careers/
 Efecte Oyj - https://careers.efecte.com/api/v2/jobs/?filters[company_id]=49719&filters[statuses][]=active&filters[hidden]=0&filters[ignore_auth]=1
 Nets - https://www.nets.eu/careers/Pages/Job-openings.aspx

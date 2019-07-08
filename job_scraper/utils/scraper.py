@@ -2062,12 +2062,13 @@ class Nokia(Scraper):
         last_page = False
         while not last_page:
             for job in soup.find_all('div', {'class': 'job_list_row'}):
-                title, description_url, description, is_finnish = self.get_mandatory_fields(job)
-                if is_finnish and self.is_valid_job(title, description_url, description):
-                    location = self.get_location(job, title)
+                if self.is_finnish(job):
+                    title, description_url, description = self.get_mandatory_fields(job)
+                    if self.is_valid_job(title, description_url, description):
+                        location = self.get_location(job, title)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                    jobs.append(job)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
 
             if self.is_last_page(soup):
                 last_page = True
@@ -2085,10 +2086,21 @@ class Nokia(Scraper):
 
         return jobs
 
+    def is_finnish(self, item):
+        # It will skip those jobs which are not located in Finland. Due to that, if we can not get a job location, we will not store it. It needs to raise an error in that case.
+        finnish = False
+        location_tag = item.find("span", {"class": "location"})
+
+        if location_tag:
+            finnish = "Finland" in location_tag.get_text()
+        else:
+            log_support.set_error_message(self.client_name, "Could not filter by jobs located in Finland")
+
+        return finnish
+
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
-        finnish = False
 
         title_tag = item.find('a')
         if title_tag:
@@ -2097,9 +2109,7 @@ class Nokia(Scraper):
             if description_url:
                 description = self.get_description(description_url)
 
-            finnish = self.is_finnish(item, title)
-
-        return title, description_url, description, finnish
+        return title, description_url, description
 
     @staticmethod
     def get_description(url):
@@ -2119,22 +2129,6 @@ class Nokia(Scraper):
                         description += str(block)
 
         return description
-
-    def is_finnish(self, item, title):
-        # It will skip those jobs which are not located in Finland. Due to that, if we can not get a job location, we will not store it. It needs to raise an error in that case.
-        finnish = False
-        location_tag = item.find("span", {"class": "location"})
-        locator = CityLocator()
-
-        if location_tag:
-            full_location = location_tag.text.strip()
-            cities = locator.get_finnish_cities(full_location)
-            if cities:
-                finnish = True
-        else:
-            log_support.set_error_message(self.client_name, "Could not get location from job " + title)
-
-        return finnish
 
     def get_location(self, item, title):
         location = None
@@ -5925,14 +5919,15 @@ class Bittium(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
 
-        for item in soup.find_all('div', class_="openjob"):
-            title, description_url, description = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
-                location = self.get_location(item, title)
-                end_date = self.get_end_date(description_url, title)
+        containers = soup.find_all('div', class_="contents")
+        for container in containers:
+            for item in container.find_all('div'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location, end_date = self.get_job_details(description_url, title)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
-                jobs.append(job)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
 
         return jobs
 
@@ -5959,48 +5954,52 @@ class Bittium(Scraper):
             job_details_soup = BeautifulSoup(job_details_html, 'html5lib')
 
             # Two blocks, the first one contains nothing.
-            block = job_details_soup.find('div', {'id': 'left70'})
+            block = job_details_soup.find('div', class_='jobs_body')
             if block:
                 for child in block.children:
-                    Scraper.clean_attrs(child)
                     if isinstance(child, Tag):
-                        description += str(child).strip()
+                        if child.name == "a" and child.has_attr('class') and "like_button" in child['class']:
+                            break
+
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child).strip()
 
         return description
 
-    def get_location(self, item, title):
-        location = None
-
-        location_tag = item.find_previous_sibling('h3')
-        if location_tag:
-            location = location_tag.get_text()
-
-        if not location:
-            log_support.set_invalid_location(self.client_name, title)
-
-        return location
-
-    def get_end_date(self, url, title):
-        end_date = None
+    def get_job_details(self, url, title):
+        location = end_date = None
 
         job_details_html = request_support.simple_get(url)
         if job_details_html:
-            job_details_soup = BeautifulSoup(job_details_html, 'html5lib')
+            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
 
-            date_label = job_details_soup.find(lambda tag: tag.name == "b" and "Last apply date:" in tag.text)
-            if date_label:
-                date_tag = date_label.next_sibling
-                if date_tag:
-                    try:
-                        date_raw = date_tag.strip()
-                        end_date = parser.parse(date_raw, dayfirst=True).strftime('%Y-%m-%d')
-                    except (ValueError, TypeError) as e:
-                        log_support.set_error_message(self.client_name, "Invalid date string " + str(e))
+            job_details = job_details_soup.find('div', class_='jobs_details')
+            if job_details:
+                date_label = job_details.find(lambda tag: tag.name == "label" and "Last apply date:" in tag.text)
+                location_label = job_details.find(lambda tag: tag.name == "label" and "Location:" in tag.text)
+
+                if date_label:
+                    date_tag = date_label.next_sibling
+                    if date_tag:
+                        try:
+                            date_raw = date_tag.strip()
+                            end_date = parser.parse(date_raw, dayfirst=True).strftime('%Y-%m-%d')
+                        except (ValueError, TypeError) as e:
+                            log_support.set_error_message(self.client_name, "Invalid date string " + str(e))
+
+                if location_label:
+                    location_tag = location_label.next_sibling
+                    if location_tag:
+                        location = location_tag.strip()
 
         if not end_date:
             log_support.set_invalid_dates(self.client_name, title)
 
-        return end_date
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location, end_date
 
 
 class Accenture(Scraper):
