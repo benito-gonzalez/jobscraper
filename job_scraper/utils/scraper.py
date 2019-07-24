@@ -2309,13 +2309,14 @@ class Nets(Scraper):
         date_string = None
         if "ExpirationDate" in item:
             date_field = item["ExpirationDate"]
-            epoch_splited = date_field.split("(")
-            if len(epoch_splited) == 2:
-                epoch_splited_2 = epoch_splited[1].split(")")
-                if len(epoch_splited_2) == 2:
-                    epoch = epoch_splited_2[0]
-                    seconds = int(epoch[:-3])
-                    date_string = time.strftime('%Y-%m-%d', time.gmtime(seconds))
+            if date_field:
+                epoch_splited = date_field.split("(")
+                if len(epoch_splited) == 2:
+                    epoch_splited_2 = epoch_splited[1].split(")")
+                    if len(epoch_splited_2) == 2:
+                        epoch = epoch_splited_2[0]
+                        seconds = int(epoch[:-3])
+                        date_string = time.strftime('%Y-%m-%d', time.gmtime(seconds))
 
         if not date_string:
             log_support.set_invalid_dates(self.client_name, title)
