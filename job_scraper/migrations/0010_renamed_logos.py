@@ -13,7 +13,6 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             """
             UPDATE 'Companies' SET logo='blueprint_genetics.png' WHERE logo like 'blueprint.png';
-            UPDATE 'Companies' SET logo='crf_health.png' WHERE logo like 'crf.png';
             UPDATE 'Companies' SET logo='cybercom_finland.png' WHERE logo like 'cybercom.png';
             UPDATE 'Companies' SET logo='danske_bank.png' WHERE logo like 'danske.png';
             UPDATE 'Companies' SET logo='digital_goodie.png' WHERE logo like 'digital.png';

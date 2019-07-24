@@ -76,8 +76,8 @@ def generate_instance_from_client(client_name, url):
         return Nightingale(client_name, url)
     if client_name.lower() == "sandvik":
         return Sandvik(client_name, url)
-    if client_name.lower() == "crf health":
-        return Crf(client_name, url)
+    if client_name.lower() == "signant health":
+        return SignantHealth(client_name, url)
     if client_name.lower() == "op financial group":
         return Op(client_name, url)
     if client_name.lower() == "dream broker":
@@ -2764,7 +2764,7 @@ class Sandvik(Scraper):
         return end_date
 
 
-class Crf(Scraper):
+class SignantHealth(Scraper):
 
     def extract_info(self, html):
         log_support.log_extract_info(self.client_name)
