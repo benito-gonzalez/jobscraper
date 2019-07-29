@@ -176,3 +176,8 @@ Intel - https://jobs.intel.com/ListJobs/All/Search/country/fi/
 Oracle - https://oracle.taleo.net/careersection/2/jobsearch.ftl?lang=en
 Documill - https://www.documill.com/jobs/
 Elektrobit - https://jobs.elektrobit.com/job-offers.html?start=0
+Vainu.io - https://careers.vainu.io/
+Dear Lucy - https://www.dearlucy.co/en/company/#section/careers
+Electronic Arts - https://www.ea.com/jobs-feed/filter/city=Helsinki
+Sniffie - https://careers.sniffie.io/
+Wolt - https://api.lever.co/v0/postings/wolt?mode=json
