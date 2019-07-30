@@ -13921,7 +13921,7 @@ class ElectronicArts(Scraper):
             title = item["title"]
             if "opportunityId" in item:
                 job_id = item["opportunityId"]
-                description_url = "https://ea.gr8people.com/index.gp?opportunityid=" + job_id
+                description_url = "https://ea.gr8people.com/index.gp?method=cappportal.showJob&opportunityid=" + job_id
                 description = self.get_description(description_url)
 
         return title, description_url, description
