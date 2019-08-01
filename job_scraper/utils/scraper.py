@@ -5724,14 +5724,23 @@ class HatchEntertainmentOy(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            block = job_details_soup.find('div', class_='hatch-sp-content')
-            if block:
-                for child in block.children:
-                    if isinstance(child, Tag) and child.has_attr('class') and "career-perks" in child['class']:
-                        break
+            containers = job_details_soup.find_all('div', class_=['canvas-job-description', 'canvas-skills'])
+            for container in containers:
+                for row in container.find_all('div', class_='row'):
+                    # Skips button apply link
+                    if row.find('a', class_='btn'):
+                        continue
 
-                    Scraper.clean_attrs(child)
-                    description += str(child)
+                    for child in row.children:
+                        if isinstance(child, Tag):
+                            # Skips hidden texts
+                            if child.find('span', class_='placeholder hidden') and child.find('span', class_='placeholder hidden').parent.name == "h2":
+                                child.find('span', class_='placeholder hidden').parent.decompose()
+
+                            if child.name == "h2":
+                                child.name = "h3"
+                            Scraper.clean_attrs(child)
+                            description += str(child)
 
         return description
 
@@ -7215,8 +7224,10 @@ class Supermetrics(Scraper):
         open_positions_tag = soup.find('div', {'id': 'open-positions'})
         if open_positions_tag:
             for item in open_positions_tag.next_siblings:
-                if item.name == "div" and item.has_attr('id'):
+                # last elements from siblings - no jobs
+                if item.name == "div" and item.get('id') in ["sm-trial", "sm-footer"]:
                     break
+
                 if item.name == "div" and item.has_attr('class') and "et_pb_section" in item['class']:
                     title, description_url, description = self.get_mandatory_fields(item)
                     if self.is_valid_job(title, description_url, description):
