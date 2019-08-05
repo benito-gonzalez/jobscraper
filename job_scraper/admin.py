@@ -20,7 +20,7 @@ class CompanyAdmin(admin.ModelAdmin):
 
 class JobAdmin(admin.ModelAdmin):
     search_fields = ('title', 'location', 'company__name')
-    list_display = ('title', 'company', 'location', 'end_date', 'is_active', 'is_new', 'created_at', 'updated_at')
+    list_display = ('title', 'company', 'end_date', 'is_active', 'is_new', 'created_at', 'updated_at')
     date_hierarchy = "created_at"
     ordering = ('-updated_at',)
 

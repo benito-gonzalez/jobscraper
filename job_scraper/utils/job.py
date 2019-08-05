@@ -14,5 +14,3 @@ class ScrapedJob:
 
     def __str__(self):
         return self.title + "\t at " + self.company_name
-
-
