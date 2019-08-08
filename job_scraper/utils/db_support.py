@@ -12,8 +12,10 @@ django.setup()
 
 from job_scraper.models import Company  # noqa: E402
 from job_scraper.models import Job  # noqa: E402
+from job_scraper.models import City  # noqa: E402
 from job_scraper.models import Tag  # noqa: E402
 from job_scraper.models import JobTagMap  # noqa: E402
+from job_scraper.models import JobCityMap  # noqa: E402
 from job_scraper.utils import log_support  # noqa: E402
 
 
@@ -38,7 +40,6 @@ def get_company_by_name(name):
 def save_to_db(job_offer, company):
     job = Job.objects.create(title=job_offer.title,
                              description=job_offer.description,
-                             location=job_offer.location,
                              salary=job_offer.salary,
                              pub_date=job_offer.pub_date,
                              end_date=job_offer.end_date,
@@ -72,7 +73,42 @@ def get_job_from_db(scraped_job, company):
     :rtype job_scraper.models.Job
     """
     try:
-        job_db = Job.objects.get(title=scraped_job.title, company=company, location=scraped_job.location)
+        # Once we have filled the whole JobCityMap we run this code
+        #job_db = None
+        #matched_jobs = Job.objects.filter(title=scraped_job.title, company=company)
+        #for record in matched_jobs:
+        #    # if both locations are empty
+        #    record_cities = record.cities.all()
+        #    if not record_cities and not scraped_job.cities:
+        #        job_db = record
+        #        break
+
+        #    if record_cities and scraped_job.cities:
+        #        if set(record_cities) == set(scraped_job.cities):
+        #            job_db = record
+        #            break
+
+        # While JobCityMap is not filled run this:
+        job_db = None
+        jobs_db = Job.objects.filter(title=scraped_job.title, company=company)
+        if len(jobs_db) == 1:
+            if not jobs_db[0].location and not scraped_job.cities:
+                job_db = jobs_db[0]
+                return job_db
+
+        for record in jobs_db:
+            record_location_list = scraped_job_location_list = swedish_names_list = []
+            if record.location:
+                record_location_list = record.location.split(", ")
+            if scraped_job.cities:
+                scraped_job_location_list = [c.name for c in scraped_job.cities]
+                swedish_names_list = [c.swedish_name for c in scraped_job.cities]
+                swedish_names_list = [x for x in swedish_names_list if x is not None]
+
+            if set(record_location_list) == set(scraped_job_location_list) or (swedish_names_list and set(record_location_list) == set(swedish_names_list)):
+                job_db = record
+                return job_db
+
     except Job.DoesNotExist:
         job_db = None
     except Job.MultipleObjectsReturned:
@@ -160,7 +196,7 @@ def get_tags():
     return Tag.objects.all()
 
 
-def map_job_tag(job, tag, num_times):
+def add_job_tag(job, tag, num_times):
     entry = JobTagMap(job=job, tag=tag, num_times=num_times)
     entry.save()
 
@@ -175,3 +211,57 @@ def add_keyword(keyword):
     except IntegrityError:
         # If a tag with the same name already exists, we pass
         pass
+
+
+def get_cities():
+    """
+    Get all cities from DB
+    :return: QuerySet<City> with the list of cities
+    """
+    return City.objects.all()
+
+
+def get_location_by_name(location_name):
+    """
+    Get the location by a name
+    :return: Model.City if the job exists in DB. None otherwise.
+    """
+    try:
+        city_db = City.objects.get(name=location_name)
+    except City.DoesNotExist:
+        city_db = None
+
+    return city_db
+
+
+def is_job_location_mapped(job, city):
+    return JobCityMap.objects.filter(job=job, city=city).exists()
+
+
+def add_job_location(job, city):
+    entry = JobCityMap(job=job, city=city)
+    entry.save()
+
+
+def get_job_city_map_by_job(job):
+    """
+    Get a list of job city map.
+    :return: QuerySet<Job> with the list of JobCityMap
+    """
+    return JobCityMap.objects.filter(job=job)
+
+
+def get_job_cities_by_job(job):
+    """
+    Get a list of cities.
+    :return: QuerySet<City> with the list of City
+    """
+    return City.objects.filter(job=job)
+
+
+def delete_job_city_record(job_city):
+    """
+    :param job_city: Record to be removed
+    :return:
+    """
+    job_city.delete()

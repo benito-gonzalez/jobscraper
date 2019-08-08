@@ -211,12 +211,13 @@ class Job(models.Model):
 
     @property
     def get_locations(self):
-        cities_list = []
-        job_tags_map = self.cities.through.objects.filter(job_id=self)
-        for i, item in enumerate(job_tags_map):
-            cities_list.append(item.city.name)
+        cities = City.objects.filter(job=self)
 
-        return cities_list
+        cities_str = ", ".join(c.name for c in cities)
+        if cities_str == "":
+            cities_str = None
+
+        return cities_str
 
     class Meta:
         db_table = "Jobs"
