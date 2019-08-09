@@ -66,7 +66,7 @@ class IndexView(generic.ListView):
     def filter_by_location(location_query):
         # Gets those active jobs for a specific location when the end_date is either greater than today or end_date is None
         today = datetime.today()
-        return Q(is_active=True, end_date__gte=today, location__icontains=location_query) | Q(is_active=True, end_date=None, location__icontains=location_query)
+        return Q(is_active=True, end_date__gte=today, cities__name__iexact=location_query) | Q(is_active=True, end_date=None, cities__name__iexact=location_query)
 
     @staticmethod
     def filter_by_active():
