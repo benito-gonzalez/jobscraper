@@ -72,49 +72,19 @@ def get_job_from_db(scraped_job, company):
     :return: Model.Job if the job exists in DB. None otherwise.
     :rtype job_scraper.models.Job
     """
-    try:
-        # Once we have filled the whole JobCityMap we run this code
-        job_db = None
-        matched_jobs = Job.objects.filter(title=scraped_job.title, company=company)
-        for record in matched_jobs:
-            # if both locations are empty
-            record_cities = record.cities.all()
-            if not record_cities and not scraped_job.cities:
+    job_db = None
+    matched_jobs = Job.objects.filter(title=scraped_job.title, company=company)
+    for record in matched_jobs:
+        # if both locations are empty
+        record_cities = record.cities.all()
+        if not record_cities and not scraped_job.cities:
+            job_db = record
+            break
+
+        if record_cities and scraped_job.cities:
+            if set(record_cities) == set(scraped_job.cities):
                 job_db = record
                 break
-
-            if record_cities and scraped_job.cities:
-                if set(record_cities) == set(scraped_job.cities):
-                    job_db = record
-                    break
-
-        # While JobCityMap is not filled run this:
-        #job_db = None
-        #jobs_db = Job.objects.filter(title=scraped_job.title, company=company)
-        #if len(jobs_db) == 1:
-        #    if not jobs_db[0].location and not scraped_job.cities:
-        #        job_db = jobs_db[0]
-        #        return job_db
-
-        #for record in jobs_db:
-        #    record_location_list = scraped_job_location_list = swedish_names_list = []
-        #    if record.location:
-        #        record_location_list = record.location.split(", ")
-        #    if scraped_job.cities:
-        #        scraped_job_location_list = [c.name for c in scraped_job.cities]
-        #        swedish_names_list = [c.swedish_name for c in scraped_job.cities]
-        #        swedish_names_list = [x for x in swedish_names_list if x is not None]
-
-        #    if set(record_location_list) == set(scraped_job_location_list) or (swedish_names_list and set(record_location_list) == set(swedish_names_list)):
-        #        job_db = record
-        #        return job_db
-
-    except Job.DoesNotExist:
-        job_db = None
-    except Job.MultipleObjectsReturned:
-        # This exception must never be thrown
-        job_db = None
-        log_support.set_multiple_duplicated_jobs(scraped_job.title, company, scraped_job.location)
 
     return job_db
 

@@ -56,7 +56,6 @@ class Job(models.Model):
     is_active = models.BooleanField(default=False)
     is_new = models.BooleanField(default=True)
     description = models.CharField(max_length=5000)
-    location = models.CharField(max_length=100, blank=True, null=True)
     salary = models.FloatField(blank=True, default=None, null=True)
     pub_date = models.DateField(blank=True, null=True, default='')
     end_date = models.DateField(blank=True, null=True, default='')
