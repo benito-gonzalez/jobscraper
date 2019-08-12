@@ -93,10 +93,10 @@
                                     </div>
                                 {% endif %}
 
-                                {% if job.location %}
+                                {% if job.get_locations %}
                                     <div class="col-12 col-lg-auto mt-1 mt-lg-0 ">
                                         <img src="{% static 'images/location.png' %}" width="18px" height="auto" alt="Location">
-                                        <span>{{ job.location }}</span>
+                                        <span>{{ job.get_locations }}</span>
                                     </div>
                                 {% endif %}
                             </div>

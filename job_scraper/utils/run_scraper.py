@@ -2,6 +2,7 @@
 import os
 import random
 import re
+from collections import Counter
 
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
@@ -35,7 +36,13 @@ def read_server_urls():
 
 
 def are_same_jobs(db_job, scraped_job):
-    return db_job.title == scraped_job.title and db_job.company.name == scraped_job.company_name and db_job.location == scraped_job.location
+    if db_job.title == scraped_job.title and db_job.company.name == scraped_job.company_name:
+        # check same location only when title and company are the same
+        cities = scraped_job.cities
+        cities_db = db_support.get_job_cities_by_job(db_job)
+        return Counter(cities) == Counter(cities_db)
+
+    return False
 
 
 def update_active_jobs(scraped_jobs, failed_companies):
@@ -65,30 +72,26 @@ def enrich_location(title, job_location):
     Jobs which are located out of Finland are marked as invalid. If job location does not exist and title contains a Finnish city, job location is overwritten
     :param title: Job title
     :param job_location: Current job location retrieved by the scraper
-    :return: New location and if it is valid.
+    :return: If location is valid (Finnish) returns an array of model.City and valid_location=True. If is not valid it return a string with the location and valid_location=False
     """
-    location = None
 
     locator = CityLocator()
     if locator.is_foreign_job_location(job_location) or locator.is_foreign_job_title(title):
-        location = job_location
         valid_location = False
+        return valid_location, job_location
     else:
         valid_location = True
 
         if locator.has_finnish_cities(job_location):
             cities = locator.get_finnish_cities(job_location)
             # If location is "Finland" and the title has a specific Finnish city, that city must be used.
-            if len(cities) == 1 and "Finland" in cities:
+            if len(cities) == 1 and cities[0].name == "Finland":
                 if locator.has_finnish_cities(title):
                     cities = locator.get_finnish_cities(title)
         else:
             cities = locator.get_finnish_cities(title)
 
-        if cities:
-            location = ", ".join(cities)
-
-    return location, valid_location
+        return valid_location, cities
 
 
 def find_whole_world(tag, description):
@@ -108,7 +111,26 @@ def map_tag_job_descriptions(job):
         if not mapped:
             matches = find_whole_world(tag.name, job.description)
             if matches:
-                db_support.map_job_tag(job, tag, len(matches))
+                db_support.add_job_tag(job, tag, len(matches))
+
+
+def map_job_location(job, cities):
+    for city in cities:
+        # If job and city have been already mapped skip
+        mapped = db_support.is_job_location_mapped(job, city)
+        if not mapped:
+            db_support.add_job_location(job, city)
+
+    # If the job no longer has one of its previous cities, that city-job must be removed from JobCityMap
+    job_city_map = db_support.get_job_city_map_by_job(job)
+    for job_city in job_city_map:
+        found = False
+        for city in cities:
+            if city == job_city.city:
+                found = True
+
+        if not found:
+            db_support.delete_job_city_record(job_city)
 
 
 def main():
@@ -153,7 +175,7 @@ def main():
     for scraped_job in scraped_jobs:
         company = db_support.get_company_by_name(scraped_job.company_name)
         if company:
-            scraped_job.location, valid_location = enrich_location(scraped_job.title, scraped_job.location)
+            valid_location, scraped_job.cities = enrich_location(scraped_job.title, scraped_job.location)
             if valid_location:
                 job_db = db_support.get_job_from_db(scraped_job, company)
 
@@ -171,9 +193,10 @@ def main():
 
                 # Map tags with job description
                 map_tag_job_descriptions(job_db)
+                map_job_location(job_db, scraped_job.cities)
 
             else:
-                log_support.skipping_job_due_location(scraped_job.title, scraped_job.location, scraped_job.company_name)
+                log_support.skipping_job_due_location(scraped_job.title, scraped_job.cities, scraped_job.company_name)
         else:
             log_support.set_company_not_found(scraped_job.company_name)
 

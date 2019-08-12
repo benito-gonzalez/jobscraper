@@ -4,6 +4,29 @@ import re
 import time
 
 
+class Region(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "Regions"
+
+
+class City(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+    swedish_name = models.CharField(max_length=64, blank=True, default=None, null=True)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "Cities"
+        verbose_name_plural = "cities"
+
+
 class Company(models.Model):
     name = models.CharField(max_length=200)
     logo = models.ImageField()
@@ -33,7 +56,6 @@ class Job(models.Model):
     is_active = models.BooleanField(default=False)
     is_new = models.BooleanField(default=True)
     description = models.CharField(max_length=5000)
-    location = models.CharField(max_length=100, blank=True, null=True)
     salary = models.FloatField(blank=True, default=None, null=True)
     pub_date = models.DateField(blank=True, null=True, default='')
     end_date = models.DateField(blank=True, null=True, default='')
@@ -43,6 +65,7 @@ class Job(models.Model):
     created_at = models.DateTimeField(default=timezone.now)  # UTC time by default
     updated_at = models.DateTimeField(default=timezone.now)  # UTC time by default
     tags = models.ManyToManyField('Tag', through='JobTagMap')
+    cities = models.ManyToManyField('City', through='JobCityMap')
 
     def __str__(self):
         return self.title
@@ -176,15 +199,38 @@ class Job(models.Model):
     def get_meta_keywords(self):
         meta_keywords = self.title
 
-        if self.location:
-            meta_keywords += ", Jobs in {0}, Avoimet työpaikat {1}, ".format(self.location, self.location)
+        cities = self.cities.through.objects.filter(job_id=self)
+        if cities:
+            for _, item in enumerate(cities):
+                meta_keywords += ", Jobs in {0}, Avoimet työpaikat {1}, ".format(item.city.name, item.city.name)
         else:
             meta_keywords += ", Jobs in Finland, Avoimet työpaikat, "
 
         return meta_keywords
 
+    @property
+    def get_locations(self):
+        cities = City.objects.filter(job=self)
+
+        cities_str = ", ".join(c.name for c in cities)
+        if cities_str == "":
+            cities_str = None
+
+        return cities_str
+
     class Meta:
         db_table = "Jobs"
+
+
+class JobCityMap(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "JobCityMap"
+
+    def __str__(self):
+        return "'" + self.job.title + "' located in " + self.city.name
 
 
 class Tag(models.Model):

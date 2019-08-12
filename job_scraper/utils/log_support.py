@@ -103,12 +103,6 @@ def set_invalid_description_url(company, title):
     f.close()
 
 
-def set_multiple_duplicated_jobs(title, company, location):
-    f = open(SCRAPERLOG, 'a')
-    f.write(get_formatted_date() + "ERROR. Multiple duplicated jobs in DB with fields title '{0}', company '{1}', location '{2}'".format(title, company, location) + "\n")
-    f.close()
-
-
 def set_completed_scraper():
     f = open(SCRAPERLOG, 'a')
     f.write(get_formatted_date() + "Finished scraper \n")

@@ -2149,7 +2149,7 @@ class Nokia(Scraper):
             full_location = location_tag.text.strip()
             cities = locator.get_finnish_cities(full_location)
             if cities:
-                location = ", ".join(cities)
+                location = ", ".join(c.name for c in cities)
         if not location or location == "":
             log_support.set_invalid_location(self.client_name, title)
 
@@ -3720,7 +3720,7 @@ class Sofigate(Scraper):
         locator = CityLocator()
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
@@ -3795,7 +3795,7 @@ class BlueMeteorite(Scraper):
         locator = CityLocator()
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
@@ -3874,7 +3874,7 @@ class Sulava(Scraper):
         locator = CityLocator()
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
@@ -4020,7 +4020,7 @@ class Softability(Scraper):
         locator = CityLocator()
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
@@ -4112,7 +4112,7 @@ class Fleetonomy(Scraper):
         locator = CityLocator()
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
@@ -4188,7 +4188,7 @@ class Ubisoft(Scraper):
         locator = CityLocator()
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
@@ -5327,7 +5327,7 @@ class BonGames(Scraper):
         locator = CityLocator()
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
@@ -5539,7 +5539,7 @@ class FuturePlay(Scraper):
         locator = CityLocator()
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
@@ -8029,7 +8029,7 @@ class Solteq(Scraper):
         :param description: job description
         :return: Finnish cities as a String
         """
-        location_list = None
+        cities = None
         locator = CityLocator()
 
         location_tag = item.find('span', 'meta')
@@ -8037,14 +8037,14 @@ class Solteq(Scraper):
             location_raw = location_tag.get_text()
 
             if locator.has_finnish_cities(location_raw):
-                location_list = locator.get_finnish_cities(location_raw)
+                cities = locator.get_finnish_cities(location_raw)
 
-        if location_list:
-            location = ", ".join(location_list)
+        if cities:
+            location = ", ".join(c.name for c in cities)
         else:
             cities = locator.get_finnish_cities(description)
             if cities:
-                location = ", ".join(cities)
+                location = ", ".join(c.name for c in cities)
             else:
                 location = None
 
@@ -10641,7 +10641,7 @@ class InnokasMedical(Scraper):
 
         cities = locator.get_finnish_cities(description)
         if cities:
-            location = ", ".join(cities)
+            location = ", ".join(c.name for c in cities)
         else:
             location = None
 
