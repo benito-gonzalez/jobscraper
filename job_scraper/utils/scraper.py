@@ -394,6 +394,8 @@ def generate_instance_from_client(client_name, url):
         return DazzleRocks(client_name, url)
     if client_name == "Codemate":
         return Codemate(client_name, url)
+    if client_name == "Kamp Collection hotels":
+        return KampCollection(client_name, url)
     else:
         return None
 
@@ -4342,7 +4344,7 @@ class Paf(Scraper):
             location_text = location_tag.text
             location_split = location_text.split(":")
             if len(location_split) == 2:
-                location = location_split[1]
+                location = location_split[1].strip()
 
         if not location:
             log_support.set_invalid_location(self.client_name, title)
@@ -14460,10 +14462,6 @@ class NipromecGroup(Scraper):
     def get_end_date(self, description, title):
         pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
         end_date = self.get_end_date_by_regex(pattern, description)
-
-        if not end_date:
-            log_support.set_invalid_dates(self.client_name, title)
-
         return end_date
 
 
@@ -14653,3 +14651,62 @@ class Codemate(Scraper):
             location = ", ".join(c.name for c in cities)
 
         return location, title
+
+
+class KampCollection(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='text-default-format')
+        if container:
+            for item in container.find_all('a'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Helsinki"  # all jobs are located in Helsinki area
+                    end_date = self.get_end_date(item)
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        description = ""
+
+        title = item.get_text().split("|")[0].strip()
+        description_url = item.get('href')
+        if description_url:
+            description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', class_='text-default-format')
+            if container:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+    def get_end_date(self, item):
+        pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
+
+        full_title = item.get_text()
+        end_date = self.get_end_date_by_regex(pattern, full_title)
+
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, full_title)
+
+        return end_date
