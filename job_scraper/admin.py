@@ -1,11 +1,23 @@
 from django.contrib import admin
 
+from .models import City
+from .models import Region
 from .models import Job
 from .models import Company
 from .models import Tag
 from .models import JobTagMap
 from .models import ClickCounter
 from .models import UserSearches
+
+
+class RegionAdmin(admin.ModelAdmin):
+    search_fields = (['name'])
+    list_display = ('name',)
+
+
+class CityAdmin(admin.ModelAdmin):
+    search_fields = (['name'])
+    list_display = ('name', 'region')
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -44,6 +56,8 @@ class UserSearchesAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
+admin.site.register(Region, RegionAdmin)
+admin.site.register(City, CityAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Job, JobAdmin)
 admin.site.register(ClickCounter, ClickCounterAdmin)

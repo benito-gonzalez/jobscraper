@@ -181,3 +181,12 @@ Dear Lucy - https://www.dearlucy.co/en/company/#section/careers
 Electronic Arts - https://www.ea.com/jobs-feed/filter/city=Helsinki
 Sniffie - https://careers.sniffie.io/
 Wolt - https://api.lever.co/v0/postings/wolt?mode=json
+Kamp Collection hotels - https://www.kampcollectionhotels.com/liiketoiminta/tyopaikat
+Santapark - https://www.recright.com/api/v1/careers/santapark-oy
+Northern Lights Village - https://northernlightsvillage.breezy.hr/
+Kakslauttanen - http://www.kakslauttanen.fi/jobs/
+Keysight Technologies - https://jobsearch.keysight.com/search/?q=&location=fi
+Nipromec Group - https://nipromec.teamtailor.com/jobs
+Sellforte - https://www.sellforte.com/careers/
+Dazzle Rocks - https://www.dazzle.rocks/positions/overview-career.html
+Codemate - https://www.codemate.com/en/careers/
