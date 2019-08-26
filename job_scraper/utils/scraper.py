@@ -3054,14 +3054,16 @@ class DreamBroker(Scraper):
         job_details_html = request_support.simple_get(url)
 
         if job_details_html:
-            soup = BeautifulSoup(job_details_html, 'html.parser')
+            soup = BeautifulSoup(job_details_html, 'lxml')
             details_block = soup.find('article', {'class': 'db_career'})
             if details_block:
                 for tag in details_block.children:
-                    if tag.name and tag.find("script"):
-                        continue
-                    if tag != "\n":
-                        description += str(tag)
+                    if isinstance(tag, Tag):
+                        if tag.find("script"):
+                            continue
+                        Scraper.clean_attrs(tag)
+                        if tag != "\n":
+                            description += str(tag)
 
         return description
 
