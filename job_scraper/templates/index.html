@@ -48,7 +48,7 @@
                 {% endif %}
                 -->
                 <div class="col-lg-2 d-none d-lg-block text-lg-right job-logo">
-                    <a href="/jobs-at-{{ job.company.name }}"><img src="{{ job.company.logo.url }}" class="logos" alt="{{ job.company.name }}"></a>
+                    <a href="/jobs-at-{{ job.company.name }}"><img src="{{ job.company.logo.url }}" class="logos" alt="{{ job.company.name }}" title="Jobs at {{ job.company.name }}"></a>
                 </div>
 
                 <div class="col-12 col-lg-10">
@@ -103,7 +103,7 @@
                         </div>
 
                         <div class="col-6 d-lg-none justify-content-center align-self-center">
-                            <a href="/jobs-at-{{ job.company.name }}"><img class="logo-img-mobile" src="{{ job.company.logo.url }}" alt="{{ job.company.name }}"></a>
+                            <a href="/jobs-at-{{ job.company.name }}"><img class="logo-img-mobile" src="{{ job.company.logo.url }}" alt="{{ job.company.name }}" title="Jobs at {{ job.company.name }}"></a>
                         </div>
 
                     </div>
