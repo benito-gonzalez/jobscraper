@@ -28,7 +28,7 @@ class City(models.Model):
 
 
 class Company(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     logo = models.ImageField()
     logo100 = models.ImageField(blank=True, null=True)
     description = models.CharField(max_length=5000, blank=True, null=True)
