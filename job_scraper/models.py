@@ -87,6 +87,7 @@ class Job(models.Model):
         """
         reg_exp = re.compile('<.*?>')
         description = re.sub(reg_exp, ' ', self.description)
+        description = description.replace("&amp;", "&")
 
         return description
 
