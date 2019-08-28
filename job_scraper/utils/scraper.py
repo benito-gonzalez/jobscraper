@@ -3577,38 +3577,43 @@ class Enfo(Scraper):
         soup = BeautifulSoup(html, 'html.parser')
 
         for item in soup.find_all('div', class_='grid__item'):
-            title, description_url, description, end_date, is_finnish = self.get_mandatory_fields(item)
-            if is_finnish and self.is_valid_job(title, description_url, description):
-                location = self.get_location(item, title)
+            if self.is_finnish(item):
+                title, description_url, description, end_date = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
-                jobs.append(job)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                    jobs.append(job)
 
         return jobs
+
+    @staticmethod
+    def is_finnish(item):
+        finnish = True
+        country_tag = item.find('div', class_='field__item')
+        if country_tag:
+            country = country_tag.get_text()
+            finnish = "Finland" == country
+
+        return finnish
 
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
-        is_finnish = True
         end_date = None
 
-        country_tag = item.find('div', class_='field__item')
-        if country_tag:
-            is_finnish = (country_tag.get_text() == "Finland")
+        # Check title
+        title_tag = item.find('h4', class_='node__title')
+        if title_tag:
+            title = title_tag.get_text().strip()
 
-        if is_finnish:
-            # Check title
-            title_tag = item.find('h4', class_='node__title')
-            if title_tag:
-                title = title_tag.get_text().strip()
+            # Check description_url
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                description, end_date = self.get_full_description(description_url, title)
 
-                # Check description_url
-                url_tag = item.find('a')
-                if url_tag:
-                    description_url = url_tag.get('href')
-                    description, end_date = self.get_full_description(description_url, title)
-
-        return title, description_url, description, end_date, is_finnish
+        return title, description_url, description, end_date
 
     def get_full_description(self, url, title):
         description = ""
@@ -14410,7 +14415,7 @@ class NipromecGroup(Scraper):
                 title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
                     location = self.get_location(item, title)
-                    end_date = self.get_end_date(description, title)
+                    end_date = self.get_end_date(description)
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                     jobs.append(job)
@@ -14461,7 +14466,7 @@ class NipromecGroup(Scraper):
 
         return location
 
-    def get_end_date(self, description, title):
+    def get_end_date(self, description):
         pattern = r"[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}"
         end_date = self.get_end_date_by_regex(pattern, description)
         return end_date
