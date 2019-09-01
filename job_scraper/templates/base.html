@@ -44,7 +44,7 @@
     <div class="header">
         <div class="container">
 
-            <div class="row pt-4 pt-lg-5 align-items-center justify-content-center">
+            <div class="row pt-3 pt-lg-5 align-items-center justify-content-center">
                 <div class="col-3 d-lg-none text-right pr-1">
                     <a href="/"><img src="{% static 'images/logo.png' %}" alt="JobsPortal logo" class="logo-size-60"></a>
                 </div>
@@ -54,7 +54,7 @@
             </div>
 
             <form action="{% url 'job_scraper:index' %}" method="get">
-                <div class="row row-header flex-lg-nowrap w-md-75 w-lg-100 mx-auto">
+                <div class="row row-header flex-lg-nowrap w-md-75 w-lg-100 mx-auto mt-3">
 
                     <div class="d-none d-lg-block col-md header-logo">
                         <a href="/"><img src="{% static 'images/logo.png' %}" alt="JobsPortal logo" class="logo-size-100"></a>
@@ -81,19 +81,38 @@
                     <div class="col-12 col-lg-3 mt-2 mt-lg-0">
                         <div class="ui-widget">
                             {% if request.GET.location %}
-                                <input type="search" id="locations-list" class="form-control" id="location" name="location" value="{{ request.GET.location }}" placeholder="City, region..."/>
+                                <input type="search" class="form-control" id="location" name="location" value="{{ request.GET.location }}" placeholder="City, region..."/>
                             {% else %}
-                                <input type="search" id="locations-list" class="form-control" id="location" name="location" placeholder="City, region..."/>
+                                <input type="search" class="form-control" id="location" name="location" placeholder="City, region..."/>
                             {% endif %}
                         </div>
 
                     </div>
-                    <div class="col-12 col-lg-2 d-flex justify-content-center justify-content-lg-start mt-4 mt-md-2 mt-lg-0 pl-lg-4">
+                    <div class="d-none d-lg-flex col-12 col-lg-2 justify-content-center justify-content-lg-start mt-3 mt-md-2 mt-lg-0 pl-lg-4">
+                        <button id="search_button" type="submit">Search</button>
+                    </div>
+
+                </div>
+
+                <div class="row row-header flex-lg-nowrap w-md-75 w-lg-100 mx-auto mt-2 justify-content-end">
+                    <div class="col col-lg-4 text-left mr-2 mobile_english_checkbox">
+                        <div class="form-group form-check">
+                            {% if request.GET.only_english == 'on' %}
+                                {{ job.title }}
+                                <input type="checkbox" class="form-check-input" id="only_english" name="only_english" checked/>
+                            {% else %}
+                                <input type="checkbox" class="form-check-input" id="only_english" name="only_english"/>
+                            {% endif %}
+                            <label for="only_english" class="form-check-label">Only Jobs in English</label>
+                        </div>
+                    </div>
+
+                    <div class="d-lg-none col-lg-2 d-flex justify-content-center mt-1">
                         <button id="search_button" type="submit">Search</button>
                     </div>
                 </div>
-            </form>
 
+            </form>
         </div>
 
     </div>

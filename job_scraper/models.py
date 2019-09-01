@@ -66,6 +66,7 @@ class Job(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)  # UTC time by default
     tags = models.ManyToManyField('Tag', through='JobTagMap')
     cities = models.ManyToManyField('City', through='JobCityMap')
+    language = models.CharField(max_length=10, default=None, null=True)
 
     def __str__(self):
         return self.title

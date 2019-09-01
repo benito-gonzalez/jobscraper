@@ -58,7 +58,6 @@ Header
 
 .row-header {
     align-items: center;
-    margin-top: 20px;
 }
 
 .search-tag {
@@ -100,6 +99,10 @@ Header
 
 .header-logo {
     margin-left: 50px;
+}
+
+.mobile_english_checkbox{
+    height: 25px;
 }
 
 /*
@@ -475,7 +478,7 @@ Companies logo zoom
 /*
 Phones
  */
-@media (max-width: 640px) {
+@media (max-width: 740px) {
     html, body {
         background-color: white;
         overflow-x: hidden;

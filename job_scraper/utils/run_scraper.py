@@ -3,12 +3,15 @@ import os
 import random
 import re
 from collections import Counter
+from langdetect import detect, DetectorFactory
 
 from job_scraper.utils import request_support
 from job_scraper.utils import scraper
 from job_scraper.utils import db_support
 from job_scraper.utils import log_support
 from job_scraper.utils.locator import CityLocator
+
+DetectorFactory.seed = 0
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 FILENAME = os.path.join(my_path, "servers.txt")
@@ -133,6 +136,12 @@ def map_job_location(job, cities):
             db_support.delete_job_city_record(job_city)
 
 
+def set_job_language(job, description):
+    if job.language is None:
+        job.language = detect(description)
+        job.save()
+
+
 def main():
     # Companies that return HTTP != 200 should not delete jobs from DB
     failed_companies = []
@@ -194,6 +203,7 @@ def main():
                 # Map tags with job description
                 map_tag_job_descriptions(job_db)
                 map_job_location(job_db, scraped_job.cities)
+                set_job_language(job_db, scraped_job.description)
 
             else:
                 log_support.skipping_job_due_location(scraped_job.title, scraped_job.cities, scraped_job.company_name)
