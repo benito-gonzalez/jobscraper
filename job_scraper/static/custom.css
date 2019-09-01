@@ -101,7 +101,7 @@ Header
     margin-left: 50px;
 }
 
-.mobile_english_checkbox{
+.mobile_english_checkbox {
     height: 25px;
 }
 
@@ -329,6 +329,10 @@ Bottom show more
     border-color: #28a745;
 }
 
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #28a745;
+}
 
 /*
 Bottom up

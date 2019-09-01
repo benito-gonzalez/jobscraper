@@ -96,14 +96,13 @@
 
                 <div class="row row-header flex-lg-nowrap w-md-75 w-lg-100 mx-auto mt-2 justify-content-end">
                     <div class="col col-lg-4 text-left mr-2 mobile_english_checkbox">
-                        <div class="form-group form-check">
+                        <div class="custom-control custom-checkbox">
                             {% if request.GET.only_english == 'on' %}
-                                {{ job.title }}
-                                <input type="checkbox" class="form-check-input" id="only_english" name="only_english" checked/>
+                                <input type="checkbox" class="custom-control-input" id="only_english" name="only_english" checked/>
                             {% else %}
-                                <input type="checkbox" class="form-check-input" id="only_english" name="only_english"/>
+                                <input type="checkbox" class="custom-control-input" id="only_english" name="only_english"/>
                             {% endif %}
-                            <label for="only_english" class="form-check-label">Only Jobs in English</label>
+                            <label for="only_english" class="custom-control-label">Only Jobs in English</label>
                         </div>
                     </div>
 
