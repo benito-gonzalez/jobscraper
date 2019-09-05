@@ -7066,22 +7066,20 @@ class SSHCommunicationsSecurity(Scraper):
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'lxml')
 
-            parent_div = job_details_soup.find('div', class_='at-job-body')
-            if parent_div:
-                header = parent_div.find('h1')
-                if not header:
-                    first_p = parent_div.find('p')
-                    if first_p:
-                        header = first_p.find_previous_sibling()
+            container = job_details_soup.find('div', class_='at-job-body')
+            if container:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        if child.find("img"):
+                            continue
+                        if child.name == "h2":
+                            child.name = "h3"
+                        elif child.name == "h3":
+                            child.name = "h4"
 
-                if header:
-                    for sibling in header.next_siblings:
-                        if isinstance(sibling, Tag):
-                            if sibling.name == "h3" and "how to apply" in sibling.text.lower():
-                                break
-
-                            Scraper.clean_attrs(sibling)
-                            description += str(sibling).strip()
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
 
         return description
 
