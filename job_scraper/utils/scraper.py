@@ -6558,13 +6558,15 @@ class Ultimate(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'lxml')
 
-        for item in soup.find_all('li', class_="careers-list-item"):
-            title, description_url, description = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
-                location = self.get_location(item, title)
+        container = soup.find('ul', class_='jobs')
+        if container:
+            for item in container.find_all('li'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                jobs.append(job)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
 
         return jobs
 
@@ -6573,7 +6575,7 @@ class Ultimate(Scraper):
         description = ""
 
         # Check title
-        title_tag = item.find('h1', class_="careers-heading")
+        title_tag = item.find('span', class_="title")
         if title_tag:
             title = title_tag.get_text().strip().capitalize()
             url_tag = item.find('a')
@@ -6592,30 +6594,24 @@ class Ultimate(Scraper):
         job_details_html = request_support.simple_get(url)
 
         if job_details_html:
-            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            job_container = job_details_soup.find('div', class_='w-container')
+            soup = BeautifulSoup(job_details_html, 'html.parser')
 
-            for child in job_container.children:
-                if isinstance(child, Tag):
-                    Scraper.clean_attrs(child)
-
-                    if child.name == "ul":
-                        description += str(child)
-                    else:
-                        for ch in child.children:
-                            if ch.name == "h2":
-                                ch.name = "h3"
-                            if ch.text != "\u200d":
-                                description += str(ch)
+            container = soup.find('div', class_='body')
+            if container:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
 
         return description
 
     def get_location(self, item, title):
         location = None
 
-        location_tag = item.find('div', class_='careers-description')
+        location_tag = item.find('span', class_='meta')
         if location_tag:
-            location = location_tag.get_text()
+            location = location_tag.get_text().strip()
 
         if not location:
             log_support.set_invalid_location(self.client_name, title)

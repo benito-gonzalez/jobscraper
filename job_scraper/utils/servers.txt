@@ -80,7 +80,7 @@ Anders - https://www.anders.fi/en/careers/
 Small Giant Games - https://www.smallgiantgames.com/#jobs
 Oura - https://ouraring.com/careers/
 Matchmade - https://www.smartrecruiters.com/job-api/public/search/widgets/Matchmade/postings?&offset=0&limit=100&fq=&langCode=en&callback=jQuery11240969907988245692_1554996319993&_=1554996319994
-ultimate.ai - https://www.ultimate.ai/careers
+ultimate.ai - https://careers.ultimate.ai/
 Yousician - https://api.greenhouse.io/v1/boards/yousician/offices
 Leadfeeder - https://www.leadfeeder.com/jobs/
 ZenRobotics - https://careers.zenrobotics.com/
