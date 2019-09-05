@@ -7485,10 +7485,9 @@ class Umbra(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'lxml')
 
-        for item in soup.find_all('div', class_='card-clickable'):
-            title, description_url, description = self.get_mandatory_fields(item)
+        for item in soup.find_all(lambda tag: tag.name == "a" and "Read the Full Job Description" in tag.text):
+            title, description_url, description, location = self.get_mandatory_fields(item)
             if self.is_valid_job(title, description_url, description):
-                location = self.get_location(item, title)
 
                 job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                 jobs.append(job)
@@ -7496,34 +7495,42 @@ class Umbra(Scraper):
         return jobs
 
     def get_mandatory_fields(self, item):
-        title = description_url = None
+        title = None
         description = ""
+        location = None
 
-        url_tag = item.find('a')
-        if url_tag:
-            title = url_tag.get_text().strip()
+        description_url = item.get('href')
+        if description_url:
+            job_details_html = request_support.simple_get(description_url)
 
-            relative_url = url_tag.get('href')
-            description_url = self.url + relative_url
+            if job_details_html:
+                job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
 
-            if description_url:
-                description = self.get_description(description_url)
+                title_tag = job_details_soup.find('h1')
+                if title_tag:
+                    title = title_tag.get_text()
+                    description = self.get_description(job_details_soup)
 
-        return title, description_url, description
+                # since we are in the description page, we get also the location here
+                location_tag = job_details_soup.find('div', class_='pill blue')
+                if location_tag:
+                    location = location_tag.get_text()
+                else:
+                    log_support.set_invalid_location(self.client_name, title)
+
+        return title, description_url, description, location
 
     @staticmethod
-    def get_description(url):
+    def get_description(job_details_soup):
         description = ""
-        job_details_html = request_support.simple_get(url)
 
-        if job_details_html:
-            job_details_soup = BeautifulSoup(job_details_html, 'lxml')
-
-            description_parent = job_details_soup.find('div', class_='jobdesciption')
-            if description_parent:
-                for child in description_parent.children:
-                    if isinstance(child, Tag):
-                        Scraper.clean_attrs(child)
+        for section in job_details_soup.find_all('div', class_='text-body'):
+            for child in section.children:
+                if isinstance(child, Tag):
+                    Scraper.clean_attrs(child)
+                    if child.name == "h2":
+                        child.name = "h3"
+                    if child.text != "":
                         description += str(child)
 
         return description
