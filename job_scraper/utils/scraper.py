@@ -6431,14 +6431,15 @@ class Oura(Scraper):
         soup = BeautifulSoup(html, 'lxml')
 
         for item in soup.find_all('div', class_="item-container"):
-            title, description_url, description, location = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
+            enabled, title, description_url, description, location = self.get_mandatory_fields(item)
+            if enabled and self.is_valid_job(title, description_url, description):
                 job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                 jobs.append(job)
 
         return jobs
 
     def get_mandatory_fields(self, item):
+        enabled = True
         title = description_url = None
         description = ""
         location = None
@@ -6453,19 +6454,23 @@ class Oura(Scraper):
                 if job_details_html:
                     job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
 
-                    title_tag = job_details_soup.find('h1')
-                    if title_tag:
-                        title = title_tag.get_text()
-                        description = self.get_description(job_details_soup)
+                    # Oura has some jobs which are disabled. These have a div with class 'alert-notice'
+                    if job_details_soup.find('div', class_='alert-notice'):
+                        enabled = False
+                    else:
+                        title_tag = job_details_soup.find('h1')
+                        if title_tag:
+                            title = title_tag.get_text()
+                            description = self.get_description(job_details_soup)
 
-                    # since we are in the description page, we get also the location here
-                    header_section = job_details_soup.find('section', class_='section--header')
-                    if header_section:
-                        location_tag = header_section.find('p', class_='meta')
-                        if location_tag:
-                            location = location_tag.get_text()
+                        # since we are in the description page, we get also the location here
+                        header_section = job_details_soup.find('section', class_='section--header')
+                        if header_section:
+                            location_tag = header_section.find('p', class_='meta')
+                            if location_tag:
+                                location = location_tag.get_text()
 
-        return title, description_url, description, location
+        return enabled, title, description_url, description, location
 
     @staticmethod
     def get_description(job_details_soup):
