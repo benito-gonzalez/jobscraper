@@ -14680,13 +14680,14 @@ class KampCollection(Scraper):
         container = soup.find('div', class_='text-default-format')
         if container:
             for item in container.find_all('a'):
-                title, description_url, description = self.get_mandatory_fields(item)
-                if self.is_valid_job(title, description_url, description):
-                    location = "Helsinki"  # all jobs are located in Helsinki area
-                    end_date = self.get_end_date(item)
+                if item.get_text():
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = "Helsinki"  # all jobs are located in Helsinki area
+                        end_date = self.get_end_date(item)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
-                    jobs.append(job)
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
+                        jobs.append(job)
 
         return jobs
 
