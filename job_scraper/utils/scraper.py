@@ -1003,7 +1003,7 @@ class Abb(Scraper):
             title = item["Title"]
             if "Url" in item:
                 relative_url = item["Url"]
-                description_url = self.url.split("jobs/")[0] + "jobs/details" + relative_url
+                description_url = self.url.split("/jobs")[0] + relative_url
                 description = self.get_description(description_url)
 
         return title, description_url, description
