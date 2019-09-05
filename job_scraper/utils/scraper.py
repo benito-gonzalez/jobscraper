@@ -6964,12 +6964,12 @@ class Aiven(Scraper):
         jobs_div = soup.find('div', class_='open-positions')
         if jobs_div:
             for item in jobs_div.find_all('div', class_='career'):
-                title, description_url, description = self.get_mandatory_fields(item)
-                if self.is_valid_job(title, description_url, description):
+                enabled, title, description_url, description = self.get_mandatory_fields(item)
+                if enabled and self.is_valid_job(title, description_url, description):
                     location = self.get_location(item, title)
 
                     # Some jobs are remote and they define it as European Union
-                    if "European Union" in location:
+                    if "EU" in location:
                         location = location + ", Remote"
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
@@ -6978,6 +6978,7 @@ class Aiven(Scraper):
         return jobs
 
     def get_mandatory_fields(self, item):
+        enabled = True
         title = description_url = None
         description = ""
 
@@ -6987,9 +6988,12 @@ class Aiven(Scraper):
             title = url_tag.get_text().strip()
             description_url = url_tag.get('href')
             if description_url:
-                description = self.get_description(description_url)
+                if "linkedin.com" in description_url:
+                    enabled = False
+                else:
+                    description = self.get_description(description_url)
 
-        return title, description_url, description
+        return enabled, title, description_url, description
 
     @staticmethod
     def get_description(url):
