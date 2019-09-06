@@ -493,6 +493,13 @@ class Scraper(object):
 
         return end_date
 
+    @staticmethod
+    def create_tag(tag_name, text):
+        soup = BeautifulSoup("", "html.parser")
+        p_tag = soup.new_tag(tag_name)
+        p_tag.string = text
+        return p_tag
+
 
 class Dna(Scraper):
 
@@ -11370,8 +11377,7 @@ class Accountor(Scraper):
 
         return title, description_url, description
 
-    @staticmethod
-    def get_description(url):
+    def get_description(self, url):
         description = ""
         job_details_html = request_support.simple_get(url)
         if job_details_html:
@@ -11383,6 +11389,10 @@ class Accountor(Scraper):
                         Scraper.clean_attrs(child)
                         if child.get_text().strip() != "":
                             description += str(child)
+                    else:
+                        if child != "\xa0":
+                            new_tag = self.create_tag("p", child)
+                            description += str(new_tag)
 
         return description
 
@@ -13383,13 +13393,6 @@ class GE(Scraper):
                                 description += str(tag)
 
         return description
-
-    @staticmethod
-    def create_tag(tag_name, text):
-        soup = BeautifulSoup("", "html.parser")
-        p_tag = soup.new_tag(tag_name)
-        p_tag.string = text
-        return p_tag
 
     def get_location(self, item, title):
         location = None
