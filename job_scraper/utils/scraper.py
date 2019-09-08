@@ -6311,14 +6311,33 @@ class Anders(Scraper):
         soup = BeautifulSoup(html, 'lxml')
 
         for item in soup.find_all('div', class_="single-position"):
-            title, description_url, description = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
-                location = self.get_location(item, title)
+            if self.is_finnish(item):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                jobs.append(job)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
 
         return jobs
+
+    @staticmethod
+    def is_finnish(item):
+        finnish = True
+        found = False
+        locator = CityLocator()
+
+        location_tag = item.find('div', class_='position-location')
+        if location_tag:
+            for loc in location_tag.find_all('span'):
+                if locator.has_finnish_cities(loc.get_text()):
+                    found = True
+                    break
+
+        if not found:
+            finnish = False
+
+        return finnish
 
     def get_mandatory_fields(self, item):
         title = description_url = None
