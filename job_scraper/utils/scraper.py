@@ -12034,64 +12034,62 @@ class OpusCapitaSolutions(Scraper):
 class Poolia(Scraper):
 
     def extract_info(self, html):
-        # From API
-        jobs = []
         log_support.log_extract_info(self.client_name)
-        json_dict = json.loads(html)
+        jobs = []
+        soup = BeautifulSoup(html, 'html.parser')
 
-        if "items" in json_dict:
-            for item in json_dict["items"]:
-                if "company" in item and "Poolia" in item["company"]:
-                    title, description_url, description, location = self.get_mandatory_fields(item)
-                    if self.is_valid_job(title, description_url, description):
+        for item in soup.find_all("div", class_='single-item--job'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
 
-                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                        jobs.append(job)
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
 
         return jobs
 
     def get_mandatory_fields(self, item):
-        title = description_url = location = None
+        title = description_url = None
         description = ""
 
-        if "heading" in item:
-            title = item["heading"]
-            if "friendlyurl" in item:
-                description_url = self.url.split('.fi/')[0] + ".fi" + item["friendlyurl"]
-                description, location = self.get_description(description_url, title)
+        title_tag = item.find('h3')
+        if title_tag:
+            title = title_tag.get_text().strip()
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                if description_url:
+                    description = self.get_description(description_url)
 
-        return title, description_url, description, location
+        return title, description_url, description
 
-    def get_description(self, url, title):
+    @staticmethod
+    def get_description(url):
         description = ""
-        location = None
-
         job_details_html = request_support.simple_get(url)
         if job_details_html:
-            soup = BeautifulSoup(job_details_html, 'lxml')
-            first_p = soup.find('p', {'class': 'preamble'})
-            if first_p:
-                Scraper.clean_attrs(first_p)
-                description += str(first_p)
+            soup = BeautifulSoup(job_details_html, 'html.parser')
+            description_parent = soup.find('div', class_='entry-content')
+            if description_parent:
+                for child in description_parent.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
 
-                for sibling in first_p.next_siblings:
-                    if isinstance(sibling, Tag):
-                        if sibling.name == 'div' and sibling.has_attr("class") and "ad-contact" in sibling["class"]:
-                            break
-                        if sibling.name == "h3" and "Yhteyshenkilö" in sibling.get_text():
-                            break
+        return description
 
-                        Scraper.clean_attrs(sibling)
-                        if sibling.get_text().strip() != "":
-                            description += str(sibling)
+    def get_location(self, item, title):
+        location = None
 
-            location_tag = soup.find('span', {'itemprop': 'address'})
-            if location_tag:
-                location = location_tag.get_text()
-            else:
-                log_support.set_invalid_location(self.client_name, title)
+        location_tag = item.find('h6')
+        if location_tag:
+            location = location_tag.get_text().strip()
 
-        return description, location
+        if not location:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
 
 
 class SuoraTyo(Scraper):

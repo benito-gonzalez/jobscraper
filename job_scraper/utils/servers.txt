@@ -153,7 +153,7 @@ Giosg - https://careers.giosg.com/jobs?location_id=43890
 Inderes - https://ura.inderes.fi/
 LVS Brokers - https://lvsbrokers.teamtailor.com/
 OpusCapita Solutions - https://www.opuscapita.com/careers/open-positions
-Poolia - https://www.poolia.fi/api/jobs?language=fi-fi
+Poolia - https://www.poolia.fi/tyonhakijalle/#%7B%22companies%22:[%22Poolia%20Suomi%20Oy%22],%22locations%22:[],%22occupations%22:[]%7D
 SuoraTyö - https://www.suoratyo.fi/suoratyo/toihin-suoratyolle
 Tomorrow Tech - https://tomorrow.fi/jobs.html
 Vauraus - https://vauraus.fi/careers/
