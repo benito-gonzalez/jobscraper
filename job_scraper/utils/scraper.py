@@ -396,6 +396,10 @@ def generate_instance_from_client(client_name, url):
         return Codemate(client_name, url)
     if client_name == "Kamp Collection hotels":
         return KampCollection(client_name, url)
+    if client_name == "Collective Crunch":
+        return CollectiveCrunch(client_name, url)
+    if client_name == "Aito":
+        return Aito(client_name, url)
     else:
         return None
 
@@ -14734,3 +14738,119 @@ class KampCollection(Scraper):
             log_support.set_invalid_dates(self.client_name, full_title)
 
         return end_date
+
+
+class CollectiveCrunch(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('section', class_='openPositions')
+        if container:
+            for item in container.find_all('div', class_='item'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Espoo"  # all jobs are located in Helsinki area
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h3')
+        if title_tag:
+            title = title_tag.get_text()
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                if description_url:
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', class_='text-body')
+            if container:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+
+class Aito(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all("li", class_=lambda value: value and "join-us__Position-sc-" in value):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = self.get_location(item, title)
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h2')
+        if title_tag:
+            title = title_tag.get_text()
+            url_tag = item.find('a')
+            if url_tag:
+                relative_url = url_tag.get('href')
+                if relative_url:
+                    description_url = self.url.split(".ai/")[0] + ".ai" + relative_url
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', class_=lambda value: value and "base__" in value)
+            if container:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        if child.name == "a" and (s for s in child['class'] if "positionTemplate__" in s):
+                            break
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+    def get_location(self, item, title):
+        location = None
+
+        location_tag = item.find('span', class_=lambda value: value and "join-us__PositionLocation" in value)
+        if location_tag:
+            location = location_tag.get_text().strip()
+        else:
+            log_support.set_invalid_location(self.client_name, title)
+
+        return location
