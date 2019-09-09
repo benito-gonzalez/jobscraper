@@ -400,6 +400,10 @@ def generate_instance_from_client(client_name, url):
         return CollectiveCrunch(client_name, url)
     if client_name == "Aito":
         return Aito(client_name, url)
+    if client_name == "Curious AI":
+        return CuriousAI(client_name, url)
+    if client_name == "DAIN Studios":
+        return DAINStudios(client_name, url)
     else:
         return None
 
@@ -14854,3 +14858,108 @@ class Aito(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class CuriousAI(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='post-type-job')
+        if container:
+            for item in container.children:
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Helsinki"  # all jobs are located in Helsinki area
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h4')
+        if title_tag:
+            title = title_tag.get_text()
+            url_tag = item.find('a', class_='button')
+            if url_tag:
+                description_url = url_tag.get('href')
+                if description_url:
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', class_='entry-content')
+            if container:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+
+class DAINStudios(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='isotope-container')
+        if container:
+            for item in container.children:
+                if isinstance(item, Tag):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = "Helsinki"  # all jobs are located in Helsinki area
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h3', class_='t-entry-title')
+        if title_tag:
+            title = title_tag.get_text()
+            url_tag = title_tag.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                if description_url:
+                    description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', class_='post-body')
+            if container:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
