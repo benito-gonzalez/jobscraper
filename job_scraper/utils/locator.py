@@ -18,14 +18,15 @@ class CityLocator:
 
         if text:
             for city in self.finnish_cities:
+                if search(r"\b" + escape(city.name.lower()) + r"\b", text.lower()):
+                    result = True
+                    break
+
                 if city.swedish_name:
-                    if search(r"\b" + escape(city.name.lower()) + "|" + escape(city.swedish_name.lower()) + r"\b", text.lower()):
+                    if search((r"\b" + escape(city.swedish_name.lower()) + r"\b"), text.lower()):
                         result = True
                         break
-                else:
-                    if search(r"\b" + escape(city.name.lower()) + r"\b", text.lower()):
-                        result = True
-                        break
+
         return result
 
     def is_foreign_job_location(self, text):
