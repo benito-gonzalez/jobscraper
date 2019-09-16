@@ -919,13 +919,11 @@ class Silo(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
-        job_divs = soup.find_all("a", attrs={'class': 'eael-elements-flip-box-flip-card'})
+        job_divs = soup.find_all("a", class_="eael-elements-flip-box-flip-card")
         for job_div in job_divs:
             title, description_url, description = self.get_mandatory_fields(job_div)
             if self.is_valid_job(title, description_url, description):
-                job_details_html = request_support.simple_get(description_url)
-                soup = BeautifulSoup(job_details_html, 'html.parser')
-                location = self.get_location(soup, title)
+                location = "Helsinki, Turku"  # it has two office in Helsinki and all jobs can be done in any of their offices.
 
                 job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                 jobs.append(job)
@@ -951,26 +949,14 @@ class Silo(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'html.parser')
-            description_div = soup.find("div", {'class': 'text-body'})
+            description_div = soup.find("div", class_='view-job-details__body')
             if description_div:
-                for div in description_div.find_all(["p", "ul"]):
-                    description += str(div)
+                for child in description_div.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        description += str(child)
 
         return description
-
-    def get_location(self, soup, job_title):
-        location = None
-        location_block = soup.find('div', attrs={'class': 'pill blue'})
-        if location_block:
-            location_text = location_block.text
-            location_splited = location_text.split(", ")
-            if len(location_splited) == 2:
-                location = location_splited[1].strip()
-
-        if not location:
-            log_support.set_invalid_location(self.client_name, job_title)
-
-        return location
 
 
 class Abb(Scraper):
@@ -7029,7 +7015,7 @@ class Aiven(Scraper):
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
 
-            parent_div = job_details_soup.find('div', class_='text-body')
+            parent_div = job_details_soup.find('div', class_='view-job-details__body')
             if parent_div:
                 for child in parent_div.children:
                     if isinstance(child, Tag):
