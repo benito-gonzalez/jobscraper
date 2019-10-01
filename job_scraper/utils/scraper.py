@@ -411,6 +411,12 @@ def generate_instance_from_client(client_name, url):
         return Inscripta(client_name, url)
     if client_name == "Speechgrinder":
         return Speechgrinder(client_name, url)
+    if client_name == "Top Data Science":
+        return TopDataScience(client_name, url)
+    if client_name == "Utopia Analytics":
+        return UtopiaAnalytics(client_name, url)
+    if client_name == "Valohai":
+        return Valohai(client_name, url)
     else:
         return None
 
@@ -15159,3 +15165,150 @@ class Speechgrinder(Scraper):
             log_support.set_invalid_location(self.client_name, title)
 
         return location
+
+
+class TopDataScience(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        for item in soup.find_all("article", class_='career'):
+            title, description_url, description = self.get_mandatory_fields(item)
+            if self.is_valid_job(title, description_url, description):
+                location = "Helsinki"  # Only one office located in Helsinki
+
+                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h2')
+        if title_tag:
+            title = title_tag.get_text().strip()
+            url_tag = title_tag.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(url):
+        description = ""
+
+        job_details_html = request_support.simple_get(url)
+        if job_details_html:
+            soup = BeautifulSoup(job_details_html, 'lxml')
+            container = soup.find('div', class_='entry-content')
+            if container:
+                for child in container.children:
+                    if isinstance(child, Tag):
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
+
+        return description
+
+
+class UtopiaAnalytics(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='b-base__container')
+        if container:
+            for item in container.find_all("div", class_='l-columns__item'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Helsinki"  # Only one office located in Helsinki
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h3')
+        if title_tag:
+            title = title_tag.get_text().strip()
+            # This website does not have specific job description neither div id to show the description.
+            description_url = self.url
+            description = self.get_description(item)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(item):
+        description = ""
+
+        title_tag = item.find('h3')
+
+        for sibling in title_tag.next_siblings:
+            if isinstance(sibling, Tag):
+                if sibling.find('a', class_='c-btn') or (sibling.name == "a" and (s for s in sibling['class'] if "c-btn" in s)):
+                    break
+
+                Scraper.clean_attrs(sibling)
+                if sibling.get_text().strip() != "":
+                    description += str(sibling)
+
+        return description
+
+
+class Valohai(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='open-positions-list')
+        if container:
+            for item in container.find_all("button", class_='collapsible'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Helsinki"  # Only one office located in Helsinki
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        title_tag = item.find('h4')
+        if title_tag:
+            title = title_tag.get_text().strip()
+
+            content = item.find_next_sibling('div', class_="content")
+            if content:
+                # This website does not have specific job description neither div id to show the description.
+                description_url = self.url
+                description = self.get_description(content)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(content):
+        description = ""
+
+        for child in content.children:
+            if isinstance(child, Tag):
+                Scraper.clean_attrs(child)
+                if child.get_text().strip() != "":
+                    description += str(child)
+
+        return description
