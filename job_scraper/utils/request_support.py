@@ -19,7 +19,7 @@ def simple_get(url, accept_json=False):
     if accept_json:
         headers_req = {'User-Agent': 'Mozilla/5.0', 'accept': 'application/json'}
     else:
-        headers_req = {'User-Agent': 'Mozilla/5.0'}
+        headers_req = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1'}
 
     with closing(get(url, stream=True, headers=headers_req, verify=False, timeout=60)) as resp:
         if not settings.DEBUG:
