@@ -56,6 +56,12 @@ class IndexView(generic.ListView):
     paginate_by = 20
     context_object_name = 'jobs_list'
     only_english = None
+    company = None
+
+    def get_context_data(self, **kwargs):
+        ctx = super(IndexView, self).get_context_data(**kwargs)
+        ctx['company'] = self.company
+        return ctx
 
     @staticmethod
     def filter_by_location(location_query):
@@ -125,7 +131,8 @@ class IndexView(generic.ListView):
 
         if keyword_query:
             try:
-                if Company.objects.get(name__iexact=keyword_query):
+                self.company = Company.objects.get(name__iexact=keyword_query)
+                if self.company:
                     return Job.objects.filter(Q(company__name__iexact=keyword_query) & self.filter_by_active()).order_by('-updated_at')
             except (Company.DoesNotExist, Company.MultipleObjectsReturned):
                 pass
