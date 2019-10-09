@@ -13,31 +13,31 @@ class Migration(migrations.Migration):
 
         migrations.RunSQL(
             """
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Fleetonomy.ai', 'fleetonomy.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Ubisoft RedLynx', 'ubisoft.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Remedy Entertainment Plc', 'remedy.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Paf', 'paf.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Fluido', 'fluido.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Dodreams', 'dodreams.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Atea', 'atea.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Neste', 'neste.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('If', 'if.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Sanoma', 'sanoma.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Orion', 'orion.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Gemalto', 'gemalto.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Aktia', 'aktia.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Management Events', 'management.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Holvi', 'holvi.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Finitec', 'finitec.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Ferratum', 'ferratum.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Bon Games', 'bon_games.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Lightneer Inc', 'lightneer.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Unity Technologies', 'unity.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('FuturePlay', 'futurePlay.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Redhill Games', 'redhill.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Seriously Digital Entertainment', 'seriously_digital.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Housemarque', 'housemarque.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Epic Games', 'epic_games.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Fleetonomy.ai', 'fleetonomy.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Ubisoft RedLynx', 'ubisoft.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Remedy Entertainment Plc', 'remedy.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Paf', 'paf.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Fluido', 'fluido.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Dodreams', 'dodreams.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Atea', 'atea.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Neste', 'neste.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('If', 'if.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Sanoma', 'sanoma.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Orion', 'orion.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Gemalto', 'gemalto.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Aktia', 'aktia.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Management Events', 'management.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Holvi', 'holvi.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Finitec', 'finitec.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Ferratum', 'ferratum.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Bon Games', 'bon_games.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Lightneer Inc', 'lightneer.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Unity Technologies', 'unity.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('FuturePlay', 'futurePlay.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Redhill Games', 'redhill.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Seriously Digital Entertainment', 'seriously_digital.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Housemarque', 'housemarque.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Epic Games', 'epic_games.png');
             """
         )
     ]

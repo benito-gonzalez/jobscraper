@@ -12,25 +12,25 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            UPDATE 'Companies' SET logo='blueprint_genetics.png' WHERE logo like 'blueprint.png';
-            UPDATE 'Companies' SET logo='cybercom_finland.png' WHERE logo like 'cybercom.png';
-            UPDATE 'Companies' SET logo='danske_bank.png' WHERE logo like 'danske.png';
-            UPDATE 'Companies' SET logo='digital_goodie.png' WHERE logo like 'digital.png';
-            UPDATE 'Companies' SET logo='dream_broker.png' WHERE logo like 'dream.png';
-            UPDATE 'Companies' SET logo='efecte.png' WHERE logo like 'efect.png';
-            UPDATE 'Companies' SET logo='nightingale_health.png' WHERE logo like 'nightingale.png';
-            UPDATE 'Companies' SET logo='siili_solutions.png' WHERE logo like 'siili.png';
-            UPDATE 'Companies' SET logo='silo_ai.png' WHERE logo like 'silo.png';
-            UPDATE 'Companies' SET logo='smartly_io.png' WHERE logo like 'smartly.png';
-            UPDATE 'Companies' SET logo='verto_analytics.png' WHERE logo like 'verto.png';
-            UPDATE 'Companies' SET logo='fleetonomy_ai.png' WHERE logo like 'fleetonomy.png';
-            UPDATE 'Companies' SET logo='ubisoft_redlynx.png' WHERE logo like 'ubisoft.png';
-            UPDATE 'Companies' SET logo='remedy_entertainment.png' WHERE logo like 'remedy.png';
-            UPDATE 'Companies' SET logo='management_events.png' WHERE logo like 'management.png';
-            UPDATE 'Companies' SET logo='unity_technology.png' WHERE logo like 'unity.png';
-            UPDATE 'Companies' SET logo='future_play.png' WHERE logo like 'futurePlay.png';
-            UPDATE 'Companies' SET logo='redhill_games.png' WHERE logo like 'redhill.png';
-            UPDATE 'Companies' SET logo='seriously_digital_entertainment.png' WHERE logo like 'seriously_digital.png';
+            UPDATE "Companies" SET logo='blueprint_genetics.png' WHERE logo like 'blueprint.png';
+            UPDATE "Companies" SET logo='cybercom_finland.png' WHERE logo like 'cybercom.png';
+            UPDATE "Companies" SET logo='danske_bank.png' WHERE logo like 'danske.png';
+            UPDATE "Companies" SET logo='digital_goodie.png' WHERE logo like 'digital.png';
+            UPDATE "Companies" SET logo='dream_broker.png' WHERE logo like 'dream.png';
+            UPDATE "Companies" SET logo='efecte.png' WHERE logo like 'efect.png';
+            UPDATE "Companies" SET logo='nightingale_health.png' WHERE logo like 'nightingale.png';
+            UPDATE "Companies" SET logo='siili_solutions.png' WHERE logo like 'siili.png';
+            UPDATE "Companies" SET logo='silo_ai.png' WHERE logo like 'silo.png';
+            UPDATE "Companies" SET logo='smartly_io.png' WHERE logo like 'smartly.png';
+            UPDATE "Companies" SET logo='verto_analytics.png' WHERE logo like 'verto.png';
+            UPDATE "Companies" SET logo='fleetonomy_ai.png' WHERE logo like 'fleetonomy.png';
+            UPDATE "Companies" SET logo='ubisoft_redlynx.png' WHERE logo like 'ubisoft.png';
+            UPDATE "Companies" SET logo='remedy_entertainment.png' WHERE logo like 'remedy.png';
+            UPDATE "Companies" SET logo='management_events.png' WHERE logo like 'management.png';
+            UPDATE "Companies" SET logo='unity_technology.png' WHERE logo like 'unity.png';
+            UPDATE "Companies" SET logo='future_play.png' WHERE logo like 'futurePlay.png';
+            UPDATE "Companies" SET logo='redhill_games.png' WHERE logo like 'redhill.png';
+            UPDATE "Companies" SET logo='seriously_digital_entertainment.png' WHERE logo like 'seriously_digital.png';
             """
         )
     ]

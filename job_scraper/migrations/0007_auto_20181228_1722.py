@@ -12,22 +12,22 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nokia', 'nokia.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Verto Analytics', 'verto.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Efecte Oyj', 'efect.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nets', 'nets.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Danske Bank', 'danske.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nordcloud', 'nordcloud.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nebula Oy', 'telia.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Digital goodie', 'digital.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nightingale Health', 'nightingale.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Sandvik', 'sandvik.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Signant Health', 'signant_health.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('OP Financial Group', 'op.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Dream Broker', 'dream.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Relex', 'relex.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('F-Secure', 'f-secure.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Outotec', 'outotec.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Nokia', 'nokia.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Verto Analytics', 'verto.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Efecte Oyj', 'efect.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Nets', 'nets.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Danske Bank', 'danske.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Nordcloud', 'nordcloud.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Nebula Oy', 'telia.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Digital goodie', 'digital.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Nightingale Health', 'nightingale.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Sandvik', 'sandvik.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Signant Health', 'signant_health.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('OP Financial Group', 'op.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Dream Broker', 'dream.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Relex', 'relex.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('F-Secure', 'f-secure.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Outotec', 'outotec.png');
             """
         ),
     ]
