@@ -6013,16 +6013,17 @@ class Bittium(Scraper):
             job_details_soup = BeautifulSoup(job_details_html, 'html5lib')
 
             # Two blocks, the first one contains nothing.
-            block = job_details_soup.find('div', class_='jobs_body')
+            block = job_details_soup.find('div', class_='multiline-text')
             if block:
                 for child in block.children:
                     if isinstance(child, Tag):
-                        if child.name == "a" and child.has_attr('class') and "like_button" in child['class']:
-                            break
-
                         Scraper.clean_attrs(child)
                         if child.get_text().strip() != "":
                             description += str(child).strip()
+                    else:
+                        p_tag = job_details_soup.new_tag('p')
+                        p_tag.string = child
+                        description += str(p_tag)
 
         return description
 
@@ -6033,24 +6034,24 @@ class Bittium(Scraper):
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'lxml')
 
-            job_details = job_details_soup.find('div', class_='jobs_details')
+            job_details = job_details_soup.find('div', class_='body-inner')
             if job_details:
-                date_label = job_details.find(lambda tag: tag.name == "label" and "Last apply date:" in tag.text)
-                location_label = job_details.find(lambda tag: tag.name == "label" and "Location:" in tag.text)
+                date_label = job_details.find("div", string=lambda value: value and "Closing date" in value)
+                location_label = job_details.find("div", string=lambda value: value and "Locations" in value)
 
                 if date_label:
-                    date_tag = date_label.next_sibling
+                    date_tag = date_label.find_next_sibling('div')
                     if date_tag:
                         try:
-                            date_raw = date_tag.strip()
+                            date_raw = date_tag.get_text().strip()
                             end_date = parser.parse(date_raw, dayfirst=True).strftime('%Y-%m-%d')
                         except (ValueError, TypeError) as e:
                             log_support.set_error_message(self.client_name, "Invalid date string " + str(e))
 
                 if location_label:
-                    location_tag = location_label.next_sibling
+                    location_tag = location_label.find_next_sibling('div')
                     if location_tag:
-                        location = location_tag.strip()
+                        location = location_tag.get_text().strip()
 
         if not end_date:
             log_support.set_invalid_dates(self.client_name, title)
