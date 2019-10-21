@@ -30,7 +30,7 @@ Nebula Oy - https://www.inmicsnebula.fi/fi/avoimet-tyopaikat
 Digital goodie - http://www.digitalgoodie.com/careers/
 Nightingale Health - https://nightingalehealth.com/company/join
 Sandvik - https://www.home.sandvik/en/careers/job-search/?category=all&country=finland&jq=
-Signant Health - https://careers-signanthealth.icims.com/jobs/search?ss=1&searchLocation=--Helsinki%2C+Finland&mobile=false&width=1351&height=500&bga=true&needsRedirect=false&jan1offset=60&jun1offset=120
+Signant Health - https://careers-signanthealth.icims.com/jobs/search?searchLocation=--Helsinki&pr=0
 OP Financial Group - https://op-careers.fi/search/
 Dream Broker - https://dreambroker.com/careers/
 Relex - https://jsapi.recruiterbox.com/v1/openings?client_name=relex&limit=100

@@ -3789,14 +3789,17 @@ class BlueMeteorite(Scraper):
         description = ""
 
         # Check title
-        title_tag = item.find('a')
+        title_tag = item.find('h3')
         if title_tag:
             title = title_tag.text
 
             # Check description_url
-            description_url = title_tag.get('href')
-            if description_url:
-                description = self.get_full_description(description_url)
+            description_p = item.find('p', class_='articlelist__item__button')
+            if description_p:
+                description_url_tag = description_p.find('a')
+                if description_url_tag:
+                    description_url = description_url_tag.get('href')
+                    description = self.get_full_description(description_url)
 
         return title, description_url, description
 
@@ -3810,17 +3813,15 @@ class BlueMeteorite(Scraper):
             if details_block:
                 first_p = details_block.find('p')
                 if first_p:
-                    for child in first_p.find_all(True):
-                        child.attrs = {}
-                    description += str(first_p)
-
                     for sibling in first_p.next_siblings:
+                        Scraper.clean_attrs(sibling)
                         if sibling.name:
                             if sibling.attrs and ('getsocial' in sibling.attrs.get('class') or 'yuzo_related_post' in sibling.attrs.get('class')):
                                 break
-                            for child in sibling.find_all(True):
-                                child.attrs = {}
-                            description += str(sibling)
+                            if sibling.find("img") or sibling.find("iframe"):
+                                continue
+                            if sibling.get_text().strip() != "":
+                                description += str(sibling)
 
         return description
 
@@ -6488,38 +6489,22 @@ class Oura(Scraper):
                 if job_details_html:
                     job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
 
-                    # Oura has some jobs which are disabled. These have a div with class 'alert-notice'
-                    if job_details_soup.find('div', class_='alert-notice'):
-                        enabled = False
-                    else:
-                        title_tag = job_details_soup.find('h1')
-                        if title_tag:
-                            title = title_tag.get_text()
-                            description = self.get_description(job_details_soup)
+                    content_tag = job_details_soup.find("meta", property="og:url")
+                    if content_tag:
+                        content_url = content_tag["content"]
+                        job_id = content_url.rsplit("/", 1)[1]
+                        api_url = f"https://careers-page.workable.com/api/v1/accounts/oura-health-ltd/jobs/{job_id}"
+                        resp = request_support.get(api_url)
+                        dict_json = resp.json()
 
-                        # since we are in the description page, we get also the location here
-                        header_section = job_details_soup.find('section', class_='section--header')
-                        if header_section:
-                            location_tag = header_section.find('p', class_='meta')
-                            if location_tag:
-                                location = location_tag.get_text()
+                        if "title" in dict_json:
+                            title = dict_json["title"]
+                        if "description" in dict_json and "requirements" in dict_json and "benefits" in dict_json:
+                            description = dict_json["description"] + dict_json["requirements"] + dict_json["benefits"]
+                        if "location" in dict_json and "city" in dict_json["location"]:
+                            location = dict_json["location"]["city"]
 
         return enabled, title, description_url, description, location
-
-    @staticmethod
-    def get_description(job_details_soup):
-        description = ""
-
-        for section in job_details_soup.find_all('section', class_='section--text'):
-            for child in section.children:
-                if isinstance(child, Tag):
-                    Scraper.clean_attrs(child)
-                    if child.name == "h2":
-                        child.name = "h3"
-                    if child.text != "":
-                        description += str(child)
-
-        return description
 
 
 class Matchmade(Scraper):
@@ -14610,16 +14595,16 @@ class DazzleRocks(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             soup = BeautifulSoup(job_details_html, 'lxml')
-            header = soup.find('span', class_='image main')
-            if header:
-                for sibling in header.next_siblings:
-                    if isinstance(sibling, Tag):
+            containers = soup.find_all("div", class_='row')
+            for container in containers:
+                for child in container.children:
+                    if isinstance(child, Tag):
                         # if we find the hr, break
-                        if sibling.name == "hr":
+                        if child.name == "hr":
                             break
-                        Scraper.clean_attrs(sibling)
-                        if sibling.get_text().strip() != "":
-                            description += str(sibling)
+                        Scraper.clean_attrs(child)
+                        if child.get_text().strip() != "":
+                            description += str(child)
 
         return description
 
