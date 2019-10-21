@@ -31,7 +31,7 @@ class Company(models.Model):
     name = models.CharField(max_length=200, unique=True)
     logo = models.ImageField()
     logo100 = models.ImageField(blank=True, null=True)
-    description = models.CharField(max_length=5000, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -55,13 +55,13 @@ class Job(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
     is_new = models.BooleanField(default=True)
-    description = models.CharField(max_length=5000)
+    description = models.TextField()
     salary = models.FloatField(blank=True, default=None, null=True)
     pub_date = models.DateField(blank=True, null=True, default='')
     end_date = models.DateField(blank=True, null=True, default='')
     job_type = models.CharField(max_length=500, blank=True, null=True)
     is_highlighted = models.BooleanField(default=False)
-    job_url = models.URLField(max_length=500)
+    job_url = models.URLField(max_length=1000)
     created_at = models.DateTimeField(default=timezone.now)  # UTC time by default
     updated_at = models.DateTimeField(default=timezone.now)  # UTC time by default
     tags = models.ManyToManyField('Tag', through='JobTagMap')

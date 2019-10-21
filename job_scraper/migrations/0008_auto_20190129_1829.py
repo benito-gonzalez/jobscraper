@@ -12,16 +12,16 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Kone', 'kone.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Smartly.io', 'smartly.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Cybercom Finland Oy', 'cybercom.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Enfo Oyj', 'enfo.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Sofigate', 'sofigate.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('MPY', 'mpy.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Blue Meteorite', 'sininen_meteoriitti.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Sulava', 'sulava.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Nitor', 'nitor.png');
-            INSERT INTO 'Companies'('name', 'logo') VALUES ('Softability', 'softability.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Kone', 'kone.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Smartly.io', 'smartly.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Cybercom Finland Oy', 'cybercom.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Enfo Oyj', 'enfo.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Sofigate', 'sofigate.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('MPY', 'mpy.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Blue Meteorite', 'sininen_meteoriitti.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Sulava', 'sulava.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Nitor', 'nitor.png');
+            INSERT INTO "Companies"("name", "logo") VALUES ('Softability', 'softability.png');
             """
         )
     ]

@@ -1,6 +1,6 @@
 from webapp.settings.common import *
 
-ALLOWED_HOSTS = ['91.217.83.113', 'www.jobsportal.fi', 'jobsportal.fi']
+ALLOWED_HOSTS = ['54.38.158.6', 'www.jobsportal.fi', 'jobsportal.fi']
 
 DEBUG = False
 

@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            INSERT INTO 'Companies'('name', 'logo', 'logo100', 'description') VALUES ('Posti', 'posti.png', 'posti_100.png', '<p>Posti is the leading postal and logistics service company in Finland. Our core business include postal services, parcels, freight and logistics services. We have the widest network coverage in Finland and we visit about three million households and companies every weekday. We manage the flow of everyday life in 10 countries.</p>');
+            INSERT INTO "Companies"("name", "logo", "logo100", "description") VALUES ('Posti', 'posti.png', 'posti_100.png', '<p>Posti is the leading postal and logistics service company in Finland. Our core business include postal services, parcels, freight and logistics services. We have the widest network coverage in Finland and we visit about three million households and companies every weekday. We manage the flow of everyday life in 10 countries.</p>');
             """
         )
         ]
