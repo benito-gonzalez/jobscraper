@@ -3849,7 +3849,7 @@ class Sulava(Scraper):
             for item in jobs_div.find_all('div', {'class': 'vc_gitem-post-data-source-post_title'}):
                 title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
-                    location = self.get_location(description)
+                    location = "Helsinki"
 
                     job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                     jobs.append(job)
@@ -3878,43 +3878,22 @@ class Sulava(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            details_block = job_details_soup.find('div', attrs={'class': 'full_section_inner'})
+            details_block = job_details_soup.find('div', class_='full_section_inner')
             if details_block:
-                title = details_block.find(['h1', 'h2'])
-                if title:
-                    for sibling in title.next_siblings:
-                        if sibling.name:
-                            if sibling.name == "h3" and sibling.text.strip() == "Lisätietoja antaa":
+                # Get divs with a specific class from the lowest level
+                containers = [d for d in details_block.find_all('div', class_='wpb_wrapper') if not d.find('div', class_='wpb_wrapper')]
+                for container in containers:
+                    for child in container.children:
+                        if isinstance(child, Tag):
+                            Scraper.clean_attrs(child)
+
+                            if child.find('iframe'):
                                 break
-                            if sibling.name == "blockquote":
-                                continue
 
-                            # Reduce size from paragraphs
-                            if sibling.name == "h2":
-                                sibling.name = "h4"
-                            if sibling.name == "h3":
-                                sibling.name = "h5"
-
-                            if sibling.text != "\xa0":
-                                description += str(sibling)
+                            if child.get_text().strip() != "" and child.get_text().strip() != "\xa0":
+                                description += str(child)
 
         return description
-
-    @staticmethod
-    def get_location(description):
-        """
-        It tries to get a Finnish city from the job description
-        :param description: job description
-        :return: Finnish cities as a String
-        """
-        locator = CityLocator()
-        cities = locator.get_finnish_cities(description)
-        if cities:
-            location = ", ".join(c.name for c in cities)
-        else:
-            location = None
-
-        return location
 
 
 class Nitor(Scraper):
@@ -10634,11 +10613,12 @@ class InnokasMedical(Scraper):
         soup = BeautifulSoup(html, 'lxml')
 
         for item in soup.find_all('div', class_='vc_column_container'):
-            title, description_url, description = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
-                location = self.get_location(description)
-                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                jobs.append(job)
+            if item.get_text().strip() != "":
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(description)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
 
         return jobs
 
@@ -10836,12 +10816,13 @@ class Zynga(Scraper):
         soup = BeautifulSoup(html, 'lxml')
 
         for item in soup.find_all('div', class_='listing'):
-            title, description_url, description = self.get_mandatory_fields(item)
-            if self.is_valid_job(title, description_url, description):
-                location = self.get_location(item, title)
+            if item.get_text().strip() != "No listings found.":
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = self.get_location(item, title)
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                jobs.append(job)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
 
         return jobs
 
