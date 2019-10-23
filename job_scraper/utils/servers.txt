@@ -15,7 +15,7 @@ Varjo Technologies - https://varjo.com/jobs/
 Telia Finland Oyj - https://www.telia.fi/.rest/vacancies/youatwork?type=regular
 Wärtsilä - https://careers.wartsila.com/search/?createNewAlert=false&q=&optionsFacetsDD_title=&optionsFacetsDD_country=FI&optionsFacetsDD_customfield4=&optionsFacetsDD_customfield2=&optionsFacetsDD_customfield1=&optionsFacetsDD_customfield3=
 Nordea - https://www.nordea.com/en/careers/vacant-positions/?p=3&cty=19420
-Tieto - https://www.tieto.com/en/careers/open-positions/search-our-jobs/?area=&country=Finland&city=&q=
+Tieto - https://www.tieto.com/en/careers/search-our-jobs/?area=&country=Finland&city=&q=
 Rightware - https://www.rightware.com/careers/
 Rovio - https://www.rovio.com/careers?field_location_channel_tid=722
 Futurice - https://www.futurice.com/careers/
