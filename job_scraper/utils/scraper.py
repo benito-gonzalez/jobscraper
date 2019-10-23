@@ -3274,21 +3274,17 @@ class Outotec(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            details_block = job_details_soup.find('div', attrs={'class': 'cssPageHeader'})
-            if details_block:
-                # Description contains an image, we don't want the information before that image since it is related to the company, not to the job
-                has_to_save = False
-                for tag in details_block.next_siblings:
-                    if tag.name:
-                        # description ends with a job table information
-                        if tag.find('tr'):
+            header = job_details_soup.find('div', class_='cssPageHeader')
+            if header:
+                for sibling in header.next_siblings:
+                    if isinstance(sibling, Tag):
+                        Scraper.clean_attrs(sibling)
+                        if sibling.name == "img" or sibling.find("img"):
+                            continue
+                        if sibling.find("tr"):
                             break
-                        if has_to_save:
-                            for element in tag.find_all(True):
-                                element.attrs = {}
-                            description += str(tag)
-                        if tag.find('img'):
-                            has_to_save = True
+                        if sibling.get_text().strip() != "":
+                            description += str(sibling)
 
         return description
 
