@@ -8927,86 +8927,121 @@ class Bitville(Scraper):
 
 
 class VarianMedicalSystems(Scraper):
+    page_offset = 50
 
     def extract_info(self, html):
-        log_support.log_extract_info(self.client_name)
+        # From API
         jobs = []
+        last_page = False
+        current_page = self.url
+        current_offset = 0
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
+        total_jobs = self.get_total_jobs(json_dict)
 
-        post_url = "https://sjobs.brassring.com/TgNewUI/Search/Ajax/PowerSearchJobs"
+        while not last_page:
+            jobs_list = self.get_jobs_list(json_dict)
+            if jobs_list:
+                for item in jobs_list:
+                    if self.is_finnish(item):
+                        title, description_url, description = self.get_mandatory_fields(item)
+                        if self.is_valid_job(title, description_url, description):
+                            location = "Helsinki"
+                            job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                            jobs.append(job)
 
-        body = {"partnerId": "25044", "siteId": "5224", "keyword": "", "location": "", "keywordCustomSolrFields": "JobTitle,FORMTEXT1,FORMTEXT3,FORMTEXT2,FORMTEXT4", "turnOffHttps": False,
-                "Latitude": 0, "Longitude": 0, "facetfilterfields": {"Facet": []},
-                "powersearchoptions": {"PowerSearchOption": [{"VerityZone": "FORMTEXT1", "Type": "single-select", "OptionCodes": []},
-                                                             {"VerityZone": "FORMTEXT9", "Type": "single-select", "OptionCodes": ["FI"]},
-                                                             {"VerityZone": "FORMTEXT4", "Type": "single-select", "OptionCodes": []},
-                                                             {"VerityZone": "FORMTEXT2", "Type": "single-select", "OptionCodes": []},
-                                                             {"VerityZone": "LastUpdated", "Type": "date", "Value": None}]},
-                "encryptedsessionvalue": "^DhsnDFWj5cD_slp_rhc_RDUy6mN1QQbQMHgB_slp_rhc_kY_slp_rhc_yIC0W/b_slp_rhc_9O5lqe4nV9X1RiO/R_slp_rhc_QbQeSgW0AvJXgsm9XFEifaEoadsQq/zJzdOGGCE7OrofGWFlA="}
+                current_page, current_offset = self.get_next_page(current_page, VarianMedicalSystems.page_offset)
+                if current_page and current_offset:
+                    html = request_support.simple_get(current_page, accept_json=True)
+                    json_dict = json.loads(html)
+                else:
+                    # in case of error, finish
+                    last_page = True
 
-        html = request_support.simple_post(post_url, body=body)
-        if html:
-            json_dict = json.loads(html)
-            if "Jobs" in json_dict and "Job" in json_dict["Jobs"]:
-                for item in json_dict["Jobs"]["Job"]:
-                    title, description_url, description, location = self.get_mandatory_fields(item)
-                    if self.is_valid_job(title, description_url, description):
-                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                        jobs.append(job)
+            if not jobs_list or current_offset >= total_jobs:
+                last_page = True
 
         return jobs
 
-    def get_mandatory_fields(self, item):
-        title = description_url = location = None
-        description = ""
+    def is_finnish(self, item):
+        finnish = False
 
-        if "Questions" in item:
-            for question in item["Questions"]:
-                if question["QuestionName"] == "jobtitle":
-                    title = question["Value"]
+        try:
+            location = item["subtitles"][0]["instances"][0]["text"]
+            finnish = "Helsinki" in location
+        except (IndexError, KeyError, ValueError):
+            log_support.set_error_message(self.client_name, "Can't filter jobs by location")
 
-                # we get the location here so we save a HTML call then
-                if question["QuestionName"] == "formtext3":
-                    location = question["Value"]
+        return finnish
 
-        if "Link" in item:
-            description_url = item["Link"]
-            description = self.get_description(description_url)
+    def get_total_jobs(self, json_dict):
 
-        if not location:
-            log_support.set_invalid_location(self.client_name, title)
+        try:
+            total_jobs = json_dict["body"]["children"][0]["facetContainer"]["paginationCount"]["value"]
+            # only the first page contains the proper number of jobs. Rest of them, this value is 0
+        except (IndexError, KeyError, ValueError):
+            total_jobs = 0
+            log_support.set_error_message(self.client_name, "Can not get the total number of jobs")
 
-        return title, description_url, description, location
+        return total_jobs
 
     @staticmethod
-    def get_description(url):
+    def get_jobs_list(json_dict):
+        # Jobs list is in "json_dict["body"]["children"][0]["children"][0]["listItems"]"
+        try:
+            jobs_list = json_dict["body"]["children"][0]["children"][0]["listItems"]
+        except (IndexError, KeyError, ValueError):
+            jobs_list = []
+
+        return jobs_list
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
         description = ""
-        desc1 = desc2 = None
-        job_details_html = request_support.simple_get(url)
 
+        if "title" in item and "instances" in item["title"] and len(item["title"]["instances"]) > 0 and "text" in item["title"]["instances"][0]:
+            title = item["title"]["instances"][0]["text"]
+            if "subtitles" in item and len(item["subtitles"]) > 0 and "instances" in item["subtitles"][0] and len(item["subtitles"][0]["instances"]) > 0 and "text" in item["subtitles"][0]["instances"][0]:
+                    if "commandLink" in item["title"]:
+                        relative_url = item["title"]["commandLink"]
+                        description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                        description = self.get_description(description_url)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(description_url):
+        description = ""
+        job_details_html = request_support.simple_get(description_url, accept_json=True)
         if job_details_html:
-            description_soup = BeautifulSoup(job_details_html, 'html.parser')
-            script = description_soup.find('input', {'id': 'preLoadJSON'})
-            if script:
-                if script.has_attr("value"):
-                    json_dict = json.loads(script["value"])
-                    if "Jobdetails" in json_dict and "JobDetailQuestions" in json_dict["Jobdetails"]:
-                        for question in json_dict["Jobdetails"]["JobDetailQuestions"]:
-                            if "QuestionName" in question and "AnswerValue" in question:
-                                if question["QuestionName"] == "Job Description":
-                                    desc1 = question["AnswerValue"]
-                                if question["QuestionName"] == "Job Requirements":
-                                    desc2 = question["AnswerValue"]
+            json_dict = json.loads(job_details_html)
+            try:
+                for child in json_dict["body"]["children"][1]["children"][0]["children"]:
+                    if "text" in child:
+                        description = child["text"]
+            except (ValueError, KeyError, IndexError, AttributeError):
+                # Error message will be handled by "is_valid_job()" method
+                pass
 
-                    if desc1 and desc2:
-                        full_description = desc1 + desc2
-                        description_soup = BeautifulSoup(full_description, "html.parser")
-                        for child in description_soup.children:
-                            if child.name == "style":
-                                continue
-                            Scraper.clean_attrs(child)
-                            description += str(child)
+        description_soup = BeautifulSoup(description, "html.parser")
+        Scraper.clean_attrs(description_soup)
+        description = str(description_soup)
 
         return description
+
+    def get_next_page(self, current_url, offset):
+        try:
+            result = re.search(r'/([0-9]+)\?clientRequestID', current_url)
+            current_offset = result.group(1)
+            new_offset = int(current_offset) + offset
+            old_pattern = "/" + current_offset + "?clientRequestID"
+            new_pattern = "/%d" % new_offset + "?clientRequestID"
+            new_page = current_url.replace(old_pattern, new_pattern, 1)
+        except Exception as e:
+            new_page = new_offset = None
+            log_support.set_error_message(self.client_name, "Can not get next page: " + str(e))
+
+        return new_page, new_offset
 
 
 class Valmet(Scraper):
