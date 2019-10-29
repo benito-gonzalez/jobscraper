@@ -57,7 +57,7 @@ Sanoma - https://sanoma.fi/toihin-sanomalle/avoimet-tyopaikat/
 Orion - https://web106.reachmee.com/ext/I002/1349/main?site=9&validator=39a15d53aa7879687b060a2b4e1663b5&lang=FI&ref=&ihelper=https://www.orion.fi/ura-orionilla/avoimet-tyopaikat
 Aktia - https://rekry.oikotie.fi/recruitment/widget/list/aktia-pankki-oy/internet/fi_FI/fi
 Management Events - http://jobs.jobvite.com/management-events/jobs
-Holvi - https://about.holvi.com/careers/
+Holvi - https://www.workable.com/api/accounts/11933?origin=embed
 Finitec - http://finitec.fi/vacancies
 Ferratum - https://jobs.lever.co/ferratum?location=Helsinki
 Bon Games - http://bongames.fi/#jobs

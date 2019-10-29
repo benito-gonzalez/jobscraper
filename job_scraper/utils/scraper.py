@@ -5067,69 +5067,67 @@ class ManagementEvents(Scraper):
 class Holvi(Scraper):
 
     def extract_info(self, html):
-        log_support.log_extract_info(self.client_name)
+        # From API
         jobs = []
-        soup = BeautifulSoup(html, 'html.parser')
-        section = soup.find('section', {'id': 'work-with-us'})
-        if section:
-            for row in section.find_all("li"):
-                title, description_url, description, is_enabled = self.get_mandatory_fields(row)
-                if is_enabled and self.is_valid_job(title, description_url, description):
-                    location = self.get_location(description_url, title)
+        log_support.log_extract_info(self.client_name)
+        json_dict = json.loads(html)
 
-                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                    jobs.append(job)
+        if "jobs" in json_dict:
+            for item in json_dict["jobs"]:
+                if self.is_finnish(item):
+                    title, description_url, description = self.get_mandatory_fields(item)
+                    if self.is_valid_job(title, description_url, description):
+                        location = self.get_location(item, title)
+
+                        job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                        jobs.append(job)
 
         return jobs
+
+    @staticmethod
+    def is_finnish(item):
+        finnish = True
+
+        if "country" in item:
+            finnish = "Finland" in item["country"]
+
+        return finnish
 
     def get_mandatory_fields(self, item):
         title = description_url = None
         description = ""
-        is_enabled = True
 
-        url_tag = item.find("a")
-        if url_tag:
-            title = url_tag.text
-            description_url = url_tag.get('href')
-            if description_url:
-                description, is_enabled = self.get_full_description(description_url)
+        if "title" in item:
+            title = item["title"]
+            if "url" in item:
+                description_url = item["url"]
+                if "shortcode" in item:
+                    details_url = "https://careers-page.workable.com/api/v1/accounts/holvi/jobs/" + item["shortcode"]
+                    description = self.get_description(details_url)
 
-        return title, description_url, description, is_enabled
+        return title, description_url, description
 
     @staticmethod
-    def get_full_description(url):
+    def get_description(details_url):
         description = ""
-        is_enabled = True
 
-        job_details_html = request_support.simple_get(url)
-        if job_details_html:
-            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
+        job_details_json = request_support.simple_get(details_url, accept_json=True)
+        if job_details_json:
+            json_dict = json.loads(job_details_json)
+            if "description" in json_dict:
+                description = json_dict["description"]
+            if "requirements" in json_dict:
+                description += json_dict["requirements"]
+            if "benefits" in json_dict:
+                description += json_dict["benefits"]
 
-            # Holvi has some jobs which are no longer valid. Those invalid jobs do not have '<section class="section section--header">'
-            is_enabled = job_details_soup.find('section', class_='section section--header')
-            if is_enabled:
-                sections = job_details_soup.find_all('section', class_='section section--text')
-                for section in sections:
-                    for child in section.children:
-                        Scraper.clean_attrs(child)
-                        if child.name:
-                            if child.name == "h2":
-                                child.name = "h4"
-                            description += str(child)
+        return description
 
-        return description, is_enabled
-
-    def get_location(self, description_url, title):
+    def get_location(self, item, title):
         location = None
 
-        job_details_html = request_support.simple_get(description_url)
-        if job_details_html:
-            job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            section = job_details_soup.find('section', class_='section section--header')
-            if section:
-                location_tag = section.find('p', class_='meta')
-                if location_tag:
-                    location = location_tag.text
+        if "city" in item:
+            location = item["city"]
 
         if not location:
             log_support.set_invalid_location(self.client_name, title)
