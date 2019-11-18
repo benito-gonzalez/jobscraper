@@ -110,13 +110,13 @@ class IndexView(generic.ListView):
         if keyword_query and location_query:
             keyword_words = keyword_query.split(" ")
 
-            # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
+            # If the search has special characters, the word boundary '\y' is not valid, we need to remove it in order to return the proper jobs.
             if search("[^a-zA-Z0-9 ]+", keyword_query):
                 # It returns all jobs which title contains all words typed by the user. In any order
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q)) | Q(company__name__iregex=r"\b" + escape(q)) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\y" + escape(q)) | Q(company__name__iregex=r"\y" + escape(q)) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-updated_at')
 
             else:
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=escape(q) + r"\y") | Q(company__name__iregex=r"\y" + escape(q) + r"\y") for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-updated_at')
 
             # Gets jobs which full query matches with a keyword
             list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_location(location_query)).order_by('-jobtagmap__num_times')
@@ -139,11 +139,11 @@ class IndexView(generic.ListView):
 
             keyword_words = keyword_query.split(" ")
 
-            # If the search has special characters, the word boundary '\b' is not valid, we need to remove it in order to return the proper jobs.
+            # If the search has special characters, the word boundary '\y' is not valid, we need to remove it in order to return the proper jobs.
             if search("[^a-zA-Z0-9 ]+", keyword_query):
                 list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=escape(q)) | Q(company__name__iregex=escape(q)) for q in keyword_words]) & self.filter_by_active()).order_by('-updated_at')
             else:
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\b" + escape(q) + r"\b") | Q(company__name__iregex=r"\b" + escape(q) + r"\b") for q in keyword_words]) & self.filter_by_active()).order_by('-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\y" + escape(q) + r"\y") | Q(company__name__iregex=r"\y" + escape(q) + r"\y") for q in keyword_words]) & self.filter_by_active()).order_by('-updated_at')
 
             # Gets jobs which full query matches with a keyword
             list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_active()).order_by('-jobtagmap__num_times')
