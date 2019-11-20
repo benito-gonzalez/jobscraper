@@ -45,9 +45,6 @@ def handler404(request, exception, template_name="404.html"):
     return response
 
 
-if not settings.DEBUG:
-    urlpatterns.append(url(r'^.*$', RedirectView.as_view(url='/', permanent=False), name='index'))
-
 if settings.DEBUG:
     urlpatterns += [
         url(r'^media/(?P<path>.*)$', serve, {
