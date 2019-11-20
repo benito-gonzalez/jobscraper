@@ -811,7 +811,7 @@ class Innofactor(Scraper):
         soup = BeautifulSoup(html, 'html.parser')
         ul = soup.find("ul", attrs={'class': 'jobs'})
         if ul:
-            for li in ul.find_all('li'):
+            for li in ul.findChildren('li', recursive=False):
                 title, description_url, description = self.get_mandatory_fields(li)
                 if self.is_valid_job(title, description_url, description):
                     end_date = self.get_end_date(description)
@@ -6044,7 +6044,7 @@ class Accenture(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
 
-        post_url = "https://www.accenture.com/fi-en/careers/jobsearchkeywords.query"
+        post_url = "https://www.accenture.com/api/sitecore/JobSearch/FindJobs"
         body = {
             "f": 1,
             "s": 24,
@@ -6465,17 +6465,20 @@ class Oura(Scraper):
                     content_tag = job_details_soup.find("meta", property="og:url")
                     if content_tag:
                         content_url = content_tag["content"]
-                        job_id = content_url.rsplit("/", 1)[1]
-                        api_url = f"https://careers-page.workable.com/api/v1/accounts/oura-health-ltd/jobs/{job_id}"
-                        resp = request_support.get(api_url)
-                        dict_json = resp.json()
+                        if content_url != "" and "/" in content_url:
+                            job_id = content_url.rsplit("/", 1)[1]
+                            api_url = f"https://careers-page.workable.com/api/v1/accounts/oura-health-ltd/jobs/{job_id}"
+                            resp = request_support.get(api_url)
+                            dict_json = resp.json()
 
-                        if "title" in dict_json:
-                            title = dict_json["title"]
-                        if "description" in dict_json and "requirements" in dict_json and "benefits" in dict_json:
-                            description = dict_json["description"] + dict_json["requirements"] + dict_json["benefits"]
-                        if "location" in dict_json and "city" in dict_json["location"]:
-                            location = dict_json["location"]["city"]
+                            if "title" in dict_json:
+                                title = dict_json["title"]
+                            if "description" in dict_json and "requirements" in dict_json and "benefits" in dict_json:
+                                description = dict_json["description"] + dict_json["requirements"] + dict_json["benefits"]
+                            if "location" in dict_json and "city" in dict_json["location"]:
+                                location = dict_json["location"]["city"]
+                        else:
+                            enabled = False
 
         return enabled, title, description_url, description, location
 
@@ -7338,7 +7341,10 @@ class Taiste(Scraper):
 
                 relative_url = item.get('href')
                 if relative_url:
-                    description_url = self.url.split(".fi/")[0] + ".fi" + relative_url
+                    if "https" in relative_url:
+                        description_url = relative_url
+                    else:
+                        description_url = self.url.split(".fi/")[0] + ".fi" + relative_url
 
                     if description_url:
                         description = self.get_description(description_url)
@@ -7568,7 +7574,10 @@ class Lumoame(Scraper):
 
         relative_url = item.get('href')
         if relative_url:
-            description_url = self.url.split(".me/")[0] + ".me" + relative_url
+            if "https" in relative_url:
+                description_url = relative_url
+            else:
+                description_url = self.url.split(".me/")[0] + ".me" + relative_url
 
             job_details_html = request_support.simple_get(description_url)
             if job_details_html:
@@ -8875,7 +8884,7 @@ class Bitville(Scraper):
         title = title_raw.replace("\n", " ").replace("  ", "")
         relative_url = item.get('href')
         if relative_url:
-            description_url = self.url.split(".fi/")[0] + ".fi" + relative_url
+            description_url = self.url.split(".com/")[0] + ".com" + relative_url
             description = self.get_description(description_url)
 
         return title, description_url, description
@@ -9000,10 +9009,10 @@ class VarianMedicalSystems(Scraper):
         if "title" in item and "instances" in item["title"] and len(item["title"]["instances"]) > 0 and "text" in item["title"]["instances"][0]:
             title = item["title"]["instances"][0]["text"]
             if "subtitles" in item and len(item["subtitles"]) > 0 and "instances" in item["subtitles"][0] and len(item["subtitles"][0]["instances"]) > 0 and "text" in item["subtitles"][0]["instances"][0]:
-                    if "commandLink" in item["title"]:
-                        relative_url = item["title"]["commandLink"]
-                        description_url = self.url.split(".com/")[0] + ".com" + relative_url
-                        description = self.get_description(description_url)
+                if "commandLink" in item["title"]:
+                    relative_url = item["title"]["commandLink"]
+                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
