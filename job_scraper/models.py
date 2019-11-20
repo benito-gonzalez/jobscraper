@@ -22,6 +22,10 @@ class City(models.Model):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def is_valid_location(location):
+        return City.objects.filter(name=location).exists() or City.objects.filter(swedish_name=location).exists() or City.objects.filter(region__name=location).exists()
+
     class Meta:
         db_table = "Cities"
         verbose_name_plural = "cities"

@@ -22,6 +22,7 @@ from .forms import ContactForm
 from job_scraper.models import Job
 from job_scraper.models import Company
 from job_scraper.models import UserSearches
+from job_scraper.models import City
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
 
 
@@ -57,10 +58,19 @@ class IndexView(generic.ListView):
     context_object_name = 'jobs_list'
     only_english = None
     company = None
+    title_text = None
 
     def get_context_data(self, **kwargs):
         ctx = super(IndexView, self).get_context_data(**kwargs)
         ctx['company'] = self.company
+        if "jobs-in-" in self.request.path:
+            location = self.request.path.rsplit("-",1)[1].capitalize()
+            if City.is_valid_location(location):
+                ctx['title_text'] = "Search Jobs In " + self.request.path.rsplit("-",1)[1].capitalize()
+        if "location" in self.request.GET:
+            if City.is_valid_location(self.request.GET["location"]):
+                ctx['title_text'] = "Search Jobs In " + self.request.GET["location"]
+
         return ctx
 
     @staticmethod

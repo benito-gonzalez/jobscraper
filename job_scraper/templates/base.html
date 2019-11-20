@@ -33,7 +33,13 @@
     <link rel="stylesheet" type="text/css" href="{% static 'custom.css' %}">
 
     <title>
-        {% block title %}Search & Find jobs in Finland • Jobs Portal{% endblock %}
+        {% block title %}
+            {% if title_text %}
+                {{ title_text }}
+            {% else %}
+                Search & Find jobs in Finland • Jobs Portal
+            {% endif %}
+        {% endblock %}
     </title>
 </head>
 
@@ -49,7 +55,11 @@
                     <a href="/"><img src="{% static 'images/logo.png' %}" alt="JobsPortal logo" class="logo-size-60"></a>
                 </div>
                 <div class="col-9 col-lg-12 text-lg-center pl-sm-5 pl-md-0 pl-lg-4 pt-2 pt-md-0">
-                    <h1 class="header-title">Search Jobs In Finland</h1>
+                    {% if title_text %}
+                        <h1 class="header-title">{{ title_text }}</h1>
+                    {% else %}
+                        <h1 class="header-title">Search Jobs In Finland</h1>
+                    {% endif %}
                 </div>
             </div>
 
