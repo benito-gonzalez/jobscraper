@@ -9,7 +9,7 @@ from django.contrib import messages
 from re import escape
 from re import search
 from urllib.parse import unquote
-from datetime import datetime
+from datetime import datetime, date
 
 from operator import and_
 from operator import or_
@@ -176,13 +176,21 @@ class IndexView(generic.ListView):
 class DetailView(generic.DetailView):
     model = Job
     template_name = 'detail.html'
+    is_disable = False
+    is_expired = False
+
+    def get_context_data(self, **kwargs):
+        ctx = super(DetailView, self).get_context_data(**kwargs)
+        if not self.object.is_active:
+            ctx['is_disabled'] = True
+        if self.object.end_date and self.object.end_date < date.today():
+            ctx['is_expired'] = True
+
+        return ctx
 
     def get_object(self, **kwargs):
         job = get_object_or_404(Job, pk=self.kwargs['pk'])
         if job.get_title_slug != self.kwargs.get('slug'):
-            raise Http404
-
-        if not job.is_active:
             raise Http404
 
         job.update_details_counter()

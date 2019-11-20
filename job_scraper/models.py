@@ -224,6 +224,10 @@ class Job(models.Model):
 
         return cities_str
 
+    @property
+    def get_updated_date(self):
+        return self.updated_at.date()
+
     class Meta:
         db_table = "Jobs"
 

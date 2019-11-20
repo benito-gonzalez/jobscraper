@@ -429,6 +429,11 @@ Bottom up
     margin-right: auto;
 }
 
+.alert-danger-border{
+    border: #FF0000 solid 1px;
+    border-radius: 5px;
+}
+
 input:focus::-webkit-input-placeholder {
     color: transparent;
 }

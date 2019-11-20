@@ -6,6 +6,27 @@
 
 
 {% block content %}
+
+    {% if is_disabled %}
+        <div class="alert alert-danger alert-danger-border mt-5 mb-5" role="alert">
+            <div class="row pt-2 pb-2">
+                <div class="col text-center font-weight-bold">
+                    <h4>This job is no longer active. It was disabled the {{ job.get_updated_date }} by {{ job.company}}</h4>
+                </div>
+            </div>
+
+        </div>
+    {% elif is_expired %}
+        <div class="alert alert-danger alert-danger-border mt-5 mb-5" role="alert">
+            <div class="row pt-2 pb-2">
+                <div class="col text-center font-weight-bold">
+                    <h4>This job is no longer active. It expired the {{ job.end_date }}</h4>
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+
     <div class="row mt-3">
         <div class="col text-md-center">
             <h1><strong>{{ job.title }}</strong></h1>
