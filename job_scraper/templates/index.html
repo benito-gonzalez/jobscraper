@@ -36,9 +36,9 @@
 
     {% if jobs_list %}
         {% for job in jobs_list %}
-            <div class="row row-job mt-3 align-items-center pr-lg-5">
-
                 {% if job.is_highlighted %}
+            <div class="row row-job-featured mt-3 align-items-center pr-lg-5 featured-background pt-3">
+
                     <div class="media border-bottom border-gray d-flex align-items-stretch mr-4">
                     <div class="p-2 featured-div">
                         <span id="featuredSpan"> Featured </span>
@@ -172,7 +172,9 @@
                     </div>
                 </div>
                     </div>
+            </div>
                 {% else %}
+            <div class="row row-job mt-3 align-items-center pr-lg-5">
 
                 <div class="col-lg-2 d-none d-lg-block text-lg-right job-logo">
                     <a href="/jobs-at-{{ job.company.name }}"><img src="{{ job.company.logo.url }}" class="logos" alt="{{ job.company.name }}" title="Jobs at {{ job.company.name }}"></a>
@@ -302,11 +304,10 @@
                     </div>
                 </div>
 
-
+            </div>
                 {% endif %}
 
                 <!--   </div>  -->
-            </div>
 
         {% endfor %}
 

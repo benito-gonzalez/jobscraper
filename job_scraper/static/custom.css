@@ -141,6 +141,10 @@ Jobs
     border-bottom: 2px solid #dee2e6 !important;
 }
 
+.row-job-featured {
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
 .row-company {
     border-bottom: 3px solid #e6e6e6 !important;
     width: 122%; /*100*(100/80)*/
@@ -399,10 +403,16 @@ Bottom up
 
 /* featured code */
 
+.featured-background {
+    background-color: #F5F5F5;
+    border-radius: 15px;
+}
+
+
 .featured-div {
     background-color: #28a745;
     position: relative;
-    border: 2px solid #0e51a5;
+    border: 3px solid #28a745;
     color: white;
     font-weight: bold;
     margin-top: -16px;
