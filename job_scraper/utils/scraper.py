@@ -417,6 +417,8 @@ def generate_instance_from_client(client_name, url):
         return UtopiaAnalytics(client_name, url)
     if client_name == "Valohai":
         return Valohai(client_name, url)
+    if client_name == "Amino":
+        return Amino(client_name, url)
     else:
         return None
 
@@ -15315,5 +15317,52 @@ class Valohai(Scraper):
                 Scraper.clean_attrs(child)
                 if child.get_text().strip() != "":
                     description += str(child)
+
+        return description
+
+
+class Amino(Scraper):
+
+    def extract_info(self, html):
+        log_support.log_extract_info(self.client_name)
+        jobs = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        container = soup.find('div', class_='medium-11')
+        if container:
+            for item in container.find_all("div", class_='page-content'):
+                title, description_url, description = self.get_mandatory_fields(item)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Helsinki"  # Only one office located in Helsinki
+
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
+
+        return jobs
+
+    def get_mandatory_fields(self, item):
+        title = description_url = None
+        description = ""
+
+        first_p = item.find('p')
+        if first_p:
+            title_tag = first_p.find('strong')
+            if title_tag:
+                title = title_tag.get_text().strip()
+                # This website does not have specific job description neither div id to show the description.
+                description_url = self.url
+                description = self.get_description(first_p)
+
+        return title, description_url, description
+
+    @staticmethod
+    def get_description(first_p):
+        description = ""
+
+        for sibling in first_p.next_siblings:
+            if isinstance(sibling, Tag):
+                Scraper.clean_attrs(sibling)
+                if sibling.get_text().strip() != "":
+                    description += str(sibling)
 
         return description
