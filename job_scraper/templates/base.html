@@ -36,6 +36,8 @@
         {% block title %}
             {% if title_text %}
                 {{ title_text }}
+            {% elif company_text %}
+                {{ company_text }}
             {% else %}
                 Search & Find jobs in Finland • Jobs Portal
             {% endif %}
@@ -57,6 +59,8 @@
                 <div class="col-9 col-lg-12 text-lg-center pl-sm-5 pl-md-0 pl-lg-4 pt-2 pt-md-0">
                     {% if title_text %}
                         <h1 class="header-title">{{ title_text }}</h1>
+                    {% elif company_text %}
+                        <h1 class="header-title">{{ company_text }}</h1>
                     {% else %}
                         <h1 class="header-title">Search Jobs In Finland</h1>
                     {% endif %}
@@ -317,7 +321,10 @@
 
 <!-- content -->
 <script src='https://www.google.com/recaptcha/api.js'></script>
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
         crossorigin="anonymous"></script>

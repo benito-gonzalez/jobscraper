@@ -59,10 +59,14 @@ class IndexView(generic.ListView):
     only_english = None
     company = None
     title_text = None
+    company_text = None
 
     def get_context_data(self, **kwargs):
         ctx = super(IndexView, self).get_context_data(**kwargs)
         ctx['company'] = self.company
+        if self.company:
+            ctx["company_text"] = "Jobs at " + self.company.name
+
         if "jobs-in-" in self.request.path:
             location = self.request.path.rsplit("-",1)[1].capitalize()
             if City.is_valid_location(location):
