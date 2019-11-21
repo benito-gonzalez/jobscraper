@@ -127,16 +127,16 @@ class IndexView(generic.ListView):
             # If the search has special characters, the word boundary '\y' is not valid, we need to remove it in order to return the proper jobs.
             if search("[^a-zA-Z0-9 ]+", keyword_query):
                 # It returns all jobs which title contains all words typed by the user. In any order
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\y" + escape(q)) | Q(company__name__iregex=r"\y" + escape(q)) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\y" + escape(q)) | Q(company__name__iregex=r"\y" + escape(q)) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-is_highlighted', '-updated_at')
 
             else:
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=escape(q) + r"\y") | Q(company__name__iregex=r"\y" + escape(q) + r"\y") for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=escape(q) + r"\y") | Q(company__name__iregex=r"\y" + escape(q) + r"\y") for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-is_highlighted', '-updated_at')
 
             # Gets jobs which full query matches with a keyword
-            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_location(location_query)).order_by('-jobtagmap__num_times')
+            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_location(location_query)).order_by('-is_highlighted', '-jobtagmap__num_times')
 
             # Gets jobs which any word from user query matches with a keyword
-            list3 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-jobtagmap__num_times')
+            list3 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_location(location_query)).order_by('-is_highlighted', '-jobtagmap__num_times')
 
             result_list = list(chain(list1, list2, list3))
 
@@ -147,7 +147,7 @@ class IndexView(generic.ListView):
             try:
                 self.company = Company.objects.get(name__iexact=keyword_query)
                 if self.company:
-                    return Job.objects.filter(Q(company__name__iexact=keyword_query) & self.filter_by_active()).order_by('-updated_at')
+                    return Job.objects.filter(Q(company__name__iexact=keyword_query) & self.filter_by_active()).order_by('-is_highlighted', '-updated_at')
             except (Company.DoesNotExist, Company.MultipleObjectsReturned):
                 pass
 
@@ -155,15 +155,15 @@ class IndexView(generic.ListView):
 
             # If the search has special characters, the word boundary '\y' is not valid, we need to remove it in order to return the proper jobs.
             if search("[^a-zA-Z0-9 ]+", keyword_query):
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=escape(q)) | Q(company__name__iregex=escape(q)) for q in keyword_words]) & self.filter_by_active()).order_by('-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=escape(q)) | Q(company__name__iregex=escape(q)) for q in keyword_words]) & self.filter_by_active()).order_by('-is_highlighted', '-updated_at')
             else:
-                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\y" + escape(q) + r"\y") | Q(company__name__iregex=r"\y" + escape(q) + r"\y") for q in keyword_words]) & self.filter_by_active()).order_by('-updated_at')
+                list1 = Job.objects.filter(functools.reduce(and_, [Q(title__iregex=r"\y" + escape(q) + r"\y") | Q(company__name__iregex=r"\y" + escape(q) + r"\y") for q in keyword_words]) & self.filter_by_active()).order_by('-is_highlighted', '-updated_at')
 
             # Gets jobs which full query matches with a keyword
-            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_active()).order_by('-jobtagmap__num_times')
+            list2 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=keyword_query)]) & self.filter_by_active()).order_by('-is_highlighted', '-jobtagmap__num_times')
 
             # Gets jobs which any word from user query matches with a keyword
-            list3 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_active()).order_by('-jobtagmap__num_times')
+            list3 = Job.objects.filter(functools.reduce(or_, [Q(tags__name__iexact=q) for q in keyword_words]) & self.filter_by_active()).order_by('-is_highlighted', '-jobtagmap__num_times')
 
             result_list = list(chain(list1, list2, list3))
 
@@ -172,9 +172,9 @@ class IndexView(generic.ListView):
 
         if location_query:
             UserSearches.add_entry(where_entry=location_query)
-            return Job.objects.filter(self.filter_by_location(location_query)).order_by('-updated_at')
+            return Job.objects.filter(self.filter_by_location(location_query)).order_by('-is_highlighted', '-updated_at')
         else:
-            return Job.objects.filter(self.filter_by_active()).order_by('-updated_at')
+            return Job.objects.filter(self.filter_by_active()).order_by('-is_highlighted', '-updated_at')
 
 
 class DetailView(generic.DetailView):
