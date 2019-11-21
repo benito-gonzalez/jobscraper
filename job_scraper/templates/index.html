@@ -37,16 +37,13 @@
     {% if jobs_list %}
         {% for job in jobs_list %}
             <div class="row row-job mt-3 align-items-center pr-lg-5">
-                <!--
+
                 {% if job.is_highlighted %}
                     <div class="media border-bottom border-gray d-flex align-items-stretch mr-4">
                     <div class="p-2 featured-div">
                         <span id="featuredSpan"> Featured </span>
                     </div>
-                {% else %}
-                    <div class="media d-flex align-items-center no-featured-div">
-                {% endif %}
-                -->
+
                 <div class="col-lg-2 d-none d-lg-block text-lg-right job-logo">
                     <a href="/jobs-at-{{ job.company.name }}"><img src="{{ job.company.logo.url }}" class="logos" alt="{{ job.company.name }}" title="Jobs at {{ job.company.name }}"></a>
                 </div>
@@ -174,6 +171,140 @@
                         </div>
                     </div>
                 </div>
+                    </div>
+                {% else %}
+
+                <div class="col-lg-2 d-none d-lg-block text-lg-right job-logo">
+                    <a href="/jobs-at-{{ job.company.name }}"><img src="{{ job.company.logo.url }}" class="logos" alt="{{ job.company.name }}" title="Jobs at {{ job.company.name }}"></a>
+                </div>
+
+                <div class="col-12 col-lg-10">
+                    <div class="row">
+
+                        {% if job.is_recent_job %}
+                            <div class="col-12 col-lg-11 job-title">
+                                <a href="{% url 'job_scraper:detail' job.id job.get_title_slug %}" class="job-title-link">{{ job.title }}</a>
+                            </div>
+                            <div class="d-none d-lg-block col-lg-1">
+                                <div class="job-tag">New</div>
+                            </div>
+
+                        {% elif job.is_published_again %}
+                            <div class="col-12 col-lg-9 job-title">
+                                <a href="{% url 'job_scraper:detail' job.id job.get_title_slug %}" class="job-title-link">{{ job.title }}</a>
+                            </div>
+                            <div class="d-none d-lg-block col-lg-3">
+                                <div class="job-tag">Republished</div>
+                            </div>
+
+                        {% else %}
+                            <div class="col-12 job-title">
+                                <a href="{% url 'job_scraper:detail' job.id job.get_title_slug %}" class="job-title-link">{{ job.title }}</a>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="row job-details pl-2">
+                        <div class="col-6 col-lg-12">
+                            <div class="row">
+                                <div class="col-12 col-lg-auto">
+                                    <img src="{% static 'images/pub_date.png' %}" width="20px" height="auto" alt="Published date"> {{ job.posted_date }}
+                                </div>
+
+                                {% if job.end_date %}
+                                    <div class="col-12 col-lg-auto mt-1 mt-lg-0 ">
+                                        <img src="{% static 'images/end_date.png' %}" width="23px" height="auto" alt="End date">
+                                        <span><strong class="job-end-date">Due date: </strong>{{ job.end_date |date:"d M, Y" }}</span>
+                                    </div>
+                                {% endif %}
+
+                                {% if job.get_locations %}
+                                    <div class="col-12 col-lg-auto mt-1 mt-lg-0 ">
+                                        <img src="{% static 'images/location.png' %}" width="18px" height="auto" alt="Location">
+                                        <span>{{ job.get_locations }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-6 d-lg-none justify-content-center align-self-center">
+                            <a href="/jobs-at-{{ job.company.name }}"><img class="logo-img-mobile" src="{{ job.company.logo.url }}" alt="{{ job.company.name }}" title="Jobs at {{ job.company.name }}"></a>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md d-none d-lg-block mt-3">
+                            <p>{{ job.get_initial_description |slice:":500" }}...</p>
+                        </div>
+                    </div>
+
+                    <div class="frm-outer-container">
+                        <div class="frm-container" style="display: none;">
+                            {% if job.get_keywords %}
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="row justify-content-start ml-1">
+                                            {% for item in job.get_keywords_mobile %}
+                                                <div class="col-auto text-center pl-1 pr-0">
+                                                    <a href="/{{ item }}-jobs" class="tag-label-link">
+                                                        <div class="tag-label">
+                                                            {{ item }}
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col mt-3">
+                                    <p>{{ job.get_initial_description |slice:":250" }}...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3 mt-lg-0 mb-2 ">
+                            <div class="col-4 d-lg-none pr-1" onClick="return true">
+                                <button class="btn btn-more btn-block btn-outline-success btn-sm">+ More</button>
+                            </div>
+                            <div class="col-4 d-lg-none pl-1 pr-1">
+                                <a href="{% url 'job_scraper:detail' job.id job.get_title_slug %}" class="btn btn-block btn-outline-success btn-sm">Job details</a>
+                            </div>
+                            <div class="col-4 col-md d-lg-none pl-1">
+                                <a href="{% url 'job_scraper:apply' job.id job.get_title_slug %}" class="btn btn-block btn-apply btn-sm btn-apply-mbl" rel="nofollow">Apply!</a>
+                            </div>
+
+                            <div class="col-9 d-none d-lg-block">
+                                {% if job.get_keywords %}
+                                    <div class="row justify-content-start ml-1">
+                                        {% for item in job.get_keywords %}
+                                            <div class="col-auto text-center pl-1 pr-0">
+                                                <a href="/{{ item }}-jobs" class="tag-label-link">
+                                                    <div class="tag-label">
+                                                        {{ item }}
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-3 d-none d-lg-block">
+                                <a href="{% url 'job_scraper:detail' job.id job.get_title_slug %}" class="btn btn-show-more btn-outline-success btn-sm ">Show more</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                {% endif %}
+
                 <!--   </div>  -->
             </div>
 
