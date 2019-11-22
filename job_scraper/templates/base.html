@@ -34,10 +34,14 @@
 
     <title>
         {% block title %}
-            {% if title_text %}
-                {{ title_text }}
+            {% if keyword_text and location_text %}
+                {{ keyword_text }} Jobs In {{ location_text }}
+            {% elif location_text %}
+                Search Jobs In {{ location_text }}
+            {% elif keyword_text %}
+                {{ keyword_text }} Jobs In Finland
             {% elif company_text %}
-                {{ company_text }}
+                Jobs at {{ company_text }}
             {% else %}
                 Search & Find jobs in Finland • Jobs Portal
             {% endif %}
@@ -57,10 +61,10 @@
                     <a href="/"><img src="{% static 'images/logo.png' %}" alt="JobsPortal logo" class="logo-size-60"></a>
                 </div>
                 <div class="col-9 col-lg-12 text-lg-center pl-sm-5 pl-md-0 pl-lg-4 pt-2 pt-md-0">
-                    {% if title_text %}
-                        <h1 class="header-title">{{ title_text }}</h1>
+                    {% if location_text %}
+                        <h1 class="header-title">Search Jobs In {{ location_text }}</h1>
                     {% elif company_text %}
-                        <h1 class="header-title">{{ company_text }}</h1>
+                        <h1 class="header-title">Jobs at {{ company_text }}</h1>
                     {% else %}
                         <h1 class="header-title">Search Jobs In Finland</h1>
                     {% endif %}
@@ -227,34 +231,63 @@
                     <legend class="footer-legend">Jobs by keywords</legend>
 
                     <ul class="ul-jobs-list">
-                        <li>
-                            <a href="/python-jobs" class="about-links">Python jobs</a>
-                        </li>
-                        <li>
-                            <a href="/java-jobs" class="about-links">Java jobs</a>
-                        </li>
-                        <li>
-                            <a href="/c-jobs" class="about-links">C jobs</a>
-                        </li>
-                        <li>
-                            <a href="/javascript-jobs" class="about-links">JavaScript jobs</a>
-                        </li>
-                        <li>
-                            <a href="/ios-jobs" class="about-links">iOS jobs</a>
-                        </li>
-                        <li>
-                            <a href="/android-jobs" class="about-links">Android jobs</a>
-                        </li>
-                        <li>
-                            <a href="/sql-jobs" class="about-links">SQL jobs</a>
-                        </li>
-                        <li>
-                            <a href="/node-jobs" class="about-links">Node jobs</a>
-                        </li>
-                        <li>
-                            <a href="/react-jobs" class="about-links">React jobs</a>
-                        </li>
-
+                        {% if location_text %}
+                            <li>
+                                <a href="/python-jobs-in-{{ location_text }}" class="about-links">Python jobs</a>
+                            </li>
+                            <li>
+                                <a href="/java-jobs-in-{{ location_text }}" class="about-links">Java jobs</a>
+                            </li>
+                            <li>
+                                <a href="/c-jobs-in-{{ location_text }}" class="about-links">C jobs</a>
+                            </li>
+                            <li>
+                                <a href="/javascript-jobs-in-{{ location_text }}" class="about-links">JavaScript jobs</a>
+                            </li>
+                            <li>
+                                <a href="/ios-jobs-in-{{ location_text }}" class="about-links">iOS jobs</a>
+                            </li>
+                            <li>
+                                <a href="/android-jobs-in-{{ location_text }}" class="about-links">Android jobs</a>
+                            </li>
+                            <li>
+                                <a href="/sql-jobs-in-{{ location_text }}" class="about-links">SQL jobs</a>
+                            </li>
+                            <li>
+                                <a href="/node-jobs-in-{{ location_text }}" class="about-links">Node jobs</a>
+                            </li>
+                            <li>
+                                <a href="/react-jobs-in-{{ location_text }}" class="about-links">React jobs</a>
+                            </li>
+                        {% else %}
+                            <li>
+                                <a href="/python-jobs" class="about-links">Python jobs</a>
+                            </li>
+                            <li>
+                                <a href="/java-jobs" class="about-links">Java jobs</a>
+                            </li>
+                            <li>
+                                <a href="/c-jobs" class="about-links">C jobs</a>
+                            </li>
+                            <li>
+                                <a href="/javascript-jobs" class="about-links">JavaScript jobs</a>
+                            </li>
+                            <li>
+                                <a href="/ios-jobs" class="about-links">iOS jobs</a>
+                            </li>
+                            <li>
+                                <a href="/android-jobs" class="about-links">Android jobs</a>
+                            </li>
+                            <li>
+                                <a href="/sql-jobs" class="about-links">SQL jobs</a>
+                            </li>
+                            <li>
+                                <a href="/node-jobs" class="about-links">Node jobs</a>
+                            </li>
+                            <li>
+                                <a href="/react-jobs" class="about-links">React jobs</a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </fieldset>
             </div>

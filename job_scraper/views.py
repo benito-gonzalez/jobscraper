@@ -23,6 +23,7 @@ from job_scraper.models import Job
 from job_scraper.models import Company
 from job_scraper.models import UserSearches
 from job_scraper.models import City
+from job_scraper.models import Tag
 from job_scraper.serializers import JobSerializer, JobDetailSerializer
 
 
@@ -58,22 +59,29 @@ class IndexView(generic.ListView):
     context_object_name = 'jobs_list'
     only_english = None
     company = None
-    title_text = None
+    location_text = None
     company_text = None
+    keyword_text = None
 
     def get_context_data(self, **kwargs):
         ctx = super(IndexView, self).get_context_data(**kwargs)
         ctx['company'] = self.company
         if self.company:
-            ctx["company_text"] = "Jobs at " + self.company.name
+            ctx["company_text"] = self.company.name
 
         if "jobs-in-" in self.request.path:
-            location = self.request.path.rsplit("-",1)[1].capitalize()
+            location = self.request.path.rsplit("-", 1)[1].capitalize()
             if City.is_valid_location(location):
-                ctx['title_text'] = "Search Jobs In " + self.request.path.rsplit("-",1)[1].capitalize()
+                ctx['location_text'] = self.request.path.rsplit("-", 1)[1].capitalize()
         if "location" in self.request.GET:
             if City.is_valid_location(self.request.GET["location"]):
-                ctx['title_text'] = "Search Jobs In " + self.request.GET["location"]
+                ctx['location_text'] = self.request.GET["location"]
+
+        m = search("^/(.+?)-jobs", self.request.path)
+        if m:
+            keyword = m.group(1)
+            if Tag.is_valid_tag(keyword):
+                ctx['keyword_text'] = keyword.capitalize()
 
         return ctx
 
@@ -103,23 +111,33 @@ class IndexView(generic.ListView):
         global only_english
         only_english = self.request.GET.get('only_english', "None")
 
-        if self.request.get_full_path().startswith("/jobs-in-"):
-            location_query = self.request.get_full_path().split("/jobs-in-")[1]
+        # checks URLS like '/python-jobs-in-Tampere'
+        m = search(r"^/(.+?)-jobs-in-(.+?)$", self.request.path)
+        if m and m.group(1) and m.group(2):
+            keyword_query = m.group(1)
+            self.request.GET._mutable = True
+            self.request.GET["keyword"] = keyword_query
+            location_query = m.group(2)
             self.request.GET._mutable = True
             self.request.GET["location"] = location_query
+        else:
+            if self.request.get_full_path().startswith("/jobs-in-"):
+                location_query = self.request.get_full_path().split("/jobs-in-")[1]
+                self.request.GET._mutable = True
+                self.request.GET["location"] = location_query
 
-        if self.request.get_full_path().startswith("/jobs-at-"):
-            keyword_query_raw = self.request.get_full_path().split("/jobs-at-")[1]
-            keyword_query = unquote(keyword_query_raw)
-            self.request.GET._mutable = True
-            self.request.GET["keyword"] = keyword_query
+            if self.request.get_full_path().startswith("/jobs-at-"):
+                keyword_query_raw = self.request.get_full_path().split("/jobs-at-")[1]
+                keyword_query = unquote(keyword_query_raw)
+                self.request.GET._mutable = True
+                self.request.GET["keyword"] = keyword_query
 
-        if self.request.get_full_path().endswith("-jobs"):
-            keyword_query_raw = self.request.get_full_path().split("-jobs")[0]
-            # remove initial "/"
-            keyword_query = unquote(keyword_query_raw[1:])
-            self.request.GET._mutable = True
-            self.request.GET["keyword"] = keyword_query
+            if self.request.get_full_path().endswith("-jobs"):
+                keyword_query_raw = self.request.get_full_path().split("-jobs")[0]
+                # remove initial "/"
+                keyword_query = unquote(keyword_query_raw[1:])
+                self.request.GET._mutable = True
+                self.request.GET["keyword"] = keyword_query
 
         if keyword_query and location_query:
             keyword_words = keyword_query.split(" ")

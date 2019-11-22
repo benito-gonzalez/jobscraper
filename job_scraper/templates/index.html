@@ -28,7 +28,7 @@
 
     {% endif %}
 
-    <p class="total_jobs text-right">
+    <p class="total_jobs text-right pt-2">
         {% if page_obj.paginator.count > 0 %}
             Showing {% get_first_index 20 page_obj.number %} - {% get_last_index 20 page_obj.number page_obj.paginator.count %} of {{ page_obj.paginator.count }} jobs
         {% endif %}

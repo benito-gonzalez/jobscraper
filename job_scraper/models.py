@@ -249,6 +249,10 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def is_valid_tag(location):
+        return Tag.objects.filter(name__iexact=location).exists()
+
     class Meta:
         db_table = "Tags"
 
