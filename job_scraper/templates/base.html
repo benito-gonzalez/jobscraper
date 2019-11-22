@@ -61,8 +61,12 @@
                     <a href="/"><img src="{% static 'images/logo.png' %}" alt="JobsPortal logo" class="logo-size-60"></a>
                 </div>
                 <div class="col-9 col-lg-12 text-lg-center pl-sm-5 pl-md-0 pl-lg-4 pt-2 pt-md-0">
-                    {% if location_text %}
+                    {% if keyword_text and location_text %}
+                        <h1 class="header-title">{{ keyword_text }} Jobs In {{ location_text }}</h1>
+                    {% elif location_text %}
                         <h1 class="header-title">Search Jobs In {{ location_text }}</h1>
+                    {% elif keyword_text %}
+                        <h1 class="header-title">{{ keyword_text }} Jobs In Finland</h1>
                     {% elif company_text %}
                         <h1 class="header-title">Jobs at {{ company_text }}</h1>
                     {% else %}
