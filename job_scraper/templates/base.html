@@ -35,13 +35,13 @@
     <title>
         {% block title %}
             {% if keyword_text and location_text %}
-                {{ keyword_text }} Jobs In {{ location_text }}
+                {{ keyword_text }} Jobs In {{ location_text }} • Jobs Portal
             {% elif location_text %}
-                Search Jobs In {{ location_text }}
+                Search Jobs In {{ location_text }} • Jobs Portal
             {% elif keyword_text %}
-                {{ keyword_text }} Jobs In Finland
+                {{ keyword_text }} Jobs In Finland • Jobs Portal
             {% elif company_text %}
-                Jobs at {{ company_text }}
+                Jobs at {{ company_text }} • Jobs Portal
             {% else %}
                 Search & Find jobs in Finland • Jobs Portal
             {% endif %}
