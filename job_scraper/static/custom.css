@@ -53,7 +53,7 @@ Header
  */
 .header {
     background: linear-gradient(to bottom, #2aa847 0%, #8fd19e 99%);
-    height: 250px;
+    overflow:auto;
 }
 
 .row-header {
