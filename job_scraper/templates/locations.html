@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% load search_tags %}
+
+
+{% block content %}
+
+<div class="row mt-5 mb-4">
+    <div class="col text-center">
+        <h2>
+            <strong>
+                Have a look at all our locations and their jobs
+            </strong>
+        </h2>
+    </div>
+</div>
+
+<div class="row justify-content-center align-items-center">
+    {% for location in locations_list %}
+    {% if forloop.counter0|divisibleby:5 %}
+</div>
+<div class="row justify-content-center align-items-center mt-xl-4">
+    {% endif %}
+
+    <div class="col-auto text-center mt-2 mt-xl-0">
+        <div>
+            <a href="/jobs-in-{{ location.cities__name }}">
+                <button type="button" class="location-label mr-lg-3">
+                    <div class="pt-2 pl-2 pr-1">
+                <h5>    {{ location.cities__name }}  <span class="ml-lg-1 badge badge-success">
+                    {{ location.num_jobs }} </span> </h5>
+                        </div>
+                </button>
+            </a>
+        </div>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+<div class="pt-lg-5 pb-lg-5"></div>
+
+{% endblock %}

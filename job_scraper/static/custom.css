@@ -134,6 +134,34 @@ Footer
     font-size: 14px;
 }
 
+.location-label:hover, .location-label:visited, .location-label:link, .location-label:active {
+    text-decoration: none;
+}
+
+.location-label {
+    cursor: pointer;
+    color: #212529;
+    text-decoration: none;
+    background-color: #e6e6e6;
+    border: none;
+    border-radius: .2rem;
+}
+
+.location-label:hover {
+    background-color: #8fd19e;
+    border: none;
+    border-radius: .2rem;
+    text-decoration: none;
+}
+
+.badge-success{
+    font-size: 16px;
+}
+
+.location-label:active{
+    background-color: #8fd19e;
+}
+
 /*
 Jobs
  */

@@ -2,7 +2,7 @@ from rest_framework import generics
 from django.views import generic
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.views.generic.edit import FormView
 from django.conf import settings
 from django.contrib import messages
@@ -122,18 +122,18 @@ class IndexView(generic.ListView):
             self.request.GET["location"] = location_query
         else:
             if self.request.get_full_path().startswith("/jobs-in-"):
-                location_query = self.request.get_full_path().split("/jobs-in-")[1]
+                location_query = self.request.path.split("/jobs-in-")[1]
                 self.request.GET._mutable = True
                 self.request.GET["location"] = location_query
 
             if self.request.get_full_path().startswith("/jobs-at-"):
-                keyword_query_raw = self.request.get_full_path().split("/jobs-at-")[1]
+                keyword_query_raw = self.request.path.split("/jobs-at-")[1]
                 keyword_query = unquote(keyword_query_raw)
                 self.request.GET._mutable = True
                 self.request.GET["keyword"] = keyword_query
 
             if self.request.get_full_path().endswith("-jobs"):
-                keyword_query_raw = self.request.get_full_path().split("-jobs")[0]
+                keyword_query_raw = self.request.path.split("-jobs")[0]
                 # remove initial "/"
                 keyword_query = unquote(keyword_query_raw[1:])
                 self.request.GET._mutable = True
@@ -246,3 +246,13 @@ class JobListApiView(generics.ListAPIView):
 class JobDetailApiView(generics.RetrieveAPIView):
     queryset = Job.objects.all()
     serializer_class = JobDetailSerializer
+
+
+class LocationIndexView(generic.ListView):
+    template_name = 'locations.html'
+    context_object_name = 'locations_list'
+
+    def get_queryset(self):
+        # Get number of active jobs per city name
+        today = datetime.today()
+        return Job.objects.values('cities__name').filter(functools.reduce(and_, [Q(is_active=True, end_date__gte=today) | Q(is_active=True, end_date=None)])).exclude(cities__name="Finland").annotate(num_jobs=Count('cities__name')).filter(num_jobs__gt=0).order_by('cities__name')
