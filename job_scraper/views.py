@@ -69,19 +69,11 @@ class IndexView(generic.ListView):
         if self.company:
             ctx["company_text"] = self.company.name
 
-        if "jobs-in-" in self.request.path:
-            location = self.request.path.rsplit("-", 1)[1].capitalize()
-            if City.is_valid_location(location):
-                ctx['location_text'] = self.request.path.rsplit("-", 1)[1].capitalize()
-        if "location" in self.request.GET:
-            if City.is_valid_location(self.request.GET["location"]):
-                ctx['location_text'] = self.request.GET["location"]
+        if 'location' in self.request.GET:
+            ctx['location_text'] = self.request.GET['location'].capitalize()
 
-        m = search("^/(.+?)-jobs", self.request.path)
-        if m:
-            keyword = m.group(1)
-            if Tag.is_valid_tag(keyword):
-                ctx['keyword_text'] = keyword.capitalize()
+        if 'keyword' in self.request.GET:
+            ctx['keyword_text'] = self.request.GET['keyword'].capitalize()
 
         return ctx
 
@@ -117,14 +109,21 @@ class IndexView(generic.ListView):
             keyword_query = m.group(1)
             self.request.GET._mutable = True
             self.request.GET["keyword"] = keyword_query
+            if not Tag.is_valid_tag(keyword_query):
+                raise Http404
+
             location_query = m.group(2)
             self.request.GET._mutable = True
             self.request.GET["location"] = location_query
+            if not City.is_valid_location(location_query):
+                raise Http404
         else:
             if self.request.get_full_path().startswith("/jobs-in-"):
                 location_query = self.request.path.split("/jobs-in-")[1]
                 self.request.GET._mutable = True
                 self.request.GET["location"] = location_query
+                if not City.is_valid_location(location_query):
+                    raise Http404
 
             if self.request.get_full_path().startswith("/jobs-at-"):
                 keyword_query_raw = self.request.path.split("/jobs-at-")[1]
@@ -138,6 +137,8 @@ class IndexView(generic.ListView):
                 keyword_query = unquote(keyword_query_raw[1:])
                 self.request.GET._mutable = True
                 self.request.GET["keyword"] = keyword_query
+                if not Tag.is_valid_tag(keyword_query):
+                    raise Http404
 
         if keyword_query and location_query:
             keyword_words = keyword_query.split(" ")
@@ -256,3 +257,37 @@ class LocationIndexView(generic.ListView):
         # Get number of active jobs per city name
         today = datetime.today()
         return Job.objects.values('cities__name').filter(functools.reduce(and_, [Q(is_active=True, end_date__gte=today) | Q(is_active=True, end_date=None)])).exclude(cities__name="Finland").annotate(num_jobs=Count('cities__name')).filter(num_jobs__gt=0).order_by('cities__name')
+
+
+class TagIndexView(generic.ListView):
+    template_name = 'tags.html'
+    context_object_name = 'tags_list'
+    city = None
+    location_text = None
+
+    def get_context_data(self, **kwargs):
+        ctx = super(TagIndexView, self).get_context_data(**kwargs)
+        if self.city:
+            ctx["location_text"] = self.city
+
+        return ctx
+
+    def get_queryset(self):
+        if self.request.path.startswith("/tags-in-"):
+            location = self.request.path.split("/tags-in-")[1]
+            if City.is_valid_location(location):
+                self.request.GET._mutable = True
+                self.request.GET["location"] = location
+                self.city = location
+            else:
+                raise Http404
+
+        today = datetime.today()
+
+        if self.city:
+            # Get number of active jobs per keyword for a specific city
+            return Job.objects.values('tags__name').filter(functools.reduce(and_, [Q(is_active=True, end_date__gte=today, cities__name=self.city) | Q(is_active=True, end_date=None, cities__name=self.city)])).annotate(num_jobs=Count('tags__name')).filter(num_jobs__gt=0).order_by('tags__name')
+
+        else:
+            # Get number of active jobs per keyword
+            return Job.objects.values('tags__name').filter(functools.reduce(and_, [Q(is_active=True, end_date__gte=today) | Q(is_active=True, end_date=None)])).annotate(num_jobs=Count('tags__name')).filter(num_jobs__gt=0).order_by('tags__name')

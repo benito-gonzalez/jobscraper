@@ -24,7 +24,7 @@ class City(models.Model):
 
     @staticmethod
     def is_valid_location(location):
-        return City.objects.filter(name=location).exists() or City.objects.filter(swedish_name=location).exists() or City.objects.filter(region__name=location).exists()
+        return City.objects.filter(name__iexact=location).exists() or City.objects.filter(swedish_name__iexact=location).exists() or City.objects.filter(region__name__iexact=location).exists()
 
     class Meta:
         db_table = "Cities"

@@ -31,6 +31,7 @@ urlpatterns = [
     path('about/contact-us', views.ContactFormView.as_view()),
     path('donations', TemplateView.as_view(template_name='payment_process.html')),
     re_path(r'jobs-in-\w+', views.IndexView.as_view(), name='index'),
+    re_path(r'tags-in-\w+', views.TagIndexView.as_view(), name='tags.html'),
     re_path(r'jobs-at-\w+', views.IndexView.as_view(), name='index'),
     re_path(r'(.*?)-jobs', views.IndexView.as_view(), name='index'),
     path('', include('job_scraper.urls')),

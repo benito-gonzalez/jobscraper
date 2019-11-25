@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+{% load search_tags %}
+
+
+{% block content %}
+
+<div class="row mt-5 mb-4">
+    <div class="col text-center">
+        <h2>
+            <strong>
+                {% if location_text %}
+                    Find any job in {{ location_text }} by its keyword
+                {% else %}
+                    Find any job in Finland by its keyword
+                {% endif %}
+            </strong>
+        </h2>
+    </div>
+</div>
+
+<div class="row justify-content-center align-items-center">
+    {% for tag in tags_list %}
+    {% if forloop.counter0|divisibleby:5 %}
+</div>
+<div class="row justify-content-center align-items-center mt-xl-4">
+    {% endif %}
+
+    <div class="col-auto text-center mt-2 mt-xl-0">
+        <div>
+            {% if location_text %}
+                <a href="/{{ tag.tags__name }}-jobs-in-{{ location_text }}">
+                    <button type="button" class="location-label mr-lg-3">
+                        <div class="pt-2 pl-2 pr-1">
+                            <h5> {{ tag.tags__name }} <span class="ml-lg-1 badge badge-success">
+                        {{ tag.num_jobs }} </span></h5>
+                        </div>
+                    </button>
+                </a>
+            {% else %}
+                <a href="/{{ tag.tags__name }}-jobs">
+                    <button type="button" class="location-label mr-lg-3">
+                        <div class="pt-2 pl-2 pr-1">
+                            <h5> {{ tag.tags__name }} <span class="ml-lg-1 badge badge-success">
+                        {{ tag.num_jobs }} </span></h5>
+                        </div>
+                    </button>
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+<div class="pt-lg-5 pb-lg-5"></div>
+
+{% endblock %}
