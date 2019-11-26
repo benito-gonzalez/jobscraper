@@ -90,7 +90,7 @@ Aiven - https://aiven.io/careers
 SSH Communications Security - https://careers.ssh.com/jobs
 #Vizor - https://site.vizor.io/jobs
 Frosmo - https://frosmo.com/careers/?type=career&country%5B%5D=finland
-Supermetrics - https://supermetrics.com/jobs
+Supermetrics - https://careers.supermetrics.com
 Autori Oy - https://www.autori.fi/en/careers/
 720 Degrees Oy - https://720.io/en/open-positions/
 #Umbra - https://www.umbra3d.com/about-us/careers/
@@ -177,7 +177,7 @@ Oracle - https://oracle.taleo.net/careersection/2/jobsearch.ftl?lang=en
 Documill - https://www.documill.com/jobs/
 Elektrobit - https://jobs.elektrobit.com/job-offers.html?start=0
 Vainu.io - https://careers.vainu.io/
-Dear Lucy - https://www.dearlucy.co/en/company/#section/careers
+Dear Lucy - https://www.dearlucy.co/jobs
 Electronic Arts - https://www.ea.com/jobs-feed/filter/city=Helsinki
 Sniffie - https://careers.sniffie.io/
 Wolt - https://api.lever.co/v0/postings/wolt?mode=json
