@@ -63,7 +63,7 @@ Ferratum - https://jobs.lever.co/ferratum?location=Helsinki
 Bon Games - http://bongames.fi/#jobs
 Lightneer Inc - https://lightneer.com/jobs/
 Unity Technologies - https://api.greenhouse.io/v1/boards/unity3d/embed/jobs?content=true
-FuturePlay - http://www.futureplaygames.com/join-us/
+FuturePlay - https://careers.futureplaygames.com/jobs
 Redhill Games - https://www.redhillgames.com/jobs
 Seriously Digital Entertainment - https://app.recruiterbox.com/widget/65241/openings/
 Housemarque - https://app.recruiterbox.com/widget/78174/openings/
@@ -79,7 +79,7 @@ AJR solutions Oy - https://ajr.fi/careers/
 Anders - https://www.anders.fi/en/careers/
 Small Giant Games - https://www.smallgiantgames.com/#jobs
 Oura - https://ouraring.com/careers/
-Matchmade - https://www.smartrecruiters.com/job-api/public/search/widgets/Matchmade/postings?&offset=0&limit=100&fq=&langCode=en&callback=jQuery11240969907988245692_1554996319993&_=1554996319994
+Matchmade - https://career.recruitee.com/api/c/39981/widget/?widget=true
 ultimate.ai - https://careers.ultimate.ai/
 Yousician - https://api.greenhouse.io/v1/boards/yousician/offices
 Leadfeeder - https://www.leadfeeder.com/jobs/
