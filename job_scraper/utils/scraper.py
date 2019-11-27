@@ -942,14 +942,15 @@ class Silo(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
-        job_divs = soup.find_all("a", class_="eael-elements-flip-box-flip-card")
+        job_divs = soup.find_all("div", class_="elementor-column-wrap elementor-element-populated")
         for job_div in job_divs:
-            title, description_url, description = self.get_mandatory_fields(job_div)
-            if self.is_valid_job(title, description_url, description):
-                location = "Helsinki, Turku"  # it has two office in Helsinki and all jobs can be done in any of their offices.
+            if job_div.find("span", class_='elementor-button-text', string="APPLY"):
+                title, description_url, description = self.get_mandatory_fields(job_div)
+                if self.is_valid_job(title, description_url, description):
+                    location = "Helsinki, Turku"  # it has two office in Helsinki and all jobs can be done in any of their offices.
 
-                job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
-                jobs.append(job)
+                    job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
+                    jobs.append(job)
 
         return jobs
 
@@ -959,10 +960,12 @@ class Silo(Scraper):
 
         title_tag = item.find("h2")
         if title_tag:
-            title = title_tag.text.strip()
-            description_url = item.get('href')
-            if description_url:
-                description = self.get_description(description_url)
+            title = title_tag.text.strip().capitalize()
+            url_tag = item.find('a')
+            if url_tag:
+                description_url = url_tag.get('href')
+                if description_url:
+                    description = self.get_description(description_url)
 
         return title, description_url, description
 
@@ -5512,9 +5515,9 @@ class FuturePlay(Scraper):
         description = ""
 
         # Check title
-        title_div = item.find('h6').strip()
+        title_div = item.find('h6')
         if title_div:
-            title = title_div.text
+            title = title_div.text.strip()
 
             # Check description_url
             url_tag = item.find('a')
