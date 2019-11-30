@@ -2241,12 +2241,13 @@ class Verto(Scraper):
                 title_tag = soup.find('h2')
                 if title_tag:
                     title = title_tag.text
-                    description_block = soup.find('div', {'id': 'text-block-7'})
+                    description_block = soup.find('div', {'id': 'text-block-6'})
                     if description_block:
                         for tag in description_block.children:
-                            if tag != "\n":
-                                for child in tag.find_all(True):
-                                    child.attrs = {}
+                            if isinstance(tag, Tag):
+                                if tag.name == "h4" and "org-desc" in tag.get('class'):
+                                    continue
+                                Scraper.clean_attrs(tag)
                                 description += str(tag)
 
         return title, description_url, description
