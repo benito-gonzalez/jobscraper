@@ -3496,11 +3496,11 @@ class Smartly(Scraper):
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
             description_block = job_details_soup.find('div', {'class': 'section-wrapper page-full-width'})
             if description_block:
-                for div in description_block.find_all('div'):
-                    if div.attrs and 'last-section-apply' in div.attrs.get('class'):
+                for child in description_block.children:
+                    if child.attrs and 'last-section-apply' in child.attrs.get('class'):
                         break
-                    Scraper.clean_attrs(div)
-                    description += str(div)
+                    Scraper.clean_attrs(child)
+                    description += str(child)
 
         return description
 
@@ -6670,18 +6670,13 @@ class Yousician(Scraper):
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
             job_container = job_details_soup.find('div', {'id': 'content'})
 
-            # skip the first h3
-            first_tag = job_container.find('h3')
-            if first_tag:
-                for sibling in first_tag.next_siblings:
-                    if isinstance(sibling, Tag):
-                        if sibling.name == "h3" and sibling.text == "HOW TO APPLY":
-                            break
-                        if sibling.name == "h3":
-                            sibling.string = sibling.text.capitalize()
-
-                        Scraper.clean_attrs(sibling)
-                        description += str(sibling)
+            if job_container:
+                for child in job_container.children:
+                    if isinstance(child, Tag):
+                        if child.name == "h3":
+                            child.string = child.text.capitalize()
+                        Scraper.clean_attrs(child)
+                        description += str(child)
 
         return description
 
@@ -6966,9 +6961,9 @@ class Aiven(Scraper):
         jobs = []
         soup = BeautifulSoup(html, 'lxml')
 
-        jobs_div = soup.find('div', class_='open-positions')
+        jobs_div = soup.find('div', class_='jobs-table')
         if jobs_div:
-            for item in jobs_div.find_all('div', class_='career'):
+            for item in jobs_div.find_all('div', class_='job'):
                 enabled, title, description_url, description = self.get_mandatory_fields(item)
                 if enabled and self.is_valid_job(title, description_url, description):
                     location = self.get_location(item, title)
@@ -8896,15 +8891,16 @@ class Bitville(Scraper):
         return jobs
 
     def get_mandatory_fields(self, item):
-        description_url = None
+        title = description_url = None
         description = ""
 
-        title_raw = item.get_text().strip()
-        title = title_raw.replace("\n", " ").replace("  ", "")
-        relative_url = item.get('href')
-        if relative_url:
-            description_url = self.url.split(".com/")[0] + ".com" + relative_url
-            description = self.get_description(description_url)
+        title_tag = item.find('h3')
+        if title_tag:
+            title = title_tag.get_text()
+            relative_url = item.get('href')
+            if relative_url:
+                description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                description = self.get_description(description_url)
 
         return title, description_url, description
 
