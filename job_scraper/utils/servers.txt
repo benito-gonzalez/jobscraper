@@ -28,7 +28,7 @@ Danske Bank - https://danskebank.com/en-uk/careers/Apply/Pages/Current-openings.
 Nordcloud - https://nordcloudfinland.breezy.hr/json
 Nebula Oy - https://www.inmicsnebula.fi/fi/avoimet-tyopaikat
 Digital goodie - http://www.digitalgoodie.com/careers/
-Nightingale Health - https://nightingalehealth.com/company/join
+Nightingale Health - https://nightingalehealth.com/about/join-us
 Sandvik - https://www.home.sandvik/en/careers/job-search/?category=all&country=finland&jq=
 Signant Health - https://careers-signanthealth.icims.com/jobs/search?searchLocation=--Helsinki&pr=0
 OP Financial Group - https://op-careers.fi/search/
@@ -64,7 +64,7 @@ Bon Games - http://bongames.fi/#jobs
 Lightneer Inc - https://lightneer.com/jobs/
 Unity Technologies - https://api.greenhouse.io/v1/boards/unity3d/embed/jobs?content=true
 FuturePlay - https://careers.futureplaygames.com/jobs
-Redhill Games - https://www.redhillgames.com/jobs
+Redhill Games - https://www.redhillgames.com/careers/
 Seriously Digital Entertainment - https://app.recruiterbox.com/widget/65241/openings/
 Housemarque - https://app.recruiterbox.com/widget/78174/openings/
 Hatch Entertainment Oy - https://playhatch.com/careers/

@@ -1668,9 +1668,9 @@ class Tieto(Scraper):
                         title, description_url, description = self.get_mandatory_fields(item)
                         if self.is_valid_job(title, description_url, description):
                             location = self.get_location(item, title)
-                            pub_date, end_date = self.get_dates(description_url, title)
+                            end_date = self.get_dates(item, title)
 
-                            job = ScrapedJob(title, description, location, self.client_name, None, pub_date, end_date, None, description_url)
+                            job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
                             jobs.append(job)
                     else:
                         if "jobListingPageLoadMore" in item.get("id"):
@@ -1691,72 +1691,62 @@ class Tieto(Scraper):
         title = description_url = None
         description = ""
 
-        title_tag = item.find('div', {'class': 'col-md-4'})
+        title_tag = item.find('div', {'class': 'col-md-3'})
         if title_tag:
             title = title_tag.text.strip()
 
-            relative_url = item.get('href')
-            if relative_url:
-                description_url = self.url.split("com/")[0] + "com" + relative_url
-                description = self.get_description(description_url)
+            description_url = item.get('href')
+            description = self.get_description(description_url)
 
         return title, description_url, description
 
     @staticmethod
     def get_description(url):
         description = ""
-        job_details_html = request_support.simple_get(url)
+        job_details_html = request_support.simple_get(url, accept_json=True)
         if job_details_html:
-            description_soup = BeautifulSoup(job_details_html, 'html.parser')
-            description_div = description_soup.find('div', {'class': 'infobox'})
-            if description_div:
-                for p in description_div.next_siblings:
-                    if p.name and p.text.lower() == "about tieto":
-                        break
-                    if p != "\n":
-                        description += str(p)
+            json_dict = json.loads(job_details_html)
+            for child in json_dict["body"]["children"][1]["children"][0]["children"]:
+                if child["ecid"] == "richTextArea.jobPosting.jobDescription":
+                    description_raw = child["text"]
+                    description_soup = BeautifulSoup(description_raw, "html.parser")
+                    for tag in description_soup.children:
+                        if isinstance(tag, Tag):
+                            Scraper.clean_attrs(tag)
+                            if tag.text != "\xa0" and tag.text.strip() != "":
+                                description += str(tag)
+                    break
 
         return description
 
     def get_location(self, item, title):
-        # last div contains the location
-        div_list = item.find_all('div', {'class': 'col-md-4'})
-        last_div = location = None
+        # third div contains the location
+        div_list = item.find_all('div', {'class': 'col-md-3'})
+        location = None
 
-        for last_div in div_list:
-            pass
-        if last_div:
-            location = last_div.text.strip()
+        if len(div_list) == 4:
+            location = div_list[2].text.strip()
 
         if not location:
             log_support.set_invalid_location(self.client_name, title)
 
         return location
 
-    def get_dates(self, url, title):
-        pub_date = end_date = None
+    def get_dates(self, item, title):
+        # last div contains the date
+        div_list = item.find_all('div', {'class': 'col-md-3'})
+        last_div = end_date = None
 
-        job_details_html = request_support.simple_get(url)
-        if job_details_html:
-            description_soup = BeautifulSoup(job_details_html, 'html.parser')
-            dates_label = description_soup.find('label', string='Application period:')
-            if dates_label:
-                # dates_string is something like "Application period: 05 December 2018 - 23 December 2018"
-                dates_string = dates_label.parent.text
-                dates_fields = dates_string.split(":")
-                if len(dates_fields) == 2:
-                    dates = dates_string.split(":")[1]
-                    pub_date_splited = dates.split(" - ")
-                    if len(pub_date_splited) == 2:
-                        pub_date_str = dates.split(" - ")[0]
-                        end_date_str = dates.split(" - ")[1]
-                        try:
-                            pub_date = parser.parse(pub_date_str).strftime('%Y-%m-%d')
-                            end_date = parser.parse(end_date_str).strftime('%Y-%m-%d')
-                        except ValueError:
-                            log_support.set_invalid_dates(self.client_name, title)
+        for last_div in div_list:
+            pass
+        if last_div:
+            end_date_datetime = parser.parse(last_div.text.strip())
+            end_date = end_date_datetime.strftime('%Y-%m-%d')
 
-        return pub_date, end_date
+        if not end_date:
+            log_support.set_invalid_dates(self.client_name, title)
+
+        return end_date
 
 
 class Rightware(Scraper):
@@ -5579,9 +5569,9 @@ class RedhillGames(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
-        block = soup.find('div', {"id": "comp-joer0a86"})
+        block = soup.find('div', class_='job-toggles-container')
         if block:
-            for item in block.find_all('li'):
+            for item in block.find_all('div', class_='job-toggle'):
                 title, description_url, description = self.get_mandatory_fields(item)
                 if self.is_valid_job(title, description_url, description):
                     # only one office located in Helsinki
@@ -5596,12 +5586,15 @@ class RedhillGames(Scraper):
         description = ""
 
         # Check title
-        title_tag = item.find('a')
+        title_tag = item.find('h2')
         if title_tag:
             title = title_tag.text
-            description_url = title_tag.get('href')
-            if description_url:
-                description = self.get_full_description(description_url)
+        url_tag = item.find('a')
+        if url_tag:
+            description_url = url_tag.get('href')
+
+        if description_url:
+            description = self.get_full_description(description_url)
 
         return title, description_url, description
 
@@ -5611,16 +5604,13 @@ class RedhillGames(Scraper):
         job_details_html = request_support.simple_get(url)
         if job_details_html:
             job_details_soup = BeautifulSoup(job_details_html, 'html.parser')
-            divs = job_details_soup.find_all('div', class_='txtNew')
+            divs = job_details_soup.find_all('div', class_='entry-content')
             for div in divs:
-                # There is only one valid div that contains the job description. It's defined by the "data-packed == False"
-                if div.get('data-packed') == "false":
-                    for tag in div.children:
-                        if tag.name:
-                            Scraper.clean_attrs(tag)
-                            if tag.text != "\n" and tag.text != "\u200b" and tag.text != "\xa0":
-                                description += str(tag)
-                    break
+                if "two-images grid" in div.get('class'):
+                    continue
+                if isinstance(div, Tag):
+                    Scraper.clean_attrs(div)
+                    description += str(div)
 
         return description
 
