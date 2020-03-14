@@ -2095,9 +2095,11 @@ class Nokia(Scraper):
         log_support.log_extract_info(self.client_name)
         jobs = []
         soup = BeautifulSoup(html, 'html.parser')
+        current_page = 0
+        max_page = 150
 
         last_page = False
-        while not last_page:
+        while not last_page and current_page < max_page:
             for job in soup.find_all('div', {'class': 'job_list_row'}):
                 if self.is_finnish(job):
                     title, description_url, description = self.get_mandatory_fields(job)
@@ -3096,17 +3098,13 @@ class Relex(Scraper):
         log_support.log_extract_info(self.client_name)
         json_dict = json.loads(html)
 
-        if "objects" in json_dict:
-            for item in json_dict["objects"]:
+        if "jobs" in json_dict:
+            for item in json_dict["jobs"]:
                 finnish = self.is_finnish(item)
                 if finnish:
                     title, description_url, description = self.get_mandatory_fields(item)
                     if self.is_valid_job(title, description_url, description):
-                        if "location" in item and "city" in item["location"]:
-                            location = item["location"]["city"]
-                        else:
-                            location = None
-                            log_support.set_invalid_location(self.client_name, title)
+                        location = item["location"]["name"]
 
                         job = ScrapedJob(title, description, location, self.client_name, None, None, None, None, description_url)
                         jobs.append(job)
@@ -3117,8 +3115,8 @@ class Relex(Scraper):
     def is_finnish(item):
         finnish = True
 
-        if "location" in item and "country" in item["location"] and "city" in item["location"]:
-            finnish = "Finland" == item["location"]["country"] or "Finland" in item["location"]["city"]
+        if "location" in item and "name" in item["location"]:
+            finnish = "Finland" in item["location"]["name"]
 
         return finnish
 
@@ -3128,11 +3126,11 @@ class Relex(Scraper):
 
         if "title" in item:
             title = item["title"]
-            if "hosted_url" in item:
-                description_url = item["hosted_url"]
-                if "description" in item:
-                    description_raw = item["description"]
-                    description_soup = BeautifulSoup(description_raw, "html.parser")
+            if "absolute_url" in item:
+                description_url = item["absolute_url"]
+                if "content" in item:
+                    description_raw = item["content"]
+                    description_soup = BeautifulSoup(description_raw, "lxml")
                     for tag in description_soup.children:
                         if isinstance(tag, Tag):
                             Scraper.clean_attrs(tag)
@@ -3316,6 +3314,7 @@ class Kone(Scraper):
 
     def extract_info(self, html):
         # From API
+        locator = CityLocator()
         jobs = []
         last_page = False
         current_page = self.url
@@ -3331,7 +3330,10 @@ class Kone(Scraper):
                     title, description_url, description, is_finnish = self.get_mandatory_fields(item)
                     if is_finnish and self.is_valid_job(title, description_url, description):
                         # location has already being checked in get_mandatory_fields()
-                        location = item["subtitles"][0]["instances"][0]["text"]
+                        texts = [x["instances"][0]["text"] for x in item["subtitles"]]
+                        for text in texts:
+                            if locator.has_finnish_cities(text):
+                                location = text
                         end_date = self.get_end_date(description)
 
                         job = ScrapedJob(title, description, location, self.client_name, None, None, end_date, None, description_url)
@@ -3381,8 +3383,9 @@ class Kone(Scraper):
             title = item["title"]["instances"][0]["text"]
             if "subtitles" in item and len(item["subtitles"]) > 0 and "instances" in item["subtitles"][0] and \
                     len(item["subtitles"][0]["instances"]) > 0 and "text" in item["subtitles"][0]["instances"][0]:
-                location = item["subtitles"][0]["instances"][0]["text"]
-                if locator.has_finnish_cities(location):
+
+                all_texts = [x["instances"][0]["text"] for x in item["subtitles"]]
+                if locator.has_finnish_cities(" ".join(all_texts)):
                     is_finnish = True
                     if "commandLink" in item["title"]:
                         relative_url = item["title"]["commandLink"]
