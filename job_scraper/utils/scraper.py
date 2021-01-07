@@ -3315,6 +3315,7 @@ class Kone(Scraper):
     def extract_info(self, html):
         # From API
         locator = CityLocator()
+        location = None
         jobs = []
         last_page = False
         current_page = self.url
@@ -5557,7 +5558,7 @@ class FuturePlay(Scraper):
         if len(containers) == 3:
             try:
                 end_date = parser.parse(containers[2].get_text()).strftime('%Y-%m-%d')
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError):
                 pass
 
         if not end_date:
