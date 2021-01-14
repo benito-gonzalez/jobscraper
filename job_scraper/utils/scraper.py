@@ -834,7 +834,7 @@ class Innofactor(Scraper):
             if relative_url_a:
                 relative_url = relative_url_a.get('href')
                 if relative_url:
-                    description_url = self.url.split("fi/")[0] + "fi" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
@@ -889,7 +889,7 @@ class Smarp(Scraper):
             if relative_url_a:
                 relative_url = relative_url_a.get('href')
                 if relative_url:
-                    description_url = self.url.split("com/")[0] + "com" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
@@ -1144,7 +1144,7 @@ class Blueprint(Scraper):
             if url_a:
                 relative_url = url_a.get('href')
                 if relative_url:
-                    description_url = self.url.split("com/")[0] + "com" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
@@ -1209,7 +1209,7 @@ class Eficode(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
@@ -3532,7 +3532,7 @@ class Cybercom(Scraper):
             if url_span:
                 relative_url = url_span.get('href')
                 if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description_url = relative_url
                     description = self.get_full_description(description_url)
 
         return title, description_url, description
@@ -6581,7 +6581,7 @@ class Ultimate(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".ai/")[0] + ".ai" + relative_url
+                    description_url = relative_url
                     if description_url:
                         description = self.get_description(description_url)
 
@@ -6773,7 +6773,7 @@ class ZenRobotics(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description_url = relative_url
                     if description_url:
                         description = self.get_description(description_url)
 
@@ -7282,7 +7282,7 @@ class Supermetrics(Scraper):
             title = title_tag.get_text().strip()
             url_tag = item.find('a')
             if url_tag:
-                description_url = self.url + url_tag.get('href')
+                description_url = url_tag.get('href')
 
             if description_url:
                 description = self.get_description(description_url)
@@ -8042,7 +8042,7 @@ class Solteq(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description_url = relative_url
                     if description_url:
                         description = self.get_description(description_url)
 
@@ -11737,7 +11737,7 @@ class Enfuce(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
@@ -11801,7 +11801,7 @@ class Giosg(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
@@ -11868,7 +11868,7 @@ class Inderes(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".fi/")[0] + ".fi" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
@@ -11920,7 +11920,7 @@ class LvsBrokers(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
@@ -13857,7 +13857,7 @@ class Vainu(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".io/")[0] + ".io" + relative_url
+                    description_url = relative_url
                     if description_url:
                         description = self.get_description(description_url)
 
@@ -14051,7 +14051,7 @@ class Sniffie(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".io/")[0] + ".io" + relative_url
+                    description_url = relative_url
                     if description_url:
                         description = self.get_description(description_url)
 
@@ -14459,7 +14459,7 @@ class NipromecGroup(Scraper):
             if url_tag:
                 relative_url = url_tag.get('href')
                 if relative_url:
-                    description_url = self.url.split(".com/")[0] + ".com" + relative_url
+                    description_url = relative_url
                     description = self.get_description(description_url)
 
         return title, description_url, description
